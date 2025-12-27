@@ -9,6 +9,7 @@ interface Song {
   duration: number;
   uri: string;
   artwork?: string;
+  palette?: string[];
   is_liked: boolean;
   play_count: number;
 }
@@ -34,7 +35,7 @@ interface SongState {
   fetchLikedSongs: () => Promise<void>;
   fetchStats: () => Promise<void>;
   addSong: (
-    song: Omit<Song, "id" | "is_liked" | "play_count">
+    song: Omit<Song, "id" | "is_liked" | "play_count"> & { palette?: string[] }
   ) => Promise<void>;
   deleteSong: (id: string) => Promise<void>;
   toggleLike: (id: string) => Promise<void>;

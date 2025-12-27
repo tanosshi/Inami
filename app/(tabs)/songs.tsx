@@ -162,6 +162,7 @@ export default function SongsScreen() {
                 album: "Unknown Album",
                 duration: 0,
                 artwork: undefined,
+                palette: undefined,
               };
             }
 
@@ -172,6 +173,7 @@ export default function SongsScreen() {
               uri: cacheUri,
               duration: metadata.duration,
               artwork: metadata.artwork,
+              palette: metadata.palette,
             });
             addedCount++;
           } catch (error) {
@@ -191,75 +193,12 @@ export default function SongsScreen() {
         } else {
           Alert.alert("Success", `Added ${addedCount} song(s) from folder`);
         }
-      } else if (Platform.OS === "web") {
-        handlePickFileWeb();
       }
     } catch (error) {
       console.error("Error picking folder:", error);
       setScanningFolder(false);
       Alert.alert("Error", "Failed to import music files");
     }
-  };
-
-  const handlePickFileWeb = async () => {
-    if (Platform.OS !== "web") return;
-
-    const input = document.createElement("input");
-    input.type = "file";
-    input.setAttribute("webkitdirectory", "");
-    input.setAttribute("directory", "");
-    input.multiple = true;
-    input.accept = "audio/*";
-
-    input.onchange = async (e: any) => {
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-
-      const audioFiles = Array.from(files).filter((file: any) =>
-        isAudioFile(file.name)
-      ) as File[];
-
-      if (audioFiles.length === 0) {
-        Alert.alert(
-          "No Music Found",
-          "No audio files found in the selected folder"
-        );
-        return;
-      }
-
-      setScanningFolder(true);
-      setScanProgress({ current: 0, total: audioFiles.length });
-      let addedCount = 0;
-
-      for (let i = 0; i < audioFiles.length; i++) {
-        const file = audioFiles[i];
-        setScanProgress({ current: i + 1, total: audioFiles.length });
-
-        try {
-          const uri = URL.createObjectURL(file);
-          const fileName = file.name.replace(/\.[^/.]+$/, "");
-          const metadata = await extractMetadata(uri, fileName);
-
-          await addSong({
-            title: metadata.title,
-            artist: metadata.artist,
-            album: metadata.album,
-            uri: uri,
-            duration: metadata.duration,
-            artwork: metadata.artwork,
-          });
-          addedCount++;
-        } catch (error) {
-          console.error("Error processing file:", error);
-        }
-      }
-
-      setScanningFolder(false);
-      await fetchSongs();
-      Alert.alert("Success", `Added ${addedCount} song(s) from folder`);
-    };
-
-    input.click();
   };
 
   const handleImportURL = async () => {
@@ -427,11 +366,11 @@ export default function SongsScreen() {
 
       <FolderScanModal show={scanningFolder} scanProgress={scanProgress} />
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
           styles.shuffleButton,
-          currentSong && styles.shuffleButtonWithMiniPlayer
-        ]} 
+          currentSong && styles.shuffleButtonWithMiniPlayer,
+        ]}
         onPress={handleShuffleAll}
       >
         <MaterialIcons name="shuffle" size={28} color={COLORS.onPrimary} />

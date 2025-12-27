@@ -2,7 +2,11 @@ import { create } from "zustand";
 import { Platform } from "react-native";
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from "expo-audio";
 import * as db from "../utils/database";
-import { updateNotificationState, initializeNotificationService, setupNotificationListeners } from "../utils/notificationService";
+import {
+  updateNotificationState,
+  initializeNotificationService,
+  setupNotificationListeners,
+} from "../utils/notificationService";
 
 interface Song {
   id: string;
@@ -54,15 +58,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   playSong: async (song: Song) => {
     const { player: existingPlayer, webAudio: existingWebAudio, queue } = get();
 
-    if (Platform.OS === "web") {
-      if (existingWebAudio) {
-        existingWebAudio.pause();
-        existingWebAudio.src = "";
-      }
-    } else {
-      if (existingPlayer) {
-        existingPlayer.remove();
-      }
+    if (existingWebAudio) {
+      existingWebAudio.pause();
+      existingWebAudio.src = "";
+    } else if (existingPlayer) {
+      existingPlayer.remove();
     }
 
     try {
@@ -168,7 +168,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         }
       }
       set({ isPlaying: !isPlaying });
-      
+
       // Update notification
       updateNotificationState();
     } catch (error) {
@@ -250,17 +250,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   stopPlayback: async () => {
-    const { player, webAudio } = get();
+    const { player } = get();
 
-    if (Platform.OS === "web") {
-      if (webAudio) {
-        webAudio.pause();
-        webAudio.src = "";
-      }
-    } else {
-      if (player) {
-        player.remove();
-      }
+    if (player) {
+      player.remove();
     }
 
     set({
@@ -272,7 +265,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       duration: 0,
     });
 
-    // Update notification
     updateNotificationState();
   },
 }));

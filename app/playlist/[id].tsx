@@ -234,12 +234,12 @@ export default function PlaylistDetailScreen() {
         animationType="slide"
         onRequestClose={() => setShowAddSongsModal(false)}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={() => setShowAddSongsModal(false)}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
             style={styles.modalContent}
@@ -295,7 +295,7 @@ export default function PlaylistDetailScreen() {
                       </View>
                     </View>
                   </View>
-                  <Feather name="plus" size={16} color={COLORS.primary} />
+                  <Feather name="plus" size={16} color={COLORS.onSurface} />
                 </TouchableOpacity>
               )}
               ListEmptyComponent={

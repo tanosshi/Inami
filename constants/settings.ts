@@ -80,15 +80,6 @@ export const SETTINGS_CONFIG = {
     title: "Features",
     settings: [
       {
-        codename: "ai_features",
-        name: "AI features",
-        description:
-          "Music recommendations, discovery page, and AI powered functions.",
-        emoji: "android",
-        type: "menu",
-        defaultValue: null,
-      },
-      {
         codename: "lastfm",
         name: "Last.fm",
         description: "Settings related to last.fm",
@@ -106,6 +97,14 @@ export const SETTINGS_CONFIG = {
         defaultValue: null,
       },
       {
+        codename: "dlmusic",
+        name: "Download Music",
+        description: "Search and download music from various online sources",
+        emoji: "download",
+        type: "menu",
+        defaultValue: null,
+      },
+      {
         codename: "fetch_id3",
         name: "Fetch ID3",
         description: "Automatically apply metadata tags to your local files",
@@ -114,10 +113,18 @@ export const SETTINGS_CONFIG = {
         defaultValue: null,
       },
       {
-        codename: "discover", // todo add option to cache last fm stats alongside
+        codename: "discover",
         name: "Discovery",
         description: "Get recommended new music based on your taste",
         emoji: "music-video",
+        type: "menu",
+        defaultValue: null,
+      },
+      {
+        codename: "search",
+        name: "Search",
+        description: "Search for music outside of your library",
+        emoji: "zoom-in",
         type: "menu",
         defaultValue: null,
       },

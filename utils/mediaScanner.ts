@@ -12,9 +12,7 @@ export interface AudioAsset {
 }
 
 export const requestPermissions = async (): Promise<boolean> => {
-  if (Platform.OS === "web") {
-    return false;
-  }
+  if (Platform.OS === "web") return false;
 
   const { status } = await MediaLibrary.requestPermissionsAsync();
   return status === "granted";
@@ -23,11 +21,6 @@ export const requestPermissions = async (): Promise<boolean> => {
 export const scanDeviceMusic = async (
   onProgress?: (current: number, total: number) => void
 ): Promise<void> => {
-  if (Platform.OS === "web") {
-    console.log("Device music scanning not available on web.");
-    return;
-  }
-
   try {
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
@@ -72,14 +65,18 @@ export const scanDeviceMusic = async (
         continue;
       }
 
-      const fileName = asset.filename.replace(/\.(mp3|wav|m4a|flac|ogg)$/i, "");
+      const fileName = asset.filename
+        .replace(/\[.*?\]/g, "")
+        .replace(/\.(mp3|wav|m4a|flac|ogg)$/i, "")
+        .trim();
       let metadata;
 
       try {
         metadata = await extractMetadata(asset.uri, fileName);
-      } catch {
+      } catch (error) {
         console.warn(
-          `Failed to extract metadata for ${asset.filename}, using fallbacks`
+          `Failed to extract metadata for ${asset.filename}, using fallbacks. Error:`,
+          error
         );
         let title = fileName;
         let artist = "Unknown Artist";
@@ -98,6 +95,7 @@ export const scanDeviceMusic = async (
           album: "Unknown Album",
           duration: asset.duration,
           artwork: undefined,
+          palette: undefined,
         };
       }
 
@@ -110,6 +108,7 @@ export const scanDeviceMusic = async (
         uri: asset.uri,
         artwork: metadata.artwork || null,
         is_liked: false,
+        palette: metadata.palette || null,
         play_count: 0,
       };
 
@@ -124,6 +123,5 @@ export const scanDeviceMusic = async (
 };
 
 export const refreshLibrary = async (): Promise<void> => {
-  // Clear existing songs and rescan
   await scanDeviceMusic();
 };

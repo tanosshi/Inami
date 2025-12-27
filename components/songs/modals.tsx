@@ -51,7 +51,7 @@ export function ImportUrlModal({
             />
             <TextInput
               style={styles.modalInput}
-              placeholder="Enter MP3 URL"
+              placeholder="Enter MP3 URL (YT soon)"
               placeholderTextColor={COLORS.onSurfaceVariant}
               value={importUrl}
               onChangeText={setImportUrl}

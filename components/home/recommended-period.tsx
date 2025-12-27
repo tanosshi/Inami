@@ -24,18 +24,21 @@ interface Stats {
   most_played_song?: Song;
 }
 
-interface MostPlayedProps {
+interface RecommendedPeriodProps {
   stats: Stats | null;
   onPlaySong: (song: Song) => void;
 }
 
-export default function MostPlayed({ stats, onPlaySong }: MostPlayedProps) {
+export default function RecommendedPeriod({
+  stats,
+  onPlaySong,
+}: RecommendedPeriodProps) {
   if (!stats?.most_played_song || stats.most_played_song.play_count === 0)
     return null;
-
+  // edit when the logic is there
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Most played</Text>
+      <Text style={styles.sectionTitle}>Recommended Right Now</Text>
       <SongCard
         song={stats.most_played_song}
         onPress={() => onPlaySong(stats.most_played_song!)}

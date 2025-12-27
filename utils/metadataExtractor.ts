@@ -1,5 +1,6 @@
 import { File, Paths, Directory } from "expo-file-system";
 import { parseBuffer } from "music-metadata-browser";
+import ImageColors from "react-native-image-colors";
 
 export interface AudioMetadata {
   title: string;
@@ -7,6 +8,7 @@ export interface AudioMetadata {
   album: string;
   duration: number;
   artwork?: string;
+  palette?: string[];
 }
 
 function getExtensionFromMimeType(mimeType: string): string {
@@ -67,8 +69,6 @@ export const extractMetadata = async (
 
     const arrayBuffer = await fileToRead.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
-
-    // parse metadata
     const metadata = await parseBuffer(buffer, getMimeType(fileToRead.uri));
 
     let artworkUri: string | undefined;
@@ -83,13 +83,43 @@ export const extractMetadata = async (
       );
     }
 
-    return {
+    let palette: string[] = [];
+    if (artworkUri) {
+      try {
+        const colors = await ImageColors.getColors(artworkUri, {
+          fallback: "#000000",
+        });
+
+        console.log("Extracted colors:", colors);
+        colors.platform = "android"; // just force it lol
+
+        if (colors.platform === "android") {
+          palette = [
+            colors.dominant,
+            colors.average,
+            colors.vibrant,
+            colors.darkVibrant,
+            colors.lightVibrant,
+            colors.darkMuted,
+            colors.lightMuted,
+          ].filter(Boolean);
+          console.log("Final palette array:", palette);
+        }
+      } catch (e) {
+        console.log("ImageColors error:", e);
+      }
+    }
+
+    const result = {
       title: metadata.common.title || fallbackTitle || "Unknown Title",
       artist: metadata.common.artist || "Unknown Artist",
       album: metadata.common.album || "Unknown Album",
       duration: metadata.format.duration || 0,
       artwork: artworkUri,
+      palette,
     };
+
+    return result;
   } catch (err) {
     console.warn("Failed to extract metadata", err);
     return defaultMetadata;

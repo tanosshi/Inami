@@ -113,7 +113,7 @@ export const CUSTOMIZATION_CONFIG = {
     ],
   },
   views: {
-    title: "Change how the app looks like",
+    title: "App Style",
     settings: [
       {
         codename: "fonts",
@@ -182,13 +182,13 @@ export const CUSTOMIZATION_CONFIG = {
     ],
   },
   app: {
-    title: "App-related settings",
+    title: "App-related Settings",
     settings: [
       {
         codename: "logo",
         name: "Logo",
         description: "Change the app logo with presets or custom images",
-        emoji: "brush",
+        emoji: "",
         type: "menu",
         defaultValue: null,
       },
@@ -196,7 +196,7 @@ export const CUSTOMIZATION_CONFIG = {
         codename: "name",
         name: "Name",
         description: "Change the app name as shown on the home screen",
-        emoji: "brush",
+        emoji: "",
         type: "menu",
         defaultValue: null,
       },
@@ -209,5 +209,5 @@ export const CATEGORY_ICON_MAP: Record<string, string> = {
   themes: "palette",
   colors: "color-lens",
   views: "visibility",
-  app: "apps"
+  app: "apps",
 };

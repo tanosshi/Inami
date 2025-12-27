@@ -10,8 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
-import { SETTINGS_CONFIG } from "../constants/settings";
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { SETTINGS_CONFIG } from "../../constants/settings";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -37,10 +37,33 @@ export default function SettingsScreen() {
   const handleSettingPress = (codename: string, type: string) => {
     console.log(`Setting pressed: ${codename} (type: ${type})`);
 
-    if (codename === "version") {
-      handleVersionTap();
-    } else if (codename === "customize") {
-      router.push("/customization");
+    switch (codename) {
+      case "version":
+        handleVersionTap();
+        break;
+      case "customize":
+        router.push("/customization");
+        break;
+      case "fetch_id3":
+        router.push("/settings/fetch-id3");
+        break;
+      case "syncing":
+        router.push("/settings/syncing");
+        break;
+      case "lastfm":
+        router.push("/settings/lastfm");
+        break;
+      case "discover":
+        router.push("/settings/discovery");
+        break;
+      case "search":
+        router.push("/settings/search");
+        break;
+      case "dlmusic":
+        router.push("/settings/download");
+        break;
+      default:
+        break;
     }
   };
 

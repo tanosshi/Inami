@@ -17,6 +17,7 @@ build/
 .next/
 out/
 coverage/
+android/
 
 # env
 expo-env.d.ts

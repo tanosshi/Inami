@@ -1,7 +1,14 @@
 import { React } from "react";
 // @ts-ignore
 import { useRouter } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
@@ -24,63 +31,65 @@ export default function QuickStats({ stats }: QuickStatsProps) {
   const navigation = useNavigation();
   const router = useRouter();
   return (
-    <ScrollView 
-      horizontal 
+    <ScrollView
+      horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.statsContainer}
     >
       <View style={styles.statsRow}>
-      <TouchableOpacity
-        style={[styles.statChip]}
-        onPress={() => Alert.alert("wait", "wait")}
-      >
-        <MaterialIcons
-          name="history"
-          size={18}
-          color={COLORS.onSurfaceVariant}
-        />
-        <Text style={[styles.statChipText]}>History</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.statChip]}
+          onPress={() => Alert.alert("wait", "wait")}
+        >
+          <MaterialIcons
+            name="history"
+            size={18}
+            color={COLORS.onSurfaceVariant}
+          />
+          <Text style={[styles.statChipText]}>History</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.statChip}
-        onPress={() => router.push("/(tabs)/songs")}
-      >
-        <MaterialIcons
-          name="library-music"
-          size={18}
-          color={COLORS.onSurfaceVariant}
-        />
-        <Text style={styles.statChipText}>{stats?.total_songs || 0} songs</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.statChip}
+          onPress={() => router.push("/(tabs)/songs")}
+        >
+          <MaterialIcons
+            name="library-music"
+            size={18}
+            color={COLORS.onSurfaceVariant}
+          />
+          <Text style={styles.statChipText}>
+            {stats?.total_songs || 0} songs
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.statChip}
-        onPress={() => router.push("/(tabs)/playlists")}
-      >
-        <MaterialIcons
-          name="queue-music"
-          size={18}
-          color={COLORS.onSurfaceVariant}
-        />
-        <Text style={styles.statChipText}>
-          {stats?.total_playlists || 0} playlists
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.statChip}
+          onPress={() => router.push("/(tabs)/playlists")}
+        >
+          <MaterialIcons
+            name="queue-music"
+            size={18}
+            color={COLORS.onSurfaceVariant}
+          />
+          <Text style={styles.statChipText}>
+            {stats?.total_playlists || 0} playlists
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.statChip]}
-        onPress={() => Alert.alert("wait", "wait")}
-      >
-        <MaterialIcons
-          name="repeat"
-          size={18}
-          color={COLORS.onSurfaceVariant}
-        />
-        <Text style={[styles.statChipText]}>Most played</Text>
-      </TouchableOpacity>
-    </View>
-  </ScrollView>
+        <TouchableOpacity
+          style={[styles.statChip]}
+          onPress={() => Alert.alert("wait", "wait")}
+        >
+          <MaterialIcons
+            name="repeat"
+            size={18}
+            color={COLORS.onSurfaceVariant}
+          />
+          <Text style={[styles.statChipText]}>Most played</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 

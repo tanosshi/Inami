@@ -43,7 +43,7 @@ const featuredTiles = {
 
 const handleTilePress = (tileType: string) => {
   console.log(`Pressed ${tileType} tile`);
-  // todo navigate
+  // todo
 };
 
 export default function DiscoverScreen() {
@@ -129,12 +129,17 @@ export default function DiscoverScreen() {
           }}
         >
           <Text style={styles.sectionTitle}>Something For You</Text>
-          <MaterialIcons
-            name="refresh"
-            size={22}
-            style={{ marginRight: SPACING.sm, marginBottom: 2 }}
-            color={COLORS.onSurfaceVariant}
-          />
+          <TouchableOpacity
+            onPress={() => handleTilePress("refresh")}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons
+              name="refresh"
+              size={22}
+              style={{ marginRight: SPACING.sm, marginBottom: 2 }}
+              color={COLORS.onSurfaceVariant}
+            />
+          </TouchableOpacity>
         </View>
 
         {/* only play small part, if plus pressed add full song to tracks (we'll cache entire songs and check waveforms for peaks UNLESSS spotify has an preview api) */}

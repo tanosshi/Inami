@@ -30,7 +30,7 @@ _The **one and only** proper music player, with all the features you need._
 
 - Most players are built in Kotlin, while we run in Expo.js. Performance may vary.
 - Battery usage might be slightly higher than the average music player.
-- For low end devices the app may lag a bit during startup or caching.
+- For low end devices the app may lag a bit during startup or caching for us.
 
 ---
 
@@ -50,8 +50,8 @@ _The **one and only** proper music player, with all the features you need._
 | Font changer                     | 🔄 **Planned**                 |
 | Animated icons in bottom nav bar | 🔄 **Planned**                 |
 | Wallpaper accent color           | 🔄 **Planned**                 |
-| Sync colors based on album cover | 🔄 **Planned**                 |
 | Lyrics screen, Load lyrics       | 🔄 **Planned**                 |
+| Sync colors based on album cover | 🟡🔴 **Finish settings first** |
 | Music notification               | 🟡🔴 **Almost Complete**       |
 | Edit tag/ID3 in app              | 🔴 **Finish everything first** |
 | Proper Landscape UI              | 🔴 **Finish everything first** |
@@ -71,12 +71,14 @@ _The **one and only** proper music player, with all the features you need._
 | --------------------------------------------------- | --------------------------------- |
 | Auto fetch metadata; (artist+) covers, lyrics etc.  | 🔴 **Important**                  |
 | Make every part easily customizable (theme.ts)      | 🔴 **Important**                  |
+| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  |
 | Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  |
 | Tag cloud feature                                   | 🔴 **Finish auto fetch first**    |
 | Custom logo and app name                            | 🟡 **High**                       |
 | Music recommendations, offline version after        | 🟡 **High**                       |
 | Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       |
-| Navigation bar on top (Take auxio as reference)     | 🟢 **Low**                        |
+| Gapless playback                                    | 🟡 **High**                       |
+| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       |
 | Integration with Last.fm                            | 🟢 **Low**                        |
 | View local most played artist/track                 | 🟢 **Low**                        |
 | Sync data, songs and playlists                      | 🟢 **Low**                        |
@@ -87,12 +89,10 @@ _The **one and only** proper music player, with all the features you need._
 | Copy music link; even when offline.                 | 🟢 **Low**                        |
 | Squiggly line in notification (if possible)         | 🟢 **Low**                        |
 | Show last.fm stats in For You                       | 🟢 **Low**                        |
-| Gapless playback                                    | 🟢 **Low**                        |
 | Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** |
 | Airbuds support (Extremely challenging)             | ⁉ **Scrap?**                      |
 | In-app equalizer                                    | ⁉ **Scrap?**                      |
 | Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      |
-| Widgets                                             | ⁉ **Scrap?**                      |
 | Skip Andr. audio processing, directly output to DAC | ⁉ **Scrap?**                      |
 
 #### '⁉' indicates that i'll think about it after core functions are done.

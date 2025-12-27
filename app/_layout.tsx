@@ -21,6 +21,8 @@ import { COLORS } from "../constants/theme";
 import { useSongStore } from "../store/songStore";
 import { usePlaylistStore } from "../store/playlistStore";
 
+import { getAllSongs, getAllPlaylists, getStats } from "../utils/database";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -44,6 +46,24 @@ export default function RootLayout() {
       if (fontsLoaded) {
         SplashScreen.hideAsync();
       }
+
+      // Log the entire database to the console (debug prupose only)
+      try {
+        const [songs, playlists, stats] = await Promise.all([
+          getAllSongs(),
+          getAllPlaylists(),
+          getStats(),
+        ]);
+
+        console.log("[Database] Stats:", JSON.stringify(stats, null, 2));
+        console.log("[Database] Songs:", JSON.stringify(songs, null, 2));
+        console.log(
+          "[Database] Playlists:",
+          JSON.stringify(playlists, null, 2)
+        );
+      } catch (e) {
+        console.warn("[Database] Could not log database:", e);
+      }
     };
 
     initApp();
@@ -60,34 +80,34 @@ export default function RootLayout() {
         <NotificationProvider>
           <StatusBar style="light" />
           <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: COLORS.background },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="player"
-            options={{
-              presentation: "modal",
-              animation: "slide_from_bottom",
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: COLORS.background },
             }}
-          />
-          <Stack.Screen
-            name="playlist/[id]"
-            options={{
-              presentation: "card",
-              animation: "slide_from_right",
-            }}
-          />
-          <Stack.Screen
-            name="settings"
-            options={{
-              presentation: "card",
-              animation: "slide_from_right",
-            }}
-          />
-        </Stack>
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="player"
+              options={{
+                presentation: "modal",
+                animation: "slide_from_bottom",
+              }}
+            />
+            <Stack.Screen
+              name="playlist/[id]"
+              options={{
+                presentation: "card",
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="settings"
+              options={{
+                presentation: "card",
+                animation: "slide_from_right",
+              }}
+            />
+          </Stack>
         </NotificationProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -20,6 +20,7 @@ import RecentlyAdded from "./home/recently-added";
 import EmptyState from "./home/empty-state";
 import DemoBanner from "./home/demo-banner";
 import WebBanner from "./home/web-banner";
+import RecommendedPeriod from "./home/recommended-period";
 
 interface Song {
   id: string;
@@ -115,6 +116,7 @@ export default function Home({
         <Header onSettingsPress={() => router.push("/settings")} />
 
         {/* Quick Stats */}
+        {/* @ts-ignore */}
         <QuickStats stats={stats} />
 
         {/* Playlists Row */}
@@ -123,7 +125,9 @@ export default function Home({
         {/* Top Artists Grid */}
         <TopArtists topArtists={topArtists} />
 
+        {/* Either: Show recommended Songs for the current time (Most played during time period) OR show Most Played */}
         {/* Most Played */}
+        <RecommendedPeriod stats={stats} onPlaySong={onPlaySong} />
         <MostPlayed stats={stats} onPlaySong={onPlaySong} />
 
         {/* Recently Added */}

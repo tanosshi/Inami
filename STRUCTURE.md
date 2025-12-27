@@ -53,7 +53,6 @@ _(Last updated: 22-12-2025, structure is currently old)_
 | File              | Purpose                     | When Called             |
 | ----------------- | --------------------------- | ----------------------- |
 | `database.ts`     | SQLite operations (native)  | 🔴 Every data operation |
-| `database.web.ts` | Web localStorage            | 🟢 Web only             |
 | `mediaScanner.ts` | Scan device for music files | 🟡 On scan/refresh      |
 
 ### Config Files

@@ -30,6 +30,7 @@ export const initDatabase = async () => {
         duration REAL DEFAULT 0,
         uri TEXT NOT NULL,
         artwork TEXT,
+        palette TEXT,
         is_liked INTEGER DEFAULT 0,
         play_count INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -81,28 +82,87 @@ export const getDatabaseSafe = async (): Promise<SQLite.SQLiteDatabase> => {
 // Song Operations
 export const getAllSongs = async () => {
   const database = getDatabase();
-  return await database.getAllAsync(
+  const songs: any[] = await database.getAllAsync(
     "SELECT * FROM songs ORDER BY created_at DESC"
   );
+  return songs.map((song) => {
+    const palette = Array.isArray((song as any)?.palette)
+      ? (song as any).palette
+      : (song as any) && (song as any).palette
+      ? (() => {
+          try {
+            return JSON.parse((song as any).palette);
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+
+    return {
+      ...song,
+      palette,
+    };
+  });
 };
 
 export const getSongById = async (id: string) => {
   const database = getDatabase();
-  return await database.getFirstAsync("SELECT * FROM songs WHERE id = ?", [id]);
+  const song = await database.getFirstAsync(
+    "SELECT * FROM songs WHERE id = ?",
+    [id]
+  );
+  if (!song) return null;
+  return {
+    ...song,
+    palette: Array.isArray((song as any)?.palette)
+      ? (song as any).palette
+      : (song as any) && (song as any).palette
+      ? (() => {
+          try {
+            return JSON.parse((song as any).palette);
+          } catch {
+            return null;
+          }
+        })()
+      : null,
+  };
 };
 
 export const getLikedSongs = async () => {
   const database = getDatabase();
-  return await database.getAllAsync(
+  const songs: any[] = await database.getAllAsync(
     "SELECT * FROM songs WHERE is_liked = 1 ORDER BY created_at DESC"
   );
+  return songs.map((song) => {
+    const palette = Array.isArray((song as any)?.palette)
+      ? (song as any).palette
+      : (song as any) && (song as any).palette
+      ? (() => {
+          try {
+            return JSON.parse((song as any).palette);
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+    return {
+      ...song,
+      palette,
+    };
+  });
 };
 
 export const addSong = async (song: any) => {
   const database = getDatabase();
+  const paletteValue = song.palette
+    ? typeof song.palette === "string"
+      ? song.palette
+      : JSON.stringify(song.palette)
+    : null;
+
   await database.runAsync(
-    `INSERT INTO songs (id, title, artist, album, duration, uri, artwork, is_liked, play_count) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO songs (id, title, artist, album, duration, uri, artwork, palette, is_liked, play_count) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       song.id,
       song.title,
@@ -111,6 +171,7 @@ export const addSong = async (song: any) => {
       song.duration || 0,
       song.uri,
       song.artwork || null,
+      paletteValue,
       song.is_liked ? 1 : 0,
       song.play_count || 0,
     ]

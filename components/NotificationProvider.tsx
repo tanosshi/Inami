@@ -17,15 +17,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   useEffect(() => {
     const setupNotifications = async () => {
       try {
-        if (Platform.OS !== "web") {
-          const success = await initializeNotificationService();
-          if (success) {
-            const subscription = setupNotificationListeners();
+        const success = await initializeNotificationService();
+        if (success) {
+          const subscription = setupNotificationListeners();
 
-            return () => {
-              subscription?.remove();
-            };
-          }
+          return () => {
+            subscription?.remove();
+          };
         }
         setIsInitialized(true);
       } catch (error) {
