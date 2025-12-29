@@ -9,8 +9,8 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
-import { COLORS } from "../../constants/theme";
-import { styles } from "./styles";
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 type CreatePlaylistModalProps = {
   show: boolean;
@@ -33,6 +33,84 @@ export function CreatePlaylistModal({
   creating,
   onCreate,
 }: CreatePlaylistModalProps) {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      padding: SPACING.lg,
+    },
+    modalContent: {
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.xxl,
+      padding: SPACING.lg,
+      width: "100%" as const,
+      maxWidth: 400,
+    },
+    modalTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.headlineSmall,
+      color: COLORS.onSurface,
+      marginBottom: SPACING.lg,
+    },
+    inputContainer: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      backgroundColor: COLORS.surfaceContainer,
+      borderRadius: RADIUS.md,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.xs,
+      marginBottom: SPACING.md,
+      gap: SPACING.md,
+    },
+    modalInput: {
+      flex: 1,
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+      paddingVertical: SPACING.md,
+    },
+    descInput: {
+      minHeight: 60,
+      textAlignVertical: "top" as const,
+    },
+    modalActions: {
+      flexDirection: "row" as const,
+      gap: SPACING.md,
+      marginTop: SPACING.md,
+    },
+    modalButtonOutline: {
+      flex: 1,
+      height: 48,
+      borderRadius: RADIUS.full,
+      borderWidth: 1,
+      borderColor: COLORS.outline,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    modalButtonOutlineText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.primary,
+    },
+    modalButtonFilled: {
+      flex: 1,
+      height: 48,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.primary,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    modalButtonFilledText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onPrimary,
+    },
+  }));
+
   return (
     <Modal
       visible={show}
@@ -47,12 +125,12 @@ export function CreatePlaylistModal({
             <MaterialIcons
               name="edit"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
             <TextInput
               style={styles.modalInput}
               placeholder="Playlist name"
-              placeholderTextColor={COLORS.onSurfaceVariant}
+              placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
               value={playlistName}
               onChangeText={setPlaylistName}
             />
@@ -61,12 +139,12 @@ export function CreatePlaylistModal({
             <MaterialIcons
               name="description"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
             <TextInput
               style={[styles.modalInput, styles.descInput]}
               placeholder="Description (optional)"
-              placeholderTextColor={COLORS.onSurfaceVariant}
+              placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
               value={playlistDescription}
               onChangeText={setPlaylistDescription}
               multiline
@@ -86,7 +164,10 @@ export function CreatePlaylistModal({
               disabled={creating}
             >
               {creating ? (
-                <ActivityIndicator size="small" color={COLORS.onPrimary} />
+                <ActivityIndicator
+                  size="small"
+                  color={themeValues.COLORS.onPrimary}
+                />
               ) : (
                 <Text style={styles.modalButtonFilledText}>Create</Text>
               )}

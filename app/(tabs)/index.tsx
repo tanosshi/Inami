@@ -28,13 +28,13 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handlePlaySong = (song: any) => {
+  const PlaySong = (song: any) => {
     setQueue(songs);
     playSong(song);
     router.push("/player");
   };
 
-  const handlePlayLiked = () => {
+  const PlayLiked = () => {
     if (likedSongs.length > 0) {
       setQueue(likedSongs);
       playSong(likedSongs[0]);
@@ -50,8 +50,8 @@ export default function HomeScreen() {
       loading={loading}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      onPlaySong={handlePlaySong}
-      onPlayLiked={handlePlayLiked}
+      onPlaySong={PlaySong}
+      onPlayLiked={PlayLiked}
     />
   );
 }

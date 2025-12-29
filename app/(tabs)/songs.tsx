@@ -17,8 +17,15 @@ import * as FileSystem from "expo-file-system/legacy";
 import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
 import SongCard from "../../components/SongCard";
-import { COLORS, RADIUS, SPACING, TAB_CONFIG } from "../../constants/theme";
+import {
+  COLORS,
+  RADIUS,
+  SPACING,
+  TAB_CONFIG,
+  TYPOGRAPHY,
+} from "../../constants/theme";
 import { extractMetadata } from "../../utils/metadataExtractor";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 import {
   isAudioFile,
@@ -26,10 +33,10 @@ import {
   scanDirectoryForAudio,
 } from "../../components/songs/helpers";
 import { FolderScanModal, ImportUrlModal } from "../../components/songs/modals";
-import { styles } from "../../components/songs/styles";
 
 export default function SongsScreen() {
   const router = useRouter();
+  const themeValues = useThemeValues();
   const { songs, fetchSongs, addSong, importFromURL } = useSongStore();
   const { playSong, setQueue, currentSong } = usePlayerStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,6 +50,121 @@ export default function SongsScreen() {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const searchAnimation = useRef(new Animated.Value(0)).current;
   const searchInputRef = useRef<TextInput>(null);
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.md,
+    },
+    headerLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: SPACING.sm,
+    },
+    searchButton: {
+      width: 40,
+      height: 40,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    title: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.headlineLarge,
+      fontWeight: "100",
+      color: COLORS.onSurface,
+      marginTop: 12,
+      marginLeft: 27,
+      marginBottom: 17,
+    },
+    headerActions: {
+      flexDirection: "row",
+      gap: SPACING.xs,
+    },
+    iconButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.surfaceContainerHigh,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    searchWrapper: {
+      overflow: "hidden",
+    },
+    searchContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.surfaceContainerHigh,
+      marginHorizontal: SPACING.md,
+      marginBottom: SPACING.sm,
+      borderRadius: RADIUS.xxl,
+      paddingHorizontal: SPACING.md,
+      height: 56,
+      gap: SPACING.md,
+    },
+    searchInput: {
+      flex: 1,
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+    },
+    songCount: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onSurfaceVariant,
+      paddingHorizontal: SPACING.md,
+      display: "none",
+      paddingVertical: SPACING.md,
+    },
+    listContent: {
+      paddingHorizontal: SPACING.md,
+      paddingBottom: 140,
+    },
+    emptyState: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 80,
+    },
+    emptyTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleLarge,
+      color: COLORS.onSurface,
+      marginTop: SPACING.md,
+    },
+    emptyText: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+      marginTop: SPACING.sm,
+      textAlign: "center",
+    },
+    shuffleButton: {
+      position: "absolute",
+      bottom: 22,
+      right: SPACING.lg,
+      width: 56,
+      height: 56,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.primary,
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 6,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.27,
+      shadowRadius: 4.65,
+    },
+    shuffleButtonWithMiniPlayer: {
+      bottom: 84,
+    },
+  }));
 
   const toggleSearch = () => {
     const toValue = searchExpanded ? 0 : 1;
@@ -88,13 +210,13 @@ export default function SongsScreen() {
       song.album.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handlePlaySong = (song: any, index: number) => {
+  const PlaySong = (song: any, index: number) => {
     setQueue(filteredSongs);
     playSong(song);
     router.push("/player");
   };
 
-  const handlePickFolder = async () => {
+  const PickFolder = async () => {
     try {
       if (Platform.OS === "android") {
         const permissions =
@@ -201,7 +323,7 @@ export default function SongsScreen() {
     }
   };
 
-  const handleImportURL = async () => {
+  const ImportURL = async () => {
     if (!importUrl.trim()) {
       Alert.alert("Error", "Please enter a URL");
       return;
@@ -222,7 +344,7 @@ export default function SongsScreen() {
     }
   };
 
-  const handleShuffleAll = () => {
+  const ShuffleAll = () => {
     if (songs.length === 0) return;
     const shuffled = [...songs].sort(() => Math.random() - 0.5);
     setQueue(shuffled);
@@ -238,7 +360,7 @@ export default function SongsScreen() {
             <MaterialIcons
               name="search"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
         </View>
@@ -254,18 +376,18 @@ export default function SongsScreen() {
             },
           ]}
         >
-          <TouchableOpacity onPress={handlePickFolder}>
+          <TouchableOpacity onPress={PickFolder}>
             <MaterialIcons
               name="folder-open"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowImportModal(true)}>
             <MaterialIcons
               name="link"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
         </View>
@@ -285,13 +407,13 @@ export default function SongsScreen() {
           <MaterialIcons
             name="search"
             size={24}
-            color={COLORS.onSurfaceVariant}
+            color={themeValues.COLORS.onSurfaceVariant}
           />
           <TextInput
             ref={searchInputRef}
             style={styles.searchInput}
             placeholder="Search songs, artists, albums"
-            placeholderTextColor={COLORS.onSurfaceVariant}
+            placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -300,7 +422,7 @@ export default function SongsScreen() {
               <MaterialIcons
                 name="close"
                 size={24}
-                color={COLORS.onSurfaceVariant}
+                color={themeValues.COLORS.onSurfaceVariant}
               />
             </TouchableOpacity>
           )}
@@ -308,7 +430,7 @@ export default function SongsScreen() {
             <MaterialIcons
               name="close"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
         </View>
@@ -324,7 +446,7 @@ export default function SongsScreen() {
         renderItem={({ item, index }) => (
           <SongCard
             song={item}
-            onPress={() => handlePlaySong(item, index)}
+            onPress={() => PlaySong(item, index)}
             showOptions
           />
         )}
@@ -333,7 +455,7 @@ export default function SongsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.primary}
+            tintColor={themeValues.COLORS.primary}
           />
         }
         ListEmptyComponent={
@@ -341,7 +463,7 @@ export default function SongsScreen() {
             <MaterialIcons
               name="library-music"
               size={64}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
             <Text style={styles.emptyTitle}>No songs found</Text>
             <Text style={styles.emptyText}>
@@ -361,7 +483,7 @@ export default function SongsScreen() {
         importTitle={importTitle}
         setImportTitle={setImportTitle}
         importing={importing}
-        onImport={handleImportURL}
+        onImport={ImportURL}
       />
 
       <FolderScanModal show={scanningFolder} scanProgress={scanProgress} />
@@ -371,9 +493,13 @@ export default function SongsScreen() {
           styles.shuffleButton,
           currentSong && styles.shuffleButtonWithMiniPlayer,
         ]}
-        onPress={handleShuffleAll}
+        onPress={ShuffleAll}
       >
-        <MaterialIcons name="shuffle" size={28} color={COLORS.onPrimary} />
+        <MaterialIcons
+          name="shuffle"
+          size={28}
+          color={themeValues.COLORS.onPrimary}
+        />
       </TouchableOpacity>
     </SafeAreaView>
   );

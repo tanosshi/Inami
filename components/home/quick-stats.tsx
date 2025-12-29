@@ -1,17 +1,11 @@
-import { React } from "react";
+import React from "react";
 // @ts-ignore
 import { useRouter } from "expo-router";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 interface Stats {
   total_songs: number;
@@ -30,6 +24,39 @@ interface QuickStatsProps {
 export default function QuickStats({ stats }: QuickStatsProps) {
   const navigation = useNavigation();
   const router = useRouter();
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    statsContainer: {
+      paddingRight: SPACING.md,
+    },
+    statsRow: {
+      flexDirection: "row" as const,
+      gap: SPACING.sm,
+      marginBottom: SPACING.lg,
+    },
+    statChip: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      backgroundColor: COLORS.surfaceContainerHigh,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      borderRadius: RADIUS.sm,
+      gap: SPACING.sm,
+    },
+    statChipActive: {
+      backgroundColor: COLORS.primaryContainer,
+    },
+    statChipText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onSurfaceVariant,
+    },
+    statChipTextActive: {
+      color: COLORS.onPrimaryContainer,
+    },
+  }));
+
   return (
     <ScrollView
       horizontal
@@ -44,7 +71,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
           <MaterialIcons
             name="history"
             size={18}
-            color={COLORS.onSurfaceVariant}
+            color={themeValues.COLORS.onSurfaceVariant}
           />
           <Text style={[styles.statChipText]}>History</Text>
         </TouchableOpacity>
@@ -56,7 +83,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
           <MaterialIcons
             name="library-music"
             size={18}
-            color={COLORS.onSurfaceVariant}
+            color={themeValues.COLORS.onSurfaceVariant}
           />
           <Text style={styles.statChipText}>
             {stats?.total_songs || 0} songs
@@ -70,7 +97,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
           <MaterialIcons
             name="queue-music"
             size={18}
-            color={COLORS.onSurfaceVariant}
+            color={themeValues.COLORS.onSurfaceVariant}
           />
           <Text style={styles.statChipText}>
             {stats?.total_playlists || 0} playlists
@@ -84,7 +111,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
           <MaterialIcons
             name="repeat"
             size={18}
-            color={COLORS.onSurfaceVariant}
+            color={themeValues.COLORS.onSurfaceVariant}
           />
           <Text style={[styles.statChipText]}>Most played</Text>
         </TouchableOpacity>
@@ -92,34 +119,3 @@ export default function QuickStats({ stats }: QuickStatsProps) {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  statsContainer: {
-    paddingRight: SPACING.md,
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: SPACING.sm,
-    marginBottom: SPACING.lg,
-  },
-  statChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.surfaceContainerHigh,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: RADIUS.sm,
-    gap: SPACING.sm,
-  },
-  statChipActive: {
-    backgroundColor: COLORS.primaryContainer,
-  },
-  statChipText: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.labelLarge,
-    color: COLORS.onSurfaceVariant,
-  },
-  statChipTextActive: {
-    color: COLORS.onPrimaryContainer,
-  },
-});

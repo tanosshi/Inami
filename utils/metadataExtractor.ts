@@ -28,9 +28,8 @@ async function saveArtwork(
   songName: string
 ): Promise<string> {
   const artworkDir = new Directory(Paths.cache, "artwork");
-  if (!artworkDir.exists) {
-    artworkDir.create();
-  }
+
+  if (!artworkDir.exists) artworkDir.create();
 
   const safeName = songName.replace(/[^a-zA-Z0-9]/g, "_").substring(0, 50);
   const extension = getExtensionFromMimeType(mimeType);

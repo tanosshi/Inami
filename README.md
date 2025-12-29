@@ -36,26 +36,24 @@ _The **one and only** proper music player, with all the features you need._
 
 ## 📦 Features
 
-| Feature                          | Priority                       |
-| -------------------------------- | ------------------------------ |
-| Music player                     | ✅ **Complete**                |
-| Database                         | ✅ **Complete**                |
-| Folder scanner                   | ✅ **Complete**                |
-| Metadata reader                  | ✅ **Complete**                |
-| Playlist builder                 | 🟡 **Almost Complete, halted** |
-| Miniplayer                       | 🟡 **Almost Complete**         |
-| Sleep timer                      | 🔄 **Planned**                 |
-| Music visualizer                 | 🔄 **Planned**                 |
-| Fix unloader on new tab          | 🔄 **Planned**                 |
-| Font changer                     | 🔄 **Planned**                 |
-| Animated icons in bottom nav bar | 🔄 **Planned**                 |
-| Wallpaper accent color           | 🔄 **Planned**                 |
-| Lyrics screen, Load lyrics       | 🔄 **Planned**                 |
-| Sync colors based on album cover | 🟡🔴 **Finish settings first** |
-| Music notification               | 🟡🔴 **Almost Complete**       |
-| Edit tag/ID3 in app              | 🔴 **Finish everything first** |
-| Proper Landscape UI              | 🔴 **Finish everything first** |
-| Settings (🟡 UI)                 | 🔴 **Finish everything first** |
+| Feature                           | Priority                       |
+| --------------------------------- | ------------------------------ |
+| Play MP3, FLAC, OGG and OPUS      | ✅ **Complete**                |
+| Playlist builder                  | 🟡 **Almost Complete, halted** |
+| Miniplayer                        | 🟡 **Almost Complete**         |
+| Settings                          | 🟡 **Almost Complete**         |
+| Music notification                | 🟡 **Almost Complete**         |
+| Sync colors based on album cover  | 🟡 **Almost Complete**         |
+| Fix bugged out landing transition | 🟡 **Almost Complete**         |
+| Sleep timer                       | 🔄 **Planned**                 |
+| Music visualizer                  | 🔄 **Planned**                 |
+| Fix unloader on new tab           | 🔄 **Planned**                 |
+| Font changer                      | 🔄 **Planned**                 |
+| Animated icons in bottom nav bar  | 🔄 **Planned**                 |
+| Wallpaper accent color            | 🔄 **Planned**                 |
+| Lyrics screen, Load lyrics        | 🔄 **Planned**                 |
+| Edit tag/ID3 in app               | 🔴 **Finish everything first** |
+| Proper Landscape UI               | 🔴 **Finish everything first** |
 
 > All core/base features will be removed from the roadmap once most of them are complete, only special features will remain.
 

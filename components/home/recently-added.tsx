@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import SongCard from "../SongCard";
+import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 interface Song {
   id: string;
@@ -24,6 +25,18 @@ export default function RecentlyAdded({
   songs,
   onPlaySong,
 }: RecentlyAddedProps) {
+  const styles = useDynamicStyles(() => ({
+    section: {
+      marginBottom: SPACING.lg,
+    },
+    sectionTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurface,
+      marginBottom: SPACING.md,
+    },
+  }));
+
   if (songs.length === 0) return null;
 
   return (
@@ -35,15 +48,3 @@ export default function RecentlyAdded({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  section: {
-    marginBottom: SPACING.lg,
-  },
-  sectionTitle: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurface,
-    marginBottom: SPACING.md,
-  },
-});

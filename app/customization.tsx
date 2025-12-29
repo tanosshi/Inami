@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 // @ts-ignore
@@ -16,13 +9,243 @@ import {
   CUSTOMIZATION_CONFIG,
   CATEGORY_ICON_MAP,
 } from "../constants/customization";
+import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 
 export default function CustomizationScreen() {
   const router = useRouter();
+  const themeValues = useThemeValues();
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(
     null
   );
   const [viewMode, setViewMode] = React.useState<"grid" | "rows">("grid");
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    backButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    title: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleLarge,
+      color: COLORS.onSurface,
+    },
+    placeholder: {
+      width: 48,
+    },
+    viewModeButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      padding: SPACING.md,
+      paddingBottom: 40,
+    },
+    categoryGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: SPACING.md,
+      marginBottom: SPACING.lg,
+    },
+    categoryList: {
+      flexDirection: "column",
+      marginBottom: SPACING.lg,
+    },
+    categoryBlock: {
+      width: "30%",
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.lg,
+      padding: SPACING.md,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 120,
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    categoryBlockSelected: {
+      backgroundColor: COLORS.primaryContainer,
+      borderColor: COLORS.primary,
+    },
+    categoryBlockRow: {
+      flexDirection: "row",
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.lg,
+      padding: SPACING.md,
+      alignItems: "center",
+      minHeight: 72,
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    categoryBlockRowFirst: {
+      flexDirection: "row",
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderTopLeftRadius: RADIUS.lg,
+      borderTopRightRadius: RADIUS.lg,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
+      padding: SPACING.md,
+      alignItems: "center",
+      minHeight: 72,
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    categoryBlockRowMiddle: {
+      flexDirection: "row",
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: 0,
+      padding: SPACING.md,
+      alignItems: "center",
+      minHeight: 72,
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    categoryBlockRowLast: {
+      flexDirection: "row",
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+      borderBottomLeftRadius: RADIUS.lg,
+      borderBottomRightRadius: RADIUS.lg,
+      padding: SPACING.md,
+      alignItems: "center",
+      minHeight: 72,
+      borderWidth: 2,
+      borderColor: "transparent",
+    },
+    categoryBlockRowSelected: {
+      backgroundColor: COLORS.primaryContainer,
+      borderColor: COLORS.primary,
+    },
+    categoryIcon: {
+      marginBottom: SPACING.sm,
+    },
+    categoryIconRow: {
+      marginRight: SPACING.md,
+    },
+    categoryTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleSmall,
+      color: COLORS.onSurface,
+      textAlign: "center",
+      marginBottom: SPACING.xs,
+    },
+    categoryTitleSelected: {
+      color: COLORS.onPrimaryContainer,
+    },
+    categoryTitleRow: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+      textAlign: "left",
+      flex: 1,
+    },
+    categoryTitleRowSelected: {
+      color: COLORS.onPrimaryContainer,
+    },
+    categoryCount: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodySmall,
+      color: COLORS.onSurfaceVariant,
+      textAlign: "center",
+    },
+    selectedCategorySection: {
+      marginTop: SPACING.lg,
+    },
+    categoryHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: SPACING.md,
+      paddingHorizontal: SPACING.md,
+    },
+    selectedCategoryTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurface,
+      marginLeft: SPACING.md,
+    },
+    sectionTitle: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.titleSmall,
+      color: COLORS.primary,
+      marginBottom: SPACING.sm,
+      marginTop: SPACING.md,
+      paddingHorizontal: SPACING.md,
+    },
+    card: {
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.xl,
+      overflow: "hidden",
+    },
+    settingItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: SPACING.md,
+      minHeight: 72,
+    },
+    settingIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.primaryContainer,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: SPACING.md,
+    },
+    settingContent: {
+      flex: 1,
+    },
+    settingLabel: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+    },
+    settingDescription: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 2,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: COLORS.outlineVariant,
+      marginLeft: 72,
+    },
+    footer: {
+      alignItems: "center",
+      paddingVertical: SPACING.xl,
+      marginTop: SPACING.lg,
+    },
+    footerText: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurfaceVariant,
+    },
+    footerSubtext: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodySmall,
+      color: COLORS.outline,
+      marginTop: SPACING.xs,
+    },
+  }));
 
   const [settingsState, setSettingsState] = React.useState<
     Record<string, boolean>
@@ -97,8 +320,8 @@ export default function CustomizationScreen() {
             size={isRowMode ? 24 : 32}
             color={
               selectedCategory === sectionKey
-                ? COLORS.primary
-                : COLORS.onSurfaceVariant
+                ? themeValues.COLORS.primary
+                : themeValues.COLORS.onSurfaceVariant
             }
           />
         </View>
@@ -144,7 +367,11 @@ export default function CustomizationScreen() {
       <React.Fragment key={codename}>
         <ItemComponent style={styles.settingItem} {...itemProps}>
           <View style={styles.settingIcon}>
-            <MaterialIcons name={emoji} size={24} color={COLORS.primary} />
+            <MaterialIcons
+              name={emoji}
+              size={24}
+              color={themeValues.COLORS.primary}
+            />
           </View>
           <View style={styles.settingContent}>
             <Text style={styles.settingLabel}>{name}</Text>
@@ -157,11 +384,13 @@ export default function CustomizationScreen() {
               value={settingsState[codename] || false}
               onValueChange={(value) => handleToggleChange(codename, value)}
               trackColor={{
-                false: COLORS.surfaceVariant,
-                true: COLORS.primaryContainer,
+                false: themeValues.COLORS.surfaceVariant,
+                true: themeValues.COLORS.primaryContainer,
               }}
               thumbColor={
-                settingsState[codename] ? COLORS.primary : COLORS.outline
+                settingsState[codename]
+                  ? themeValues.COLORS.primary
+                  : themeValues.COLORS.outline
               }
             />
           )}
@@ -169,7 +398,7 @@ export default function CustomizationScreen() {
             <MaterialIcons
               name="chevron-right"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           )}
         </ItemComponent>
@@ -186,7 +415,11 @@ export default function CustomizationScreen() {
           style={styles.backButton}
           onPress={() => router.push("/settings")}
         >
-          <MaterialIcons name="arrow-back" size={24} color={COLORS.onSurface} />
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={themeValues.COLORS.onSurface}
+          />
         </TouchableOpacity>
         <Text style={styles.title}>Customize</Text>
         <TouchableOpacity
@@ -196,7 +429,7 @@ export default function CustomizationScreen() {
           <Feather
             name={viewMode === "grid" ? "list" : "grid"}
             size={20}
-            color={COLORS.onSurface}
+            color={themeValues.COLORS.onSurface}
           />
         </TouchableOpacity>
       </View>
@@ -233,7 +466,7 @@ export default function CustomizationScreen() {
                 <MaterialIcons
                   name="arrow-back"
                   size={24}
-                  color={COLORS.onSurface}
+                  color={themeValues.COLORS.onSurface}
                 />
               </TouchableOpacity>
               <Text style={styles.selectedCategoryTitle}>
@@ -271,231 +504,3 @@ export default function CustomizationScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleLarge,
-    color: COLORS.onSurface,
-  },
-  placeholder: {
-    width: 48,
-  },
-  viewModeButton: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: SPACING.md,
-    paddingBottom: 40,
-  },
-  categoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  categoryList: {
-    flexDirection: "column",
-    marginBottom: SPACING.lg,
-  },
-  categoryBlock: {
-    width: "30%",
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 120,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  categoryBlockSelected: {
-    backgroundColor: COLORS.primaryContainer,
-    borderColor: COLORS.primary,
-  },
-  categoryBlockRow: {
-    flexDirection: "row",
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    alignItems: "center",
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  categoryBlockRowFirst: {
-    flexDirection: "row",
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderTopLeftRadius: RADIUS.lg,
-    borderTopRightRadius: RADIUS.lg,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    padding: SPACING.md,
-    alignItems: "center",
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  categoryBlockRowMiddle: {
-    flexDirection: "row",
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderRadius: 0,
-    padding: SPACING.md,
-    alignItems: "center",
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  categoryBlockRowLast: {
-    flexDirection: "row",
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius: RADIUS.lg,
-    borderBottomRightRadius: RADIUS.lg,
-    padding: SPACING.md,
-    alignItems: "center",
-    minHeight: 72,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  categoryBlockRowSelected: {
-    backgroundColor: COLORS.primaryContainer,
-    borderColor: COLORS.primary,
-  },
-  categoryIcon: {
-    marginBottom: SPACING.sm,
-  },
-  categoryIconRow: {
-    marginRight: SPACING.md,
-  },
-  categoryTitle: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleSmall,
-    color: COLORS.onSurface,
-    textAlign: "center",
-    marginBottom: SPACING.xs,
-  },
-  categoryTitleSelected: {
-    color: COLORS.onPrimaryContainer,
-  },
-  categoryTitleRow: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.bodyLarge,
-    color: COLORS.onSurface,
-    textAlign: "left",
-    flex: 1,
-  },
-  categoryTitleRowSelected: {
-    color: COLORS.onPrimaryContainer,
-  },
-  categoryCount: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.onSurfaceVariant,
-    textAlign: "center",
-  },
-  selectedCategorySection: {
-    marginTop: SPACING.lg,
-  },
-  categoryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.md,
-  },
-  selectedCategoryTitle: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurface,
-    marginLeft: SPACING.md,
-  },
-  sectionTitle: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.titleSmall,
-    color: COLORS.primary,
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.md,
-  },
-  card: {
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderRadius: RADIUS.xl,
-    overflow: "hidden",
-  },
-  settingItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: SPACING.md,
-    minHeight: 72,
-  },
-  settingIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.primaryContainer,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: SPACING.md,
-  },
-  settingContent: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.bodyLarge,
-    color: COLORS.onSurface,
-  },
-  settingDescription: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.outlineVariant,
-    marginLeft: 72,
-  },
-  footer: {
-    alignItems: "center",
-    paddingVertical: SPACING.xl,
-    marginTop: SPACING.lg,
-  },
-  footerText: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurfaceVariant,
-  },
-  footerSubtext: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.outline,
-    marginTop: SPACING.xs,
-  },
-});

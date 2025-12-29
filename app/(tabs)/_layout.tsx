@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { Tabs } from "expo-router";
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import MiniPlayer from "../../components/MiniPlayer";
 import { usePlayerStore } from "../../store/playerStore";
 import { COLORS, RADIUS, ANIMATION, TAB_CONFIG } from "../../constants/theme";
+import { getThemeSettings } from "../../utils/database";
 
 const AnimatedTabIcon = ({
   name,
@@ -82,12 +83,32 @@ const AnimatedTabIcon = ({
     previousFocused.current = focused;
   }, [focused, bgOpacity, opacity, scale, translateY, previousFocused]);
 
+  const iconContainerStyle = useMemo(
+    () => ({
+      width: 64,
+      height: 32,
+      borderRadius: RADIUS.lg,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      overflow: "hidden" as const,
+    }),
+    []
+  );
+
+  const iconBackgroundStyle = useMemo(
+    () => ({
+      backgroundColor: COLORS.secondaryContainer,
+      borderRadius: RADIUS.lg,
+    }),
+    []
+  );
+
   return (
-    <View style={styles.iconContainer}>
+    <View style={iconContainerStyle}>
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
-          styles.iconBackground,
+          iconBackgroundStyle,
           { opacity: bgOpacity },
         ]}
       />
@@ -110,23 +131,100 @@ export default function TabLayout() {
   const songsPrevFocused = useRef(false);
   const playlistsPrevFocused = useRef(false);
 
+  const [navToggle, setNavToggle] = useState<boolean>(true);
+  const [showNavTextToggle, setShowNavTextToggle] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settings = await getThemeSettings();
+
+      const navToggle = settings?.navToggle ?? false;
+      setNavToggle(navToggle);
+
+      const showNavTextToggle = settings?.showNavTextToggle ?? false;
+      setShowNavTextToggle(showNavTextToggle);
+    };
+    fetchSettings();
+  }, []);
+
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: COLORS.background,
+        },
+        tabBar: {
+          backgroundColor: navToggle
+            ? COLORS.surfaceContainer
+            : COLORS.background,
+          borderTopWidth: 0,
+          elevation: 0,
+          height: 80,
+          paddingTop: 12,
+          paddingBottom: 16,
+        },
+        tabLabel: {
+          fontFamily: "Inter_500Medium",
+          fontSize: 8,
+          marginTop: 5,
+          color: COLORS.primary,
+          opacity: 0.5,
+        },
+        tabItem: {
+          paddingVertical: 0,
+        },
+        iconContainer: {
+          width: 64,
+          height: 32,
+          borderRadius: RADIUS.lg,
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+        },
+        iconBackground: {
+          backgroundColor: COLORS.secondaryContainer,
+          borderRadius: RADIUS.lg,
+        },
+        iconContainerActive: {
+          backgroundColor: COLORS.secondaryContainer,
+        },
+      }),
+    [navToggle]
+  );
+
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      tabBarStyle: dynamicStyles.tabBar,
+      tabBarActiveTintColor: COLORS.primary,
+      tabBarInactiveTintColor: COLORS.onSurfaceVariant,
+      tabBarLabelStyle: dynamicStyles.tabLabel,
+      tabBarItemStyle: dynamicStyles.tabItem,
+      tabBarShowLabel: showNavTextToggle,
+      animation: ANIMATION.tabTransition,
+      sceneStyle: { backgroundColor: COLORS.background },
+      lazy: false,
+      freezeOnBlur: true,
+      tabBarLabel: ({
+        focused,
+        children,
+      }: {
+        focused: boolean;
+        children: React.ReactNode;
+      }) => {
+        if (!showNavTextToggle) return null;
+        if (!focused) return null;
+
+        return <Text style={dynamicStyles.tabLabel}>{children}</Text>;
+      },
+    }),
+    [dynamicStyles, showNavTextToggle]
+  );
+
   return (
-    <View style={styles.container}>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: styles.tabBar,
-          tabBarActiveTintColor: COLORS.primary,
-          tabBarInactiveTintColor: COLORS.onSurfaceVariant,
-          tabBarLabelStyle: styles.tabLabel,
-          tabBarItemStyle: styles.tabItem,
-          tabBarShowLabel: true,
-          animation: ANIMATION.tabTransition,
-          sceneStyle: { backgroundColor: COLORS.background },
-          lazy: false,
-          freezeOnBlur: true,
-        }}
-      >
+    <View style={dynamicStyles.container}>
+      <Tabs screenOptions={screenOptions}>
         <Tabs.Screen
           name="index"
           options={{
@@ -188,41 +286,3 @@ export default function TabLayout() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  tabBar: {
-    backgroundColor: COLORS.surfaceContainer,
-    borderTopWidth: 0,
-    elevation: 0,
-    height: 80,
-    paddingTop: 12,
-    paddingBottom: 16,
-  },
-  tabLabel: {
-    fontFamily: "Inter_500Medium",
-    fontSize: 12,
-    marginTop: 4,
-  },
-  tabItem: {
-    paddingVertical: 0,
-  },
-  iconContainer: {
-    width: 64,
-    height: 32,
-    borderRadius: RADIUS.lg,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  iconBackground: {
-    backgroundColor: COLORS.secondaryContainer,
-    borderRadius: RADIUS.lg,
-  },
-  iconContainerActive: {
-    backgroundColor: COLORS.secondaryContainer,
-  },
-});

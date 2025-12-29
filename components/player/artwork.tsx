@@ -1,8 +1,9 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 interface Song {
   id: string;
@@ -22,6 +23,24 @@ interface ArtworkProps {
 }
 
 export default function Artwork({ song, artworkSize }: ArtworkProps) {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    artworkContainer: {
+      alignItems: "center" as const,
+      paddingHorizontal: 40,
+      paddingVertical: SPACING.lg,
+    },
+    artwork: {
+      borderRadius: RADIUS.xl,
+    },
+    artworkPlaceholder: {
+      backgroundColor: COLORS.surfaceContainerHigh,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+  }));
+
   return (
     <View style={styles.artworkContainer}>
       {song.artwork ? (
@@ -38,25 +57,13 @@ export default function Artwork({ song, artworkSize }: ArtworkProps) {
             { width: artworkSize, height: artworkSize },
           ]}
         >
-          <MaterialIcons name="music-note" size={80} color={COLORS.primary} />
+          <MaterialIcons
+            name="music-note"
+            size={80}
+            color={themeValues.COLORS.primary}
+          />
         </View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  artworkContainer: {
-    alignItems: "center",
-    paddingHorizontal: 40,
-    paddingVertical: SPACING.lg,
-  },
-  artwork: {
-    borderRadius: RADIUS.xl,
-  },
-  artworkPlaceholder: {
-    backgroundColor: COLORS.surfaceContainerHigh,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

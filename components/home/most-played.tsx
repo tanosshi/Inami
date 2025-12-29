@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import SongCard from "../SongCard";
+import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 interface Song {
   id: string;
@@ -30,6 +31,18 @@ interface MostPlayedProps {
 }
 
 export default function MostPlayed({ stats, onPlaySong }: MostPlayedProps) {
+  const styles = useDynamicStyles(() => ({
+    section: {
+      marginBottom: SPACING.lg,
+    },
+    sectionTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurface,
+      marginBottom: SPACING.md,
+    },
+  }));
+
   if (!stats?.most_played_song || stats.most_played_song.play_count === 0)
     return null;
 
@@ -51,15 +64,3 @@ export default function MostPlayed({ stats, onPlaySong }: MostPlayedProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  section: {
-    marginBottom: SPACING.lg,
-  },
-  sectionTitle: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurface,
-    marginBottom: SPACING.md,
-  },
-});

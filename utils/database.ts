@@ -20,7 +20,9 @@ export const initDatabase = async () => {
   try {
     db = await SQLite.openDatabaseAsync("Myoraei.db");
 
-    // Create tables
+    await db.execAsync("PRAGMA journal_mode=WAL;"); // Enable WAL mode for better concurrency and reduce locking issues
+    await db.execAsync("PRAGMA busy_timeout=5000;"); // Set busy timeout to wait for locks to be released (5 seconds)
+
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS songs (
         id TEXT PRIMARY KEY,
@@ -53,6 +55,21 @@ export const initDatabase = async () => {
         PRIMARY KEY (playlist_id, song_id),
         FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
         FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS settings_theme (
+        id INTEGER PRIMARY KEY DEFAULT 1,
+        theme TEXT NOT NULL DEFAULT 'Black',
+        nav_toggle INTEGER DEFAULT 1,
+        show_nav_text_toggle INTEGER DEFAULT 1,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        CHECK (id = 1)
+      );
+
+      CREATE TABLE IF NOT EXISTS settings (
+        codename TEXT PRIMARY KEY,
+        value INTEGER NOT NULL,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE INDEX IF NOT EXISTS idx_songs_liked ON songs(is_liked);
@@ -385,4 +402,153 @@ export const getFromStorage = async (key: string) => {
 
 export const removeFromStorage = async (key: string) => {
   await AsyncStorage.removeItem(key);
+};
+
+export const saveThemeSettings = async (
+  theme: string,
+  navToggle: boolean,
+  showNavTextToggle: boolean
+) => {
+  const database = await getDatabaseSafe();
+
+  const existing = await database.getFirstAsync(
+    "SELECT id FROM settings_theme WHERE id = 1"
+  );
+
+  if (existing) {
+    await database.runAsync(
+      `UPDATE settings_theme 
+       SET theme = ?, nav_toggle = ?, show_nav_text_toggle = ?, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = 1`,
+      [theme, navToggle ? 1 : 0, showNavTextToggle ? 1 : 0]
+    );
+  } else {
+    await database.runAsync(
+      `INSERT INTO settings_theme (id, theme, nav_toggle, show_nav_text_toggle) 
+       VALUES (1, ?, ?, ?)`,
+      [theme, navToggle ? 1 : 0, showNavTextToggle ? 1 : 0]
+    );
+  }
+};
+
+export const getThemeSettings = async () => {
+  try {
+    const database = await getDatabaseSafe();
+    const settings: any = await database.getFirstAsync(
+      "SELECT * FROM settings_theme WHERE id = 1"
+    );
+
+    if (!settings) {
+      return null;
+    }
+
+    return {
+      theme: settings.theme || "Black",
+      navToggle: settings.nav_toggle === 1,
+      showNavTextToggle: settings.show_nav_text_toggle === 1,
+      updatedAt: settings.updated_at,
+    };
+  } catch (error) {
+    console.warn("Could not fetch theme settings:", error);
+    return null;
+  }
+};
+
+export const saveSetting = async (codename: string, value: boolean) => {
+  try {
+    const database = await getDatabaseSafe();
+    await database.runAsync(
+      `INSERT OR REPLACE INTO settings (codename, value, updated_at) 
+       VALUES (?, ?, CURRENT_TIMESTAMP)`,
+      [codename, value ? 1 : 0]
+    );
+  } catch (error) {
+    console.warn(`Could not save setting ${codename}:`, error);
+    throw error;
+  }
+};
+
+export const saveSettingsBatch = async (
+  settings: Array<{ codename: string; value: boolean }>
+) => {
+  if (settings.length === 0) return;
+
+  const maxRetries = 3;
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    try {
+      const database = await getDatabaseSafe();
+
+      // Use a transaction to batch all inserts
+      await database.withTransactionAsync(async () => {
+        for (const setting of settings) {
+          await database.runAsync(
+            `INSERT OR REPLACE INTO settings (codename, value, updated_at) 
+             VALUES (?, ?, CURRENT_TIMESTAMP)`,
+            [setting.codename, setting.value ? 1 : 0]
+          );
+        }
+      });
+
+      return;
+    } catch (error: any) {
+      retryCount++;
+
+      // Locked?
+      const isLockedError =
+        error?.message?.includes("locked") ||
+        error?.message?.includes("database is locked") ||
+        error?.code === 5; // SQLITE_BUSY
+
+      if (isLockedError && retryCount < maxRetries) {
+        // Wait before retrying (exponential backoff)
+        const waitTime = Math.min(100 * Math.pow(2, retryCount - 1), 1000);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        continue;
+      }
+
+      // If not a lock error or max retries reached, throw
+      console.warn("Could not save settings batch:", error);
+      throw error;
+    }
+  }
+};
+
+export const getSetting = async (codename: string): Promise<boolean | null> => {
+  try {
+    const database = await getDatabaseSafe();
+    const setting: any = await database.getFirstAsync(
+      "SELECT value FROM settings WHERE codename = ?",
+      [codename]
+    );
+
+    if (!setting) {
+      return null;
+    }
+
+    return setting.value === 1;
+  } catch (error) {
+    console.warn(`Could not fetch setting ${codename}:`, error);
+    return null;
+  }
+};
+
+export const getAllSettings = async (): Promise<Record<string, boolean>> => {
+  try {
+    const database = await getDatabaseSafe();
+    const settings: any[] = await database.getAllAsync(
+      "SELECT codename, value FROM settings"
+    );
+
+    const result: Record<string, boolean> = {};
+    settings.forEach((setting) => {
+      result[setting.codename] = setting.value === 1;
+    });
+
+    return result;
+  } catch (error) {
+    console.warn("Could not fetch all settings:", error);
+    return {};
+  }
 };

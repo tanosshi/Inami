@@ -3,12 +3,12 @@ import {
   View,
   TouchableOpacity,
   Text,
-  StyleSheet,
   Animated,
   Dimensions,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 
 interface MenuItem {
   id: string;
@@ -28,11 +28,63 @@ export default function DropdownMenu({
   trigger,
   menuItems,
 }: DropdownMenuProps) {
+  const themeValues = useThemeValues();
   const [isVisible, setIsVisible] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
   const buttonRef = useRef<View>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      position: "relative",
+      zIndex: 1000,
+    },
+    trigger: {},
+    backdrop: {
+      position: "absolute",
+      top: -1000,
+      left: -1000,
+      right: -1000,
+      bottom: -1000,
+      backgroundColor: "transparent",
+      zIndex: 1000,
+    },
+    menu: {
+      backgroundColor: COLORS.background,
+      borderRadius: RADIUS.md,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 8,
+      zIndex: 1001,
+      minWidth: 180,
+      maxWidth: 280,
+    },
+    menuContent: {
+      paddingVertical: SPACING.xs,
+    },
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      minHeight: 44,
+    },
+    menuIcon: {
+      marginRight: SPACING.sm,
+    },
+    menuText: {
+      flex: 1,
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurface,
+    },
+  }));
 
   const toggleMenu = () => {
     if (!isVisible) {
@@ -128,7 +180,7 @@ export default function DropdownMenu({
                     <MaterialIcons
                       name={item.icon}
                       size={20}
-                      color={COLORS.onSurface}
+                      color={themeValues.COLORS.onSurface}
                       style={styles.menuIcon}
                     />
                   )}
@@ -142,54 +194,3 @@ export default function DropdownMenu({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: "relative",
-    zIndex: 1000,
-  },
-  trigger: {},
-  backdrop: {
-    position: "absolute",
-    top: -1000,
-    left: -1000,
-    right: -1000,
-    bottom: -1000,
-    backgroundColor: "transparent",
-    zIndex: 1000,
-  },
-  menu: {
-    backgroundColor: COLORS.background,
-    borderRadius: RADIUS.md,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-    zIndex: 1001,
-    minWidth: 180,
-    maxWidth: 280,
-  },
-  menuContent: {
-    paddingVertical: SPACING.xs,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    minHeight: 44,
-  },
-  menuIcon: {
-    marginRight: SPACING.sm,
-  },
-  menuText: {
-    flex: 1,
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurface,
-  },
-});

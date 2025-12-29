@@ -15,19 +15,85 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { usePlaylistStore } from "../../store/playlistStore";
 import PlaylistCard from "../../components/PlaylistCard";
-import { COLORS } from "../../constants/theme";
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 import { CreatePlaylistModal } from "../../components/playlists/modals";
-import { styles } from "../../components/playlists/styles";
 
 export default function PlaylistsScreen() {
   const router = useRouter();
+  const themeValues = useThemeValues();
   const { playlists, fetchPlaylists, createPlaylist } = usePlaylistStore();
   const [refreshing, setRefreshing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [playlistName, setPlaylistName] = useState("");
   const [playlistDescription, setPlaylistDescription] = useState("");
   const [creating, setCreating] = useState(false);
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.md,
+    },
+    title: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.headlineMedium,
+      color: COLORS.onSurface,
+    },
+    headerActions: {
+      flexDirection: "row",
+      gap: SPACING.sm,
+    },
+    iconButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.surfaceContainerHigh,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    fabButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.primary,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    row: {
+      justifyContent: "space-between",
+      paddingHorizontal: SPACING.md,
+      marginBottom: SPACING.md,
+    },
+    listContent: {
+      paddingTop: SPACING.sm,
+      paddingBottom: 140,
+    },
+    emptyState: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 80,
+    },
+    emptyTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleLarge,
+      color: COLORS.onSurface,
+      marginTop: SPACING.md,
+    },
+    emptyText: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+      marginTop: SPACING.sm,
+    },
+  }));
 
   useEffect(() => {
     fetchPlaylists();
@@ -40,7 +106,7 @@ export default function PlaylistsScreen() {
     setRefreshing(false);
   };
 
-  const handleCreatePlaylist = async () => {
+  const CreatePlaylist = async () => {
     if (!playlistName.trim()) {
       Alert.alert("Error", "Please enter a playlist name");
       return;
@@ -63,7 +129,7 @@ export default function PlaylistsScreen() {
     }
   };
 
-  const handleImportM3U = async () => {
+  const ImportM3U = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: "*/*",
@@ -89,7 +155,7 @@ export default function PlaylistsScreen() {
     }
   };
 
-  const handlePlaylistPress = (playlist: any) => {
+  const PlaylistPress = (playlist: any) => {
     router.push(`/playlist/${playlist.id}`);
   };
 
@@ -99,18 +165,22 @@ export default function PlaylistsScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Playlists</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.iconButton} onPress={handleImportM3U}>
+          <TouchableOpacity style={styles.iconButton} onPress={ImportM3U}>
             <MaterialIcons
               name="file-upload"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.fabButton}
             onPress={() => setShowCreateModal(true)}
           >
-            <MaterialIcons name="add" size={24} color={COLORS.onPrimary} />
+            <MaterialIcons
+              name="add"
+              size={24}
+              color={themeValues.COLORS.onPrimary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -122,17 +192,14 @@ export default function PlaylistsScreen() {
         numColumns={2}
         columnWrapperStyle={styles.row}
         renderItem={({ item }) => (
-          <PlaylistCard
-            playlist={item}
-            onPress={() => handlePlaylistPress(item)}
-          />
+          <PlaylistCard playlist={item} onPress={() => PlaylistPress(item)} />
         )}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.primary}
+            tintColor={themeValues.COLORS.primary}
           />
         }
         ListEmptyComponent={
@@ -140,7 +207,7 @@ export default function PlaylistsScreen() {
             <MaterialIcons
               name="queue-music"
               size={64}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
             <Text style={styles.emptyTitle}>No playlists yet</Text>
             <Text style={styles.emptyText}>
@@ -158,7 +225,7 @@ export default function PlaylistsScreen() {
         playlistDescription={playlistDescription}
         setPlaylistDescription={setPlaylistDescription}
         creating={creating}
-        onCreate={handleCreatePlaylist}
+        onCreate={CreatePlaylist}
       />
     </SafeAreaView>
   );

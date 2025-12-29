@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 interface Song {
   id: string;
@@ -20,6 +21,27 @@ interface SongInfoProps {
 }
 
 export default function SongInfo({ song }: SongInfoProps) {
+  const styles = useDynamicStyles(() => ({
+    songInfo: {
+      paddingHorizontal: SPACING.lg,
+      marginTop: SPACING.sm,
+    },
+    titleContainer: {
+      alignItems: "center" as const,
+    },
+    songTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.headlineSmall,
+      color: COLORS.onSurface,
+    },
+    songArtist: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 4,
+    },
+  }));
+
   return (
     <View style={styles.songInfo}>
       <View style={styles.titleContainer}>
@@ -33,24 +55,3 @@ export default function SongInfo({ song }: SongInfoProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  songInfo: {
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.sm,
-  },
-  titleContainer: {
-    alignItems: "center",
-  },
-  songTitle: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.headlineSmall,
-    color: COLORS.onSurface,
-  },
-  songArtist: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyLarge,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 4,
-  },
-});

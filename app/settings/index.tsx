@@ -1,24 +1,118 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { SETTINGS_CONFIG } from "../../constants/settings";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const themeValues = useThemeValues();
   const [versionTapCount, setVersionTapCount] = React.useState(0);
   const versionTapTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    backButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    title: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleLarge,
+      color: COLORS.onSurface,
+    },
+    placeholder: {
+      width: 48,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      padding: SPACING.md,
+      paddingBottom: 40,
+    },
+    sectionTitle: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.titleSmall,
+      color: COLORS.primary,
+      marginBottom: SPACING.sm,
+      marginTop: SPACING.md,
+      paddingHorizontal: SPACING.md,
+    },
+    card: {
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.xl,
+      overflow: "hidden",
+    },
+    settingItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: SPACING.md,
+      minHeight: 72,
+    },
+    settingIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.primaryContainer,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: SPACING.md,
+    },
+    settingContent: {
+      flex: 1,
+    },
+    settingLabel: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+    },
+    settingDescription: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 2,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: COLORS.outlineVariant,
+      marginLeft: 72,
+    },
+    footer: {
+      alignItems: "center",
+      paddingVertical: SPACING.xl,
+      marginTop: SPACING.lg,
+    },
+    footerText: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurfaceVariant,
+    },
+    footerSubtext: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodySmall,
+      color: COLORS.outline,
+      marginTop: SPACING.xs,
+    },
+  }));
 
   const [settingsState, setSettingsState] = React.useState<
     Record<string, boolean>
@@ -34,12 +128,12 @@ export default function SettingsScreen() {
     return initialState;
   });
 
-  const handleSettingPress = (codename: string, type: string) => {
+  const SettingPress = (codename: string, type: string) => {
     console.log(`Setting pressed: ${codename} (type: ${type})`);
 
     switch (codename) {
       case "version":
-        handleVersionTap();
+        VersionTap();
         break;
       case "customize":
         router.push("/customization");
@@ -62,12 +156,15 @@ export default function SettingsScreen() {
       case "dlmusic":
         router.push("/settings/download");
         break;
+      case "redo_welcome":
+        router.push("/landing");
+        break;
       default:
         break;
     }
   };
 
-  const handleToggleChange = (codename: string, value: boolean) => {
+  const ToggleChange = (codename: string, value: boolean) => {
     console.log(`Toggle changed: ${codename} = ${value}`);
     setSettingsState((prev) => ({
       ...prev,
@@ -75,7 +172,7 @@ export default function SettingsScreen() {
     }));
   };
 
-  const handleVersionTap = () => {
+  const VersionTap = () => {
     if (versionTapTimeout.current) {
       clearTimeout(versionTapTimeout.current);
     }
@@ -108,14 +205,18 @@ export default function SettingsScreen() {
 
     const ItemComponent = isClickable ? TouchableOpacity : View;
     const itemProps = isClickable
-      ? { onPress: () => handleSettingPress(codename, type) }
+      ? { onPress: () => SettingPress(codename, type) }
       : {};
 
     return (
       <React.Fragment key={codename}>
         <ItemComponent style={styles.settingItem} {...itemProps}>
           <View style={styles.settingIcon}>
-            <MaterialIcons name={emoji} size={24} color={COLORS.primary} />
+            <MaterialIcons
+              name={emoji}
+              size={24}
+              color={themeValues.COLORS.primary}
+            />
           </View>
           <View style={styles.settingContent}>
             <Text style={styles.settingLabel}>{name}</Text>
@@ -126,13 +227,15 @@ export default function SettingsScreen() {
           {isToggle && (
             <Switch
               value={settingsState[codename] || false}
-              onValueChange={(value) => handleToggleChange(codename, value)}
+              onValueChange={(value) => ToggleChange(codename, value)}
               trackColor={{
-                false: COLORS.surfaceVariant,
-                true: COLORS.primaryContainer,
+                false: themeValues.COLORS.surfaceVariant,
+                true: themeValues.COLORS.primaryContainer,
               }}
               thumbColor={
-                settingsState[codename] ? COLORS.primary : COLORS.outline
+                settingsState[codename]
+                  ? themeValues.COLORS.primary
+                  : themeValues.COLORS.outline
               }
             />
           )}
@@ -140,7 +243,7 @@ export default function SettingsScreen() {
             <MaterialIcons
               name="chevron-right"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           )}
         </ItemComponent>
@@ -157,7 +260,11 @@ export default function SettingsScreen() {
           style={styles.backButton}
           onPress={() => router.push("/")}
         >
-          <MaterialIcons name="arrow-back" size={24} color={COLORS.onSurface} />
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={themeValues.COLORS.onSurface}
+          />
         </TouchableOpacity>
         <Text style={styles.title}>Settings</Text>
         <View style={styles.placeholder} />
@@ -193,102 +300,3 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleLarge,
-    color: COLORS.onSurface,
-  },
-  placeholder: {
-    width: 48,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: SPACING.md,
-    paddingBottom: 40,
-  },
-  sectionTitle: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.titleSmall,
-    color: COLORS.primary,
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.md,
-  },
-  card: {
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderRadius: RADIUS.xl,
-    overflow: "hidden",
-  },
-  settingItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: SPACING.md,
-    minHeight: 72,
-  },
-  settingIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.primaryContainer,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: SPACING.md,
-  },
-  settingContent: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.bodyLarge,
-    color: COLORS.onSurface,
-  },
-  settingDescription: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.outlineVariant,
-    marginLeft: 72,
-  },
-  footer: {
-    alignItems: "center",
-    paddingVertical: SPACING.xl,
-    marginTop: SPACING.lg,
-  },
-  footerText: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurfaceVariant,
-  },
-  footerSubtext: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.outline,
-    marginTop: SPACING.xs,
-  },
-});

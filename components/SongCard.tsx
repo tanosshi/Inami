@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useSongStore } from "../store/songStore";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 
 interface Song {
   id: string;
@@ -31,6 +32,62 @@ export default function SongCard({
   showOptions,
 }: SongCardProps) {
   const { toggleLike } = useSongStore();
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      paddingVertical: SPACING.sm,
+      paddingHorizontal: SPACING.xs,
+      borderRadius: RADIUS.md,
+    },
+    artworkContainer: {
+      marginRight: SPACING.md,
+    },
+    artwork: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.sm,
+    },
+    artworkPlaceholder: {
+      backgroundColor: COLORS.surfaceContainerHigh,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    info: {
+      flex: 1,
+      marginRight: SPACING.sm,
+    },
+    title: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+    },
+    subtitle: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 2,
+    },
+    actions: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: SPACING.sm,
+    },
+    duration: {
+      display: "none" as const,
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.labelMedium,
+      color: COLORS.onSurfaceVariant,
+    },
+    likeButton: {
+      width: 40,
+      height: 40,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+  }));
 
   const formatDuration = (ms: number) => {
     if (!ms) return "";
@@ -61,7 +118,11 @@ export default function SongCard({
           />
         ) : (
           <View style={[styles.artwork, styles.artworkPlaceholder]}>
-            <MaterialIcons name="music-note" size={20} color={COLORS.primary} />
+            <MaterialIcons
+              name="music-note"
+              size={20}
+              color={themeValues.COLORS.primary}
+            />
           </View>
         )}
       </View>
@@ -88,7 +149,11 @@ export default function SongCard({
             <MaterialIcons
               name={song.is_liked ? "favorite" : "favorite-border"}
               size={22}
-              color={song.is_liked ? COLORS.liked : COLORS.onSurfaceVariant}
+              color={
+                song.is_liked
+                  ? themeValues.COLORS.liked
+                  : themeValues.COLORS.onSurfaceVariant
+              }
             />
           </TouchableOpacity>
         )}
@@ -96,58 +161,3 @@ export default function SongCard({
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.xs,
-    borderRadius: RADIUS.md,
-  },
-  artworkContainer: {
-    marginRight: SPACING.md,
-  },
-  artwork: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.sm,
-  },
-  artworkPlaceholder: {
-    backgroundColor: COLORS.surfaceContainerHigh,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  info: {
-    flex: 1,
-    marginRight: SPACING.sm,
-  },
-  title: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.bodyLarge,
-    color: COLORS.onSurface,
-  },
-  subtitle: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 2,
-  },
-  actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-  },
-  duration: {
-    display: "none",
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.labelMedium,
-    color: COLORS.onSurfaceVariant,
-  },
-  likeButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

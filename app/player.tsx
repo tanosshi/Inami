@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import {
   View,
-  StyleSheet,
   useWindowDimensions,
   Animated,
   PanResponder,
@@ -12,6 +11,7 @@ import { useRouter } from "expo-router";
 import { usePlayerStore } from "../store/playerStore";
 import { useSongStore } from "../store/songStore";
 import { COLORS, SPACING } from "../constants/theme";
+import { useDynamicStyles } from "../hooks/useDynamicStyles";
 import SwipeIndicator from "../components/player/swipe-indicator";
 import PlayerHeader from "../components/player/player-header";
 import Artwork from "../components/player/artwork";
@@ -28,6 +28,20 @@ export default function PlayerScreen() {
 
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    safeArea: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: 40,
+    },
+  }));
 
   const panResponder = useRef(
     PanResponder.create({
@@ -181,17 +195,3 @@ export default function PlayerScreen() {
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 40,
-  },
-});

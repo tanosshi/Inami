@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 interface PlaylistDemo {
   id: string;
@@ -13,6 +14,31 @@ interface PlaylistsRowProps {
 }
 
 export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
+  const styles = useDynamicStyles(() => ({
+    container: {
+      marginTop: 4,
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurface,
+      marginBottom: SPACING.md,
+    },
+    scrollContent: {
+      paddingHorizontal: 4,
+    },
+    playlistItem: {
+      marginRight: 16,
+    },
+    playlistImage: {
+      width: 102,
+      height: 102,
+      borderRadius: 24,
+      backgroundColor: "#eee",
+    },
+  }));
+
   if (!playlists || playlists.length === 0) {
     return null;
   }
@@ -38,28 +64,3 @@ export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 4,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurface,
-    marginBottom: SPACING.md,
-  },
-  scrollContent: {
-    paddingHorizontal: 4,
-  },
-  playlistItem: {
-    marginRight: 16,
-  },
-  playlistImage: {
-    width: 102,
-    height: 102,
-    borderRadius: 24,
-    backgroundColor: "#eee",
-  },
-});

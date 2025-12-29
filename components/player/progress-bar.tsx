@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import Slider from "@react-native-community/slider";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 interface ProgressBarProps {
   position: number;
@@ -16,7 +17,43 @@ const formatTime = (ms: number) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-export default function ProgressBar({ position, duration, onSeek }: ProgressBarProps) {
+export default function ProgressBar({
+  position,
+  duration,
+  onSeek,
+}: ProgressBarProps) {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    progressContainer: {
+      paddingHorizontal: SPACING.lg,
+      marginTop: SPACING.sm,
+    },
+    slider: {
+      width: "100%" as const,
+      height: 40,
+    },
+    timeRow: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      marginTop: -4,
+    },
+    timeText: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.labelSmall,
+      color: COLORS.onSurfaceVariant,
+      marginBottom: -1,
+    },
+    leftTime: {
+      textAlign: "left" as const,
+      paddingLeft: SPACING.md - 1,
+    },
+    rightTime: {
+      textAlign: "right" as const,
+      paddingRight: SPACING.md - 1,
+    },
+  }));
+
   return (
     <View style={styles.progressContainer}>
       <Slider
@@ -25,44 +62,18 @@ export default function ProgressBar({ position, duration, onSeek }: ProgressBarP
         maximumValue={duration || 1}
         value={position}
         onSlidingComplete={onSeek}
-        minimumTrackTintColor={COLORS.primary}
-        maximumTrackTintColor={COLORS.surfaceContainerHighest}
-        thumbTintColor={COLORS.primary}
+        minimumTrackTintColor={themeValues.COLORS.primary}
+        maximumTrackTintColor={themeValues.COLORS.surfaceContainerHighest}
+        thumbTintColor={themeValues.COLORS.primary}
       />
       <View style={styles.timeRow}>
-        <Text style={[styles.timeText, styles.leftTime]}>{formatTime(position)}</Text>
-        <Text style={[styles.timeText, styles.rightTime]}>{formatTime(duration)}</Text>
+        <Text style={[styles.timeText, styles.leftTime]}>
+          {formatTime(position)}
+        </Text>
+        <Text style={[styles.timeText, styles.rightTime]}>
+          {formatTime(duration)}
+        </Text>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  progressContainer: {
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.sm,
-  },
-  slider: {
-    width: "100%",
-    height: 40,
-  },
-  timeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: -4,
-  },
-  timeText: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.labelSmall,
-    color: COLORS.onSurfaceVariant,
-    marginBottom: -1,
-  },
-  leftTime: {
-    textAlign: "left",
-    paddingLeft: SPACING.md -1,
-  },
-  rightTime: {
-    textAlign: "right",
-    paddingRight: SPACING.md -1,
-  },
-});

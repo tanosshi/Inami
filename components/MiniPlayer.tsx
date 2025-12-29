@@ -1,20 +1,18 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  PanResponder,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, PanResponder } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 // @ts-ignore
 import { useRouter } from "expo-router";
 import { usePlayerStore } from "../store/playerStore";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
+import { getThemeSettings } from "../utils/database";
 
 export default function MiniPlayer() {
   const router = useRouter();
+  const themeValues = useThemeValues();
+  const [navToggle, setNavToggle] = useState<boolean>(true);
   const {
     currentSong,
     isPlaying,
@@ -24,6 +22,89 @@ export default function MiniPlayer() {
     playNext,
     playPrevious,
   } = usePlayerStore();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settings = await getThemeSettings();
+
+      const navToggle = settings?.navToggle ?? false;
+      setNavToggle(navToggle);
+    };
+    fetchSettings();
+  }, []);
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      position: "absolute" as const,
+      bottom: 80,
+      left: 0,
+      right: 0,
+      backgroundColor: navToggle ? COLORS.surfaceContainer : COLORS.background,
+      borderTopLeftRadius: RADIUS.lg,
+      borderTopRightRadius: RADIUS.lg,
+      overflow: "hidden" as const,
+    },
+    progressBar: {
+      height: 2,
+      backgroundColor: COLORS.surfaceVariant,
+    },
+    progressFill: {
+      height: "100%",
+      backgroundColor: COLORS.primary,
+    },
+    content: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      left: 0,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    contentTouchable: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      paddingHorizontal: SPACING.sm + 8,
+      paddingVertical: SPACING.sm,
+      flex: 1,
+    },
+    artworkContainer: {
+      marginRight: SPACING.sm,
+    },
+    artwork: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.sm,
+    },
+    artworkPlaceholder: {
+      backgroundColor: COLORS.primaryContainer,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    info: {
+      flex: 1,
+      marginRight: SPACING.sm,
+    },
+    title: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurface,
+    },
+    artist: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodySmall,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 2,
+    },
+    controls: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+    },
+    controlButton: {
+      width: 44,
+      height: 44,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+  }));
 
   const panResponder = React.useRef(
     PanResponder.create({
@@ -82,7 +163,7 @@ export default function MiniPlayer() {
                 <MaterialIcons
                   name="music-note"
                   size={18}
-                  color={COLORS.primary}
+                  color={themeValues.COLORS.primary}
                 />
               </View>
             )}
@@ -107,7 +188,7 @@ export default function MiniPlayer() {
               <MaterialIcons
                 name={isPlaying ? "pause" : "play-arrow"}
                 size={32}
-                color={COLORS.onSurface}
+                color={themeValues.COLORS.onSurface}
               />
             </TouchableOpacity>
           </View>
@@ -116,76 +197,3 @@ export default function MiniPlayer() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    bottom: 80,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.surfaceContainer,
-    borderTopLeftRadius: RADIUS.lg,
-    borderTopRightRadius: RADIUS.lg,
-    overflow: "hidden",
-  },
-  progressBar: {
-    height: 2,
-    backgroundColor: COLORS.surfaceVariant,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: COLORS.primary,
-  },
-  content: {
-    flexDirection: "row",
-    alignItems: "center",
-    left: 0,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  contentTouchable: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: SPACING.sm + 8,
-    paddingVertical: SPACING.sm,
-    flex: 1,
-  },
-  artworkContainer: {
-    marginRight: SPACING.sm,
-  },
-  artwork: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.sm,
-  },
-  artworkPlaceholder: {
-    backgroundColor: COLORS.primaryContainer,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  info: {
-    flex: 1,
-    marginRight: SPACING.sm,
-  },
-  title: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurface,
-  },
-  artist: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 2,
-  },
-  controls: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  controlButton: {
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

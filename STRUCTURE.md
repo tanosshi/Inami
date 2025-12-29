@@ -2,69 +2,41 @@
 
 # Myoraei
 
-_This file was made incase the structure wasn't clear, or gets confusing after a while._
+_This file was made incase the structure wasn't clear, or gets confusing._
 
-_(Last updated: 22-12-2025, structure is currently old)_
+_(Last updated: 29-12-2025)_
 
 ## Structure
 
-### Core App Files (`app/`)
+### Root folders
 
-| File           | Purpose                       | Importance               |
-| -------------- | ----------------------------- | ------------------------ |
-| `_layout.tsx`  | Root layout, wraps entire app | 🔴 Critical - runs first |
-| `index.tsx`    | Entry redirect                | 🔴 Critical              |
-| `player.tsx`   | Full-screen music player      | 🟡 High - main feature   |
-| `settings.tsx` | App settings screen           | 🟢 Low                   |
-| `demo.tsx`     | Demo home screen              | 🟢 Low                   |
+| Folder        | Purpose                 |
+| ------------- | ----------------------- |
+| `app\`        | Core app files          |
+| `assets\`     | Images                  |
+| `components\` | Main files for app\     |
+| `constants\`  | Set variables, settings |
+| `contexts\`   | Loads context providers |
+| `hooks\`      | Dynamic (theme) hooks   |
+| `store\`      | States, stores          |
+| `utils\`      | Database, helpers       |
 
-### Tab Screens (`app/(tabs)/`)
+###
 
-| File            | Purpose                  | Call Frequency     |
-| --------------- | ------------------------ | ------------------ |
-| `_layout.tsx`   | Tab bar + navigation bar | 🔴 Always loaded   |
-| `index.tsx`     | Home screen loader       | 🔴 Most viewed     |
-| `songs.tsx`     | All songs list           | 🟡 Frequently used |
-| `playlists.tsx` | Playlist management      | 🟡 Frequently used |
-
-### Components (`components/`)
-
-| File               | Purpose                 | Reusability              |
-| ------------------ | ----------------------- | ------------------------ |
-| `Home.tsx`         | Home screen + stats     | 🔴 Main screen           |
-| `MiniPlayer.tsx`   | Bottom mini player bar  | 🔴 Shows on every screen |
-| `SongCard.tsx`     | Individual song row     | 🔴 Used everywhere       |
-| `PlaylistCard.tsx` | Playlist thumbnail card | 🟡 Playlists screen      |
-
-### State Management (`store/`)
-
-> This part was made with the help of AI
-
-| File               | Purpose                              | Importance            |
-| ------------------ | ------------------------------------ | --------------------- |
-| `playerStore.ts`   | Playback state (current song, queue) | 🔴 Core functionality |
-| `songStore.ts`     | Song library, liked songs, stats     | 🔴 Core data          |
-| `playlistStore.ts` | Playlist CRUD operations             | 🟡 High               |
-
-### Utilities (`utils/`)
-
-> Database was made with the help of AI
-
-| File              | Purpose                     | When Called             |
-| ----------------- | --------------------------- | ----------------------- |
-| `database.ts`     | SQLite operations (native)  | 🔴 Every data operation |
-| `mediaScanner.ts` | Scan device for music files | 🟡 On scan/refresh      |
-
-### Config Files
-
-| File                 | Purpose                    |
-| -------------------- | -------------------------- |
-| `app.json`           | Expo app config (ignore)   |
-| `package.json`       | Dependencies (ignore)      |
-| `tsconfig.json`      | TypeScript config (ignore) |
-| `metro.config.js`    | Bundler config (ignore)    |
-| `constants/theme.ts` | Colors, spacing, fonts     |
+| Folder                     | Purpose                |
+| -------------------------- | ---------------------- |
+| `app\(tabs)`               | Tabs for main screens  |
+| `app\playlist`             | Playlist screens       |
+| `app\settings`             | Settings screens       |
+| `components/home`          | Home screen blocks     |
+| `components/landing`       | Landing pages          |
+| `components/player`        | Player screen blocks   |
+| `components/playlists`     | Playlist modals        |
+| `components/songs`         | Songs modals           |
+| `constants/customizations` | Customization settings |
+| `constants/customs`        | Feature settings       |
+| `constants/themes`         | Defined themes         |
 
 ## How was AI used in this project, and should I be concerned?
 
-AI was primarily used to help creating databases, the zustand stores and making the animations for the actions. Even though AI was used, that does not mean that the quality of the code is bad or unoptimized as I've been reviewing it all.
+AI was primarily used to help creating databases, the zustand stores and making the animations for the actions.

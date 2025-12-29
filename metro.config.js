@@ -10,4 +10,12 @@ config.cacheStores = [new FileStore({ root: path.join(root, "cache") })];
 
 config.maxWorkers = 2;
 
+config.resolver = {
+  ...config.resolver,
+  alias: {
+    ...config.resolver?.alias,
+    "@constants/themes": path.resolve(__dirname, "constants/themes"),
+  },
+};
+
 module.exports = config;

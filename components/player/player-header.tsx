@@ -1,14 +1,50 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import DropdownMenu from "../DropdownMenu";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 interface PlayerHeaderProps {
   onBackPressed: () => void;
 }
 
 export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    header: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    headerButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    headerCenter: {
+      flex: 1,
+      alignItems: "center" as const,
+    },
+    headerLabel: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.labelSmall,
+      color: COLORS.onSurfaceVariant,
+      textTransform: "uppercase" as const,
+      letterSpacing: 0.5,
+    },
+    headerTitle: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.titleSmall,
+      color: COLORS.onSurface,
+      marginTop: 2,
+    },
+  }));
+
   const menuItems = [
     {
       id: "delete-file",
@@ -60,7 +96,7 @@ export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
         <MaterialIcons
           name="keyboard-arrow-down"
           size={28}
-          color={COLORS.onSurface}
+          color={themeValues.COLORS.onSurface}
         />
       </TouchableOpacity>
       <View style={styles.headerCenter}>
@@ -73,7 +109,7 @@ export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
             <MaterialIcons
               name="more-vert"
               size={24}
-              color={COLORS.onSurface}
+              color={themeValues.COLORS.onSurface}
             />
           </View>
         }
@@ -82,36 +118,3 @@ export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  headerButton: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerLabel: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.labelSmall,
-    color: COLORS.onSurfaceVariant,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  headerTitle: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.titleSmall,
-    color: COLORS.onSurface,
-    marginTop: 2,
-  },
-});

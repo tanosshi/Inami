@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
+import { View, TouchableOpacity, Text } from "react-native";
 import {
   MaterialIcons,
   Ionicons,
@@ -7,6 +7,7 @@ import {
   Feather,
 } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 interface PlayerControlsProps {
   isPlaying: boolean;
@@ -29,13 +30,73 @@ export default function PlayerControls({
   onToggleShuffle,
   onToggleRepeat,
 }: PlayerControlsProps) {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    controls: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      paddingHorizontal: SPACING.lg,
+      marginTop: SPACING.lg,
+    },
+    sideControl: {
+      width: 48,
+      height: 48,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    controlButton: {
+      width: 64,
+      height: 64,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    playButton: {
+      width: 72,
+      height: 72,
+      borderRadius: RADIUS.xl,
+      backgroundColor: COLORS.primary,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      marginHorizontal: SPACING.sm,
+    },
+    modernPlayButton: {
+      width: 72,
+      height: 72,
+      borderRadius: RADIUS.xxl,
+      backgroundColor: "transparent" as const,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      marginHorizontal: SPACING.sm,
+    },
+    repeatContainer: {
+      position: "relative" as const,
+      width: 24,
+      height: 24,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    repeatOne: {
+      position: "absolute" as const,
+      fontSize: 7,
+      fontWeight: "600" as const,
+      bottom: 7.2,
+      right: 9.8,
+    },
+  }));
+
   return (
     <View style={styles.controls}>
       <TouchableOpacity style={styles.sideControl} onPress={onToggleShuffle}>
         <Ionicons
           name="shuffle"
           size={24}
-          color={shuffle ? COLORS.primary : COLORS.secondaryContainer}
+          color={
+            shuffle
+              ? themeValues.COLORS.primary
+              : themeValues.COLORS.secondaryContainer
+          }
         />
       </TouchableOpacity>
       <TouchableOpacity style={styles.controlButton} onPress={onPrevious}>
@@ -45,7 +106,7 @@ export default function PlayerControls({
         <Ionicons
           name={isPlaying ? "pause" : "play"}
           size={30}
-          color={COLORS.onSurface}
+          color={themeValues.COLORS.onSurface}
         />
       </TouchableOpacity>
       <TouchableOpacity style={styles.controlButton} onPress={onNext}>
@@ -57,68 +118,20 @@ export default function PlayerControls({
             name="repeat"
             size={18}
             color={
-              repeat !== "off" ? COLORS.primary : COLORS.secondaryContainer
+              repeat !== "off"
+                ? themeValues.COLORS.primary
+                : themeValues.COLORS.secondaryContainer
             }
           />
           {repeat === "one" && (
-            <Text style={[styles.repeatOne, { color: COLORS.primary }]}>1</Text>
+            <Text
+              style={[styles.repeatOne, { color: themeValues.COLORS.primary }]}
+            >
+              1
+            </Text>
           )}
         </View>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  controls: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.lg,
-  },
-  sideControl: {
-    width: 48,
-    height: 48,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  controlButton: {
-    width: 64,
-    height: 64,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  playButton: {
-    width: 72,
-    height: 72,
-    borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: SPACING.sm,
-  },
-  modernPlayButton: {
-    width: 72,
-    height: 72,
-    borderRadius: RADIUS.xxl,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: SPACING.sm,
-  },
-  repeatContainer: {
-    position: "relative",
-    width: 24,
-    height: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  repeatOne: {
-    position: "absolute",
-    fontSize: 7,
-    fontWeight: "600",
-    bottom: 7.2,
-    right: 9.8,
-  },
-});

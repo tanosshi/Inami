@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   FlatList,
   Alert,
@@ -18,9 +17,11 @@ import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
 import SongCard from "../../components/SongCard";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 export default function PlaylistDetailScreen() {
   const router = useRouter();
+  const themeValues = useThemeValues();
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
     playlists,
@@ -35,6 +36,199 @@ export default function PlaylistDetailScreen() {
   const [showAddSongsModal, setShowAddSongsModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [playlistSongs, setPlaylistSongs] = useState<any[]>([]);
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    linkText: {
+      fontSize: 16,
+      color: COLORS.primary,
+      marginTop: SPACING.md,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    headerActions: {
+      flexDirection: "row",
+      gap: SPACING.sm,
+    },
+    iconButton: {
+      width: 44,
+      height: 44,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.surface,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    playlistInfo: {
+      alignItems: "center",
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.lg,
+    },
+    playlistArt: {
+      width: 120,
+      height: 120,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.surfaceContainer,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: SPACING.md,
+    },
+    playlistName: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: COLORS.onSurface,
+      textAlign: "center",
+    },
+    playlistDescription: {
+      fontSize: 14,
+      color: COLORS.onSurfaceVariant,
+      textAlign: "center",
+      marginTop: SPACING.sm,
+    },
+    songCount: {
+      fontSize: 14,
+      color: COLORS.onSurfaceVariant,
+      marginTop: SPACING.sm,
+    },
+    actions: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.md,
+      gap: SPACING.sm,
+    },
+    shuffleButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.surface,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.sm,
+      borderRadius: RADIUS.xl,
+      gap: SPACING.sm,
+    },
+    shuffleText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: COLORS.onSurface,
+    },
+    playAllButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.sm,
+      borderRadius: RADIUS.xl,
+      gap: SPACING.sm,
+    },
+    playAllText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: COLORS.onPrimary,
+    },
+    addButton: {
+      width: 44,
+      height: 44,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.surface,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    listContent: {
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: 120,
+    },
+    emptyState: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: SPACING.xxl,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: COLORS.onSurface,
+      marginTop: SPACING.sm,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: COLORS.onSurfaceVariant,
+      marginTop: SPACING.xs,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.9)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: COLORS.surfaceContainer,
+      borderTopLeftRadius: RADIUS.xl,
+      borderTopRightRadius: RADIUS.xl,
+      maxHeight: "70%",
+      paddingBottom: SPACING.xxl,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: SPACING.lg,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: COLORS.onSurface,
+    },
+    addSongItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.sm,
+    },
+    addSongInfo: {
+      flex: 1,
+      marginRight: SPACING.sm,
+    },
+    addSongTitle: {
+      fontSize: 16,
+      fontWeight: "500",
+      color: COLORS.onSurface,
+    },
+    addSongArtist: {
+      fontSize: 14,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 2,
+    },
+    modalEmpty: {
+      padding: SPACING.xxl,
+      alignItems: "center",
+    },
+    modalEmptyText: {
+      fontSize: 16,
+      color: COLORS.onSurfaceVariant,
+    },
+  }));
 
   const playlist = playlists.find((p) => p.id === id);
   const playlistSongIds = playlistSongs.map((s) => s.id);
@@ -55,7 +249,7 @@ export default function PlaylistDetailScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handlePlayAll = () => {
+  const PlayAll = () => {
     if (playlistSongs.length > 0) {
       setQueue(playlistSongs);
       playSong(playlistSongs[0]);
@@ -63,13 +257,13 @@ export default function PlaylistDetailScreen() {
     }
   };
 
-  const handlePlaySong = (song: any) => {
+  const PlaySong = (song: any) => {
     setQueue(playlistSongs);
     playSong(song);
     router.push("/player");
   };
 
-  const handleShufflePlay = () => {
+  const ShufflePlay = () => {
     if (playlistSongs.length > 0) {
       const shuffled = [...playlistSongs].sort(() => Math.random() - 0.5);
       setQueue(shuffled);
@@ -78,7 +272,7 @@ export default function PlaylistDetailScreen() {
     }
   };
 
-  const handleAddSong = async (songId: string) => {
+  const AddSong = async (songId: string) => {
     if (playlist) {
       await addSongToPlaylist(playlist.id, songId);
       const songsInPlaylist = await getPlaylistSongs(playlist.id);
@@ -87,7 +281,7 @@ export default function PlaylistDetailScreen() {
     }
   };
 
-  const handleRemoveSong = async (songId: string) => {
+  const RemoveSong = async (songId: string) => {
     if (playlist) {
       Alert.alert("Remove Song", "Remove this song from the playlist?", [
         { text: "Cancel", style: "cancel" },
@@ -105,7 +299,7 @@ export default function PlaylistDetailScreen() {
     }
   };
 
-  const handleDeletePlaylist = () => {
+  const DeletePlaylist = () => {
     Alert.alert(
       "Delete Playlist",
       `Are you sure you want to delete "${playlist?.name}"?`,
@@ -129,7 +323,7 @@ export default function PlaylistDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={themeValues.COLORS.primary} />
         </View>
       </SafeAreaView>
     );
@@ -155,17 +349,18 @@ export default function PlaylistDetailScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <MaterialIcons name="arrow-back" size={24} color={COLORS.onSurface} />
+          <MaterialIcons
+            name="arrow-back"
+            size={24}
+            color={themeValues.COLORS.onSurface}
+          />
         </TouchableOpacity>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={handleDeletePlaylist}
-          >
+          <TouchableOpacity style={styles.iconButton} onPress={DeletePlaylist}>
             <MaterialIcons
               name="delete-outline"
               size={22}
-              color={COLORS.error}
+              color={themeValues.COLORS.error}
             />
           </TouchableOpacity>
         </View>
@@ -173,7 +368,11 @@ export default function PlaylistDetailScreen() {
 
       <View style={styles.playlistInfo}>
         <View style={styles.playlistArt}>
-          <MaterialIcons name="queue-music" size={48} color={COLORS.primary} />
+          <MaterialIcons
+            name="queue-music"
+            size={48}
+            color={themeValues.COLORS.primary}
+          />
         </View>
         <Text style={styles.playlistName}>{playlist.name}</Text>
         {playlist.description && (
@@ -185,22 +384,31 @@ export default function PlaylistDetailScreen() {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.shuffleButton}
-          onPress={handleShufflePlay}
-        >
-          <MaterialIcons name="shuffle" size={20} color={COLORS.onSurface} />
+        <TouchableOpacity style={styles.shuffleButton} onPress={ShufflePlay}>
+          <MaterialIcons
+            name="shuffle"
+            size={20}
+            color={themeValues.COLORS.onSurface}
+          />
           <Text style={styles.shuffleText}>Shuffle</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.playAllButton} onPress={handlePlayAll}>
-          <MaterialIcons name="play-arrow" size={22} color={COLORS.onPrimary} />
+        <TouchableOpacity style={styles.playAllButton} onPress={PlayAll}>
+          <MaterialIcons
+            name="play-arrow"
+            size={22}
+            color={themeValues.COLORS.onPrimary}
+          />
           <Text style={styles.playAllText}>Play All</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowAddSongsModal(true)}
         >
-          <MaterialIcons name="add" size={24} color={COLORS.onSurface} />
+          <MaterialIcons
+            name="add"
+            size={24}
+            color={themeValues.COLORS.onSurface}
+          />
         </TouchableOpacity>
       </View>
 
@@ -210,8 +418,8 @@ export default function PlaylistDetailScreen() {
         renderItem={({ item }) => (
           <SongCard
             song={item}
-            onPress={() => handlePlaySong(item)}
-            onLongPress={() => handleRemoveSong(item.id)}
+            onPress={() => PlaySong(item)}
+            onLongPress={() => RemoveSong(item.id)}
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -220,7 +428,7 @@ export default function PlaylistDetailScreen() {
             <MaterialIcons
               name="music-off"
               size={48}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
             <Text style={styles.emptyTitle}>No songs yet</Text>
             <Text style={styles.emptyText}>Add songs to this playlist</Text>
@@ -250,7 +458,7 @@ export default function PlaylistDetailScreen() {
                 <MaterialIcons
                   name="close"
                   size={24}
-                  color={COLORS.onSurface}
+                  color={themeValues.COLORS.onSurface}
                 />
               </TouchableOpacity>
             </View>
@@ -270,7 +478,7 @@ export default function PlaylistDetailScreen() {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.addSongItem}
-                  onPress={() => handleAddSong(item.id)}
+                  onPress={() => AddSong(item.id)}
                 >
                   <View style={styles.addSongInfo}>
                     <View
@@ -295,7 +503,11 @@ export default function PlaylistDetailScreen() {
                       </View>
                     </View>
                   </View>
-                  <Feather name="plus" size={16} color={COLORS.onSurface} />
+                  <Feather
+                    name="plus"
+                    size={16}
+                    color={themeValues.COLORS.onSurface}
+                  />
                 </TouchableOpacity>
               )}
               ListEmptyComponent={
@@ -312,196 +524,3 @@ export default function PlaylistDetailScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  linkText: {
-    fontSize: 16,
-    color: COLORS.primary,
-    marginTop: SPACING.md,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerActions: {
-    flexDirection: "row",
-    gap: SPACING.sm,
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surface,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  playlistInfo: {
-    alignItems: "center",
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-  },
-  playlistArt: {
-    width: 120,
-    height: 120,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surfaceContainer,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: SPACING.md,
-  },
-  playlistName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: COLORS.onSurface,
-    textAlign: "center",
-  },
-  playlistDescription: {
-    fontSize: 14,
-    color: COLORS.onSurfaceVariant,
-    textAlign: "center",
-    marginTop: SPACING.sm,
-  },
-  songCount: {
-    fontSize: 14,
-    color: COLORS.onSurfaceVariant,
-    marginTop: SPACING.sm,
-  },
-  actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-    gap: SPACING.sm,
-  },
-  shuffleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: RADIUS.xl,
-    gap: SPACING.sm,
-  },
-  shuffleText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.onSurface,
-  },
-  playAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: RADIUS.xl,
-    gap: SPACING.sm,
-  },
-  playAllText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.onPrimary,
-  },
-  addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surface,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  listContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 120,
-  },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: SPACING.xxl,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: COLORS.onSurface,
-    marginTop: SPACING.sm,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: COLORS.onSurfaceVariant,
-    marginTop: SPACING.xs,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: COLORS.surfaceContainer,
-    borderTopLeftRadius: RADIUS.xl,
-    borderTopRightRadius: RADIUS.xl,
-    maxHeight: "70%",
-    paddingBottom: SPACING.xxl,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: SPACING.lg,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: COLORS.onSurface,
-  },
-  addSongItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-  },
-  addSongInfo: {
-    flex: 1,
-    marginRight: SPACING.sm,
-  },
-  addSongTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: COLORS.onSurface,
-  },
-  addSongArtist: {
-    fontSize: 14,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 2,
-  },
-  modalEmpty: {
-    padding: SPACING.xxl,
-    alignItems: "center",
-  },
-  modalEmptyText: {
-    fontSize: 16,
-    color: COLORS.onSurfaceVariant,
-  },
-});

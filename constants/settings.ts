@@ -130,8 +130,8 @@ export const SETTINGS_CONFIG = {
       },
     ],
   },
-  storage: {
-    title: "Storage",
+  misc: {
+    title: "Misc",
     settings: [
       {
         codename: "compression",
@@ -147,6 +147,14 @@ export const SETTINGS_CONFIG = {
         description:
           "0 MB used (images and will be recached and music recommendations will be removed)", // todo remove the long comment we'll make a modal to delete specifics
         emoji: "delete-outline",
+        type: "menu",
+        defaultValue: null,
+      },
+      {
+        codename: "redo_welcome",
+        name: "Redo welcome screen",
+        description: "Show the welcome screen again",
+        emoji: "refresh",
         type: "menu",
         defaultValue: null,
       },

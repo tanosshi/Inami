@@ -1,7 +1,6 @@
 import React from "react";
 import {
   View,
-  StyleSheet,
   ScrollView,
   RefreshControl,
   ActivityIndicator,
@@ -11,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // @ts-ignore
 import { useRouter } from "expo-router";
 import { COLORS, SPACING } from "../constants/theme";
+import { useDynamicStyles } from "../hooks/useDynamicStyles";
 import Header from "./home/header";
 import QuickStats from "./home/quick-stats";
 import PlaylistsRow from "./home/playlists-row";
@@ -18,7 +18,6 @@ import TopArtists from "./home/top-artists";
 import MostPlayed from "./home/most-played";
 import RecentlyAdded from "./home/recently-added";
 import EmptyState from "./home/empty-state";
-import DemoBanner from "./home/demo-banner";
 import WebBanner from "./home/web-banner";
 import RecommendedPeriod from "./home/recommended-period";
 
@@ -82,6 +81,24 @@ export default function Home({
   playlists = [],
 }: HomeProps) {
   const router = useRouter();
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      padding: SPACING.md,
+      paddingBottom: 140,
+    },
+  }));
 
   if (loading && songs.length === 0) {
     return (
@@ -108,8 +125,7 @@ export default function Home({
           ) : undefined
         }
       >
-        {/* Demo */}
-        {isDemo && <DemoBanner />}
+        {/* Warning */}
         {!isDemo && Platform.OS === "web" && <WebBanner />}
 
         {/* Header */}
@@ -139,22 +155,3 @@ export default function Home({
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: SPACING.md,
-    paddingBottom: 140,
-  },
-});

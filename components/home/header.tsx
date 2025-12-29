@@ -1,7 +1,8 @@
 import React, { useRef } from "react";
-import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
+import { View, Text, Pressable, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -11,8 +12,18 @@ const getGreeting = () => {
 };
 
 const SettingsButton = ({ onPress }: { onPress: () => void }) => {
+  const themeValues = useThemeValues();
   const scale = useRef(new Animated.Value(1)).current;
   const rotation = useRef(new Animated.Value(0)).current;
+
+  const buttonStyles = useDynamicStyles(() => ({
+    settingsButton: {
+      width: 48,
+      height: 48,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+  }));
 
   const handlePressIn = () => {
     Animated.spring(scale, {
@@ -57,7 +68,7 @@ const SettingsButton = ({ onPress }: { onPress: () => void }) => {
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={styles.settingsButton}
+      style={buttonStyles.settingsButton}
     >
       <Animated.View
         style={{
@@ -67,7 +78,7 @@ const SettingsButton = ({ onPress }: { onPress: () => void }) => {
         <MaterialIcons
           name="more-vert"
           size={24}
-          color={COLORS.onSurfaceVariant}
+          color={themeValues.COLORS.onSurfaceVariant}
         />
       </Animated.View>
     </Pressable>
@@ -79,6 +90,26 @@ interface HeaderProps {
 }
 
 export default function Header({ onSettingsPress }: HeaderProps) {
+  const styles = useDynamicStyles(() => ({
+    header: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "flex-start" as const,
+      marginBottom: SPACING.lg,
+    },
+    greeting: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+    },
+    title: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.headlineLarge,
+      color: COLORS.onSurface,
+      marginTop: 4,
+    },
+  }));
+
   return (
     <View style={styles.header}>
       <View>
@@ -89,29 +120,3 @@ export default function Header({ onSettingsPress }: HeaderProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: SPACING.lg,
-  },
-  greeting: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurfaceVariant,
-  },
-  title: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.headlineLarge,
-    color: COLORS.onSurface,
-    marginTop: 4,
-  },
-  settingsButton: {
-    width: 48,
-    height: 48,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

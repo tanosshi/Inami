@@ -1,11 +1,12 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import {
   MaterialIcons,
   Feather,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 interface Song {
   id: string;
@@ -25,13 +26,33 @@ interface BottomActionsProps {
 }
 
 export default function BottomActions({ song, onLike }: BottomActionsProps) {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    bottomActions: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
+      paddingHorizontal: SPACING.lg + 9,
+      marginTop: SPACING.xxl,
+    },
+    bottomButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      backgroundColor: "transparent" as const,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+  }));
+
   return (
     <View style={styles.bottomActions}>
       <TouchableOpacity style={styles.bottomButton}>
         <MaterialCommunityIcons
           name="playlist-music"
           size={24}
-          color={COLORS.onSurfaceVariant}
+          color={themeValues.COLORS.onSurfaceVariant}
         />
       </TouchableOpacity>
       {song && onLike && (
@@ -39,7 +60,11 @@ export default function BottomActions({ song, onLike }: BottomActionsProps) {
           <MaterialIcons
             name={song.is_liked ? "favorite" : "favorite-border"}
             size={24}
-            color={song.is_liked ? COLORS.liked : COLORS.onSurfaceVariant}
+            color={
+              song.is_liked
+                ? themeValues.COLORS.liked
+                : themeValues.COLORS.onSurfaceVariant
+            }
           />
         </TouchableOpacity>
       )}
@@ -49,21 +74,3 @@ export default function BottomActions({ song, onLike }: BottomActionsProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  bottomActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: SPACING.lg + 9,
-    marginTop: SPACING.xxl,
-  },
-  bottomButton: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

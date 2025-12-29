@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Dimensions,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
 } from "react-native";
 import { COLORS, RADIUS, SPACING } from "../../constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 const { width } = Dimensions.get("window");
 const BIG_SQUARE_SIZE = (width - SPACING.md * 3) * 0.6;
@@ -47,6 +47,110 @@ const handleTilePress = (tileType: string) => {
 };
 
 export default function DiscoverScreen() {
+  const themeValues = useThemeValues();
+
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+      paddingHorizontal: SPACING.md,
+    },
+    header: {
+      color: COLORS.onSurface,
+      fontSize: 32,
+      fontWeight: "bold",
+      marginTop: SPACING.md,
+      marginBottom: SPACING.lg,
+    },
+    featuredContainer: {
+      flexDirection: "row",
+      gap: SPACING.sm,
+      marginBottom: SPACING.lg,
+    },
+    bigSquare: {
+      width: BIG_SQUARE_SIZE,
+      height: BIG_SQUARE_SIZE,
+      backgroundColor: COLORS.surfaceContainerHighest,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+    },
+    smallSquaresContainer: {
+      flex: 1,
+      gap: SPACING.sm,
+    },
+    smallSquare: {
+      flex: 1,
+      backgroundColor: COLORS.surfaceContainerHighest,
+      borderRadius: 12,
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+    },
+    tileImage: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+    },
+    tileOverlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      borderRadius: RADIUS.sm,
+      position: "absolute",
+      bottom: SPACING.sm,
+      left: SPACING.sm,
+    },
+    squareText: {
+      color: COLORS.onSurface,
+      fontSize: 20,
+      fontWeight: "600",
+    },
+    squareTextSmall: {
+      color: COLORS.onSurface,
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    sectionTitle: {
+      color: COLORS.onSurface,
+      fontSize: 22,
+      fontWeight: "bold",
+      marginTop: SPACING.md,
+      marginBottom: SPACING.md,
+    },
+    fyRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: COLORS.surfaceContainer,
+      borderRadius: 12,
+      padding: SPACING.sm,
+      marginBottom: SPACING.sm,
+      gap: SPACING.md,
+    },
+    fyThumbnail: {
+      width: 56,
+      height: 56,
+      backgroundColor: COLORS.surfaceContainerHighest,
+      borderRadius: 8,
+    },
+    fyInfo: {
+      flex: 1,
+    },
+    fyTitle: {
+      color: COLORS.onSurface,
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 4,
+    },
+    fyArtist: {
+      color: COLORS.onSurfaceVariant,
+      fontSize: 14,
+    },
+  }));
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -55,7 +159,7 @@ export default function DiscoverScreen() {
         <MaterialIcons
           name="more-vert"
           size={24}
-          color={COLORS.onSurfaceVariant}
+          color={themeValues.COLORS.onSurfaceVariant}
           style={{
             position: "absolute",
             right: SPACING.md,
@@ -137,7 +241,7 @@ export default function DiscoverScreen() {
               name="refresh"
               size={22}
               style={{ marginRight: SPACING.sm, marginBottom: 2 }}
-              color={COLORS.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
         </View>
@@ -157,105 +261,3 @@ export default function DiscoverScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    paddingHorizontal: SPACING.md,
-  },
-  header: {
-    color: COLORS.onSurface,
-    fontSize: 32,
-    fontWeight: "bold",
-    marginTop: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  featuredContainer: {
-    flexDirection: "row",
-    gap: SPACING.sm,
-    marginBottom: SPACING.lg,
-  },
-  bigSquare: {
-    width: BIG_SQUARE_SIZE,
-    height: BIG_SQUARE_SIZE,
-    backgroundColor: COLORS.surfaceContainerHighest,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  smallSquaresContainer: {
-    flex: 1,
-    gap: SPACING.sm,
-  },
-  smallSquare: {
-    flex: 1,
-    backgroundColor: COLORS.surfaceContainerHighest,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  tileImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-  },
-  tileOverlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: RADIUS.sm, // maybe full?
-    position: "absolute",
-    bottom: SPACING.sm,
-    left: SPACING.sm,
-  },
-  squareText: {
-    color: COLORS.onSurface,
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  squareTextSmall: {
-    color: COLORS.onSurface,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  sectionTitle: {
-    color: COLORS.onSurface,
-    fontSize: 22,
-    fontWeight: "bold",
-    marginTop: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  fyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.surfaceContainer,
-    borderRadius: 12,
-    padding: SPACING.sm,
-    marginBottom: SPACING.sm,
-    gap: SPACING.md,
-  },
-  fyThumbnail: {
-    width: 56,
-    height: 56,
-    backgroundColor: COLORS.surfaceContainerHighest,
-    borderRadius: 8,
-  },
-  fyInfo: {
-    flex: 1,
-  },
-  fyTitle: {
-    color: COLORS.onSurface,
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  fyArtist: {
-    color: COLORS.onSurfaceVariant,
-    fontSize: 14,
-  },
-});
