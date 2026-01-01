@@ -1,13 +1,64 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  ViewStyle,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { SETTINGS_CONFIG } from "../../constants/settings";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { triggerHaptic } from "@/utils/haptics";
+import { getAllSettings, saveSetting } from "../../utils/database";
+import * as FileSystem from "expo-file-system/legacy";
 
 export default function SettingsScreen() {
+  const [cacheSize, setCacheSize] = React.useState<number | null>(null);
+
+  const getDirectorySize = async (dirUri: string): Promise<number> => {
+    let total = 0;
+    try {
+      const items = await FileSystem.readDirectoryAsync(dirUri);
+      for (const item of items) {
+        const itemUri = dirUri.endsWith("/")
+          ? dirUri + item
+          : dirUri + "/" + item;
+        const info = await FileSystem.getInfoAsync(itemUri);
+        if (info.isDirectory) {
+          total += await getDirectorySize(itemUri);
+        } else if (
+          info.exists &&
+          !info.isDirectory &&
+          typeof info.size === "number"
+        ) {
+          total += info.size;
+        }
+      }
+    } catch {}
+    return total;
+  };
+
+  React.useEffect(() => {
+    const loadCacheSize = async () => {
+      try {
+        if (FileSystem.cacheDirectory) {
+          const size = await getDirectorySize(FileSystem.cacheDirectory);
+          setCacheSize(size);
+        } else {
+          setCacheSize(null);
+        }
+      } catch {
+        setCacheSize(null);
+      }
+    };
+    loadCacheSize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const router = useRouter();
   const themeValues = useThemeValues();
   const [versionTapCount, setVersionTapCount] = React.useState(0);
@@ -21,9 +72,9 @@ export default function SettingsScreen() {
       backgroundColor: COLORS.background,
     },
     header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: "row" as ViewStyle["flexDirection"],
+      alignItems: "center" as ViewStyle["alignItems"],
+      justifyContent: "space-between" as ViewStyle["justifyContent"],
       paddingHorizontal: SPACING.sm,
       paddingVertical: SPACING.sm,
     },
@@ -31,8 +82,8 @@ export default function SettingsScreen() {
       width: 48,
       height: 48,
       borderRadius: RADIUS.full,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as ViewStyle["justifyContent"],
+      alignItems: "center" as ViewStyle["alignItems"],
     },
     title: {
       fontFamily: "Inter_600SemiBold",
@@ -60,11 +111,11 @@ export default function SettingsScreen() {
     card: {
       backgroundColor: COLORS.surfaceContainerHigh,
       borderRadius: RADIUS.xl,
-      overflow: "hidden",
+      overflow: "hidden" as ViewStyle["overflow"],
     },
     settingItem: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as ViewStyle["flexDirection"],
+      alignItems: "center" as ViewStyle["alignItems"],
       padding: SPACING.md,
       minHeight: 72,
     },
@@ -73,8 +124,8 @@ export default function SettingsScreen() {
       height: 40,
       borderRadius: RADIUS.full,
       backgroundColor: COLORS.primaryContainer,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as ViewStyle["justifyContent"],
+      alignItems: "center" as ViewStyle["alignItems"],
       marginRight: SPACING.md,
     },
     settingContent: {
@@ -97,7 +148,7 @@ export default function SettingsScreen() {
       marginLeft: 72,
     },
     footer: {
-      alignItems: "center",
+      alignItems: "center" as ViewStyle["alignItems"],
       paddingVertical: SPACING.xl,
       marginTop: SPACING.lg,
     },
@@ -116,19 +167,47 @@ export default function SettingsScreen() {
 
   const [settingsState, setSettingsState] = React.useState<
     Record<string, boolean>
-  >(() => {
-    const initialState: Record<string, boolean> = {};
-    Object.values(SETTINGS_CONFIG).forEach((section) => {
-      section.settings.forEach((setting) => {
-        if (setting.type === "toggle" && setting.defaultValue !== null) {
-          initialState[setting.codename] = setting.defaultValue as boolean;
-        }
-      });
-    });
-    return initialState;
-  });
+  >({});
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const dbSettings = await getAllSettings();
+
+        const initialState: Record<string, boolean> = {};
+        Object.values(SETTINGS_CONFIG).forEach((section) => {
+          section.settings.forEach((setting) => {
+            if (setting.type === "toggle" && setting.defaultValue !== null) {
+              initialState[setting.codename] =
+                dbSettings[setting.codename] ??
+                (setting.defaultValue as boolean);
+            }
+          });
+        });
+
+        setSettingsState(initialState);
+      } catch (error) {
+        console.warn("Could not load settings from database:", error);
+
+        const fallbackState: Record<string, boolean> = {};
+        Object.values(SETTINGS_CONFIG).forEach((section) => {
+          section.settings.forEach((setting) => {
+            if (setting.type === "toggle" && setting.defaultValue !== null)
+              fallbackState[setting.codename] = setting.defaultValue as boolean;
+          });
+        });
+        setSettingsState(fallbackState);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   const SettingPress = (codename: string, type: string) => {
+    triggerHaptic();
     console.log(`Setting pressed: ${codename} (type: ${type})`);
 
     switch (codename) {
@@ -164,12 +243,19 @@ export default function SettingsScreen() {
     }
   };
 
-  const ToggleChange = (codename: string, value: boolean) => {
+  const ToggleChange = async (codename: string, value: boolean) => {
     console.log(`Toggle changed: ${codename} = ${value}`);
     setSettingsState((prev) => ({
       ...prev,
       [codename]: value,
     }));
+
+    try {
+      await saveSetting(codename, value);
+      console.log(`${codename} ok`);
+    } catch (error) {
+      console.warn(`${codename}:`, error);
+    }
   };
 
   const VersionTap = () => {
@@ -203,6 +289,16 @@ export default function SettingsScreen() {
     const isClickable =
       type === "menu" || type === "action" || codename === "version";
 
+    let shownDescription = description;
+    if (codename === "clear_cache") {
+      if (cacheSize == null) {
+        shownDescription = "0 MB used";
+      } else {
+        const mb = cacheSize / (1024 * 1024);
+        shownDescription = `${mb.toFixed(1)} MB used`;
+      }
+    }
+
     const ItemComponent = isClickable ? TouchableOpacity : View;
     const itemProps = isClickable
       ? { onPress: () => SettingPress(codename, type) }
@@ -210,24 +306,27 @@ export default function SettingsScreen() {
 
     return (
       <React.Fragment key={codename}>
-        <ItemComponent style={styles.settingItem} {...itemProps}>
-          <View style={styles.settingIcon}>
+        <ItemComponent style={[styles.settingItem]} {...itemProps}>
+          <View style={[styles.settingIcon]}>
             <MaterialIcons
               name={emoji}
               size={24}
               color={themeValues.COLORS.primary}
             />
           </View>
-          <View style={styles.settingContent}>
+          <View style={[styles.settingContent]}>
             <Text style={styles.settingLabel}>{name}</Text>
-            {description && (
-              <Text style={styles.settingDescription}>{description}</Text>
+            {shownDescription && (
+              <Text style={styles.settingDescription}>{shownDescription}</Text>
             )}
           </View>
           {isToggle && (
             <Switch
               value={settingsState[codename] || false}
-              onValueChange={(value) => ToggleChange(codename, value)}
+              onValueChange={(value) => {
+                ToggleChange(codename, value);
+                triggerHaptic();
+              }}
               trackColor={{
                 false: themeValues.COLORS.surfaceVariant,
                 true: themeValues.COLORS.primaryContainer,
@@ -237,6 +336,7 @@ export default function SettingsScreen() {
                   ? themeValues.COLORS.primary
                   : themeValues.COLORS.outline
               }
+              disabled={isLoading}
             />
           )}
           {hasRightArrow && (
@@ -247,7 +347,7 @@ export default function SettingsScreen() {
             />
           )}
         </ItemComponent>
-        {!isLast && <View style={styles.divider} />}
+        {!isLast && <View style={[styles.divider]} />}
       </React.Fragment>
     );
   };

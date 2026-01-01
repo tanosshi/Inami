@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import { useSongStore } from "../store/songStore";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
+import { triggerHaptic } from "../utils/haptics";
 
 interface Song {
   id: string;
@@ -97,6 +98,18 @@ export default function SongCard({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const safeString = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return value.toString();
+    if (typeof value === "boolean") return value.toString();
+    try {
+      return String(value);
+    } catch {
+      return "";
+    }
+  };
+
   const handleLike = async () => {
     await toggleLike(song.id);
   };
@@ -104,7 +117,10 @@ export default function SongCard({
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={onPress}
+      onPress={() => {
+        onPress();
+        triggerHaptic();
+      }}
       onLongPress={onLongPress}
       activeOpacity={0.7}
     >
@@ -130,10 +146,10 @@ export default function SongCard({
       {/* Song Info */}
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>
-          {song.title}
+          {safeString(song.title)}
         </Text>
         <Text style={styles.subtitle} numberOfLines={1}>
-          {song.artist} {song.album !== "Unknown Album" && `• ${song.album}`}
+          {safeString(song.artist)} {song.album !== "Unknown Album" && `• ${safeString(song.album)}`}
         </Text>
       </View>
 
@@ -145,7 +161,7 @@ export default function SongCard({
           )}
         {/* probably plans to replace like with the 3 dots */}
         {showOptions && (
-          <TouchableOpacity style={styles.likeButton} onPress={handleLike}>
+          <TouchableOpacity style={styles.likeButton} onPress={() => { triggerHaptic(); handleLike(); }}>
             <MaterialIcons
               name={song.is_liked ? "favorite" : "favorite-border"}
               size={22}

@@ -37,9 +37,9 @@ export const SETTINGS_CONFIG = {
         defaultValue: true,
       },
       {
-        codename: "low_quality_audio",
-        name: "Lower quality audio",
-        description: "Stream at lower bitrate to save battery",
+        codename: "battery_saver",
+        name: "Battery saver",
+        description: "Lower bitrate, less resources and features",
         emoji: "battery-3-bar",
         type: "toggle",
         defaultValue: false,
@@ -63,6 +63,14 @@ export const SETTINGS_CONFIG = {
         name: "Show lyrics",
         description: "Display lyrics on player",
         emoji: "lyrics",
+        type: "toggle",
+        defaultValue: true,
+      },
+      {
+        codename: "haptics",
+        name: "Haptics",
+        description: "Enable or disable haptic feedback",
+        emoji: "vibration",
         type: "toggle",
         defaultValue: true,
       },
@@ -144,8 +152,7 @@ export const SETTINGS_CONFIG = {
       {
         codename: "clear_cache",
         name: "Clear cache",
-        description:
-          "0 MB used (images and will be recached and music recommendations will be removed)", // todo remove the long comment we'll make a modal to delete specifics
+        description: "{0 MB} used",
         emoji: "delete-outline",
         type: "menu",
         defaultValue: null,
@@ -166,7 +173,7 @@ export const SETTINGS_CONFIG = {
       {
         codename: "version",
         name: "Version",
-        description: "0.0.1",
+        description: "0.3",
         emoji: "info-outline",
         type: "info",
         defaultValue: null,

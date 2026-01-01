@@ -6,33 +6,33 @@ import {
   PanResponder,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-// @ts-ignore
-import { useRouter } from "expo-router";
 import { usePlayerStore } from "../store/playerStore";
-import { useSongStore } from "../store/songStore";
 import { COLORS, SPACING } from "../constants/theme";
 import { useDynamicStyles } from "../hooks/useDynamicStyles";
-import SwipeIndicator from "../components/player/swipe-indicator";
-import PlayerHeader from "../components/player/player-header";
-import Artwork from "../components/player/artwork";
-import SongInfo from "../components/player/song-info";
-import ProgressBar from "../components/player/progress-bar";
-import PlayerControls from "../components/player/player-controls";
-import BottomActions from "../components/player/bottom-actions";
-import EmptyState from "../components/player/empty-state";
+import SwipeIndicator from "./player/swipe-indicator";
+import PlayerHeader from "./player/player-header";
+import Artwork from "./player/artwork";
+import SongInfo from "./player/song-info";
+import ProgressBar from "./player/progress-bar";
+import PlayerControls from "./player/player-controls";
+import BottomActions from "./player/bottom-actions";
+import EmptyState from "./player/empty-state";
 
-export default function PlayerScreen() {
-  const router = useRouter();
+export default function PlayerOverlay() {
   const { width, height } = useWindowDimensions();
   const artworkSize = Math.min(width - 80, 320);
 
-  const translateY = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
+  const translateY = useRef(new Animated.Value(height)).current;
 
   const styles = useDynamicStyles(() => ({
     container: {
-      flex: 1,
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       backgroundColor: COLORS.background,
+      zIndex: 1000,
     },
     safeArea: {
       flex: 1,
@@ -58,39 +58,19 @@ export default function PlayerScreen() {
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
           translateY.setValue(gestureState.dy);
-          const newOpacity = Math.max(0, 1 - gestureState.dy / (height * 0.4));
-          opacity.setValue(newOpacity);
         }
       },
       onPanResponderRelease: (_, gestureState) => {
         translateY.flattenOffset();
 
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          Animated.parallel([
-            Animated.timing(translateY, {
-              toValue: height,
-              duration: 250,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-          ]).start(() => {
-            router.back();
-          });
+          hidePlayer();
         } else {
           Animated.parallel([
             Animated.spring(translateY, {
               toValue: 0,
               damping: 20,
               stiffness: 300,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 1,
-              duration: 150,
               useNativeDriver: true,
             }),
           ]).start();
@@ -112,33 +92,45 @@ export default function PlayerScreen() {
     playPrevious,
     toggleShuffle,
     toggleRepeat,
+    showPlayer,
+    hidePlayerOverlay,
   } = usePlayerStore();
-  const { toggleLike, fetchSongs } = useSongStore();
 
-  const handleLike = async () => {
-    if (currentSong) {
-      await toggleLike(currentSong.id);
-      await fetchSongs();
-    }
+  const hidePlayer = () => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: height,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      hidePlayerOverlay();
+    });
   };
 
-  const handleGoBack = () => {
-    try {
-      if (
-        typeof (router as any).canGoBack === "function" &&
-        (router as any).canGoBack()
-      ) {
-        router.back();
-      } else {
-        router.push("/");
-      }
-    } catch {
-      router.push("/");
+  React.useEffect(() => {
+    if (showPlayer && currentSong) {
+      Animated.parallel([
+        Animated.spring(translateY, {
+          toValue: 0,
+          damping: 20,
+          stiffness: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: height,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-  };
+  }, [showPlayer, currentSong]);
 
-  if (!currentSong) {
-    return <EmptyState onGoBack={handleGoBack} />;
+  if (!showPlayer || !currentSong) {
+    return null;
   }
 
   return (
@@ -147,7 +139,6 @@ export default function PlayerScreen() {
         styles.container,
         {
           transform: [{ translateY }],
-          opacity,
         },
       ]}
       {...panResponder.panHandlers}
@@ -161,7 +152,7 @@ export default function PlayerScreen() {
           <SwipeIndicator />
 
           {/* Header */}
-          <PlayerHeader onBackPressed={() => router.back()} />
+          <PlayerHeader onBackPressed={hidePlayer} />
 
           {/* Artwork */}
           <Artwork song={currentSong} artworkSize={artworkSize} />
@@ -169,8 +160,8 @@ export default function PlayerScreen() {
           {/* Song Info */}
           <SongInfo song={currentSong} />
 
-          {/* Bottom Actions (well its up now) */}
-          <BottomActions song={currentSong} onLike={handleLike} />
+          {/* Bottom Actions */}
+          <BottomActions song={currentSong} />
 
           {/* Progress Bar */}
           <ProgressBar

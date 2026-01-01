@@ -147,14 +147,13 @@ export const TYPOGRAPHY = {
 };
 
 export const ANIMATION = {
-  // "fade" | "shift" | "none"
   tabTransition: "fade" as const,
 };
 
 export const TAB_CONFIG = {
   forYou: {
     name: "For You",
-    icon: "face" as const, // home?, maybe.
+    icon: "face" as const,
   },
   songs: {
     name: "Tracks",

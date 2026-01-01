@@ -26,6 +26,7 @@ import {
 } from "../../constants/theme";
 import { extractMetadata } from "../../utils/metadataExtractor";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { triggerHaptic } from "../../utils/haptics";
 
 import {
   isAudioFile,
@@ -349,14 +350,14 @@ export default function SongsScreen() {
     const shuffled = [...songs].sort(() => Math.random() - 0.5);
     setQueue(shuffled);
     playSong(shuffled[0]);
-    router.push("/player");
+    showPlayerOverlay();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.searchButton} onPress={toggleSearch}>
+          <TouchableOpacity style={styles.searchButton} onPress={() => { triggerHaptic(); toggleSearch(); }}>
             <MaterialIcons
               name="search"
               size={24}
@@ -376,14 +377,14 @@ export default function SongsScreen() {
             },
           ]}
         >
-          <TouchableOpacity onPress={PickFolder}>
+          <TouchableOpacity onPress={() => { triggerHaptic(); PickFolder(); }}>
             <MaterialIcons
               name="folder-open"
               size={24}
               color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowImportModal(true)}>
+          <TouchableOpacity onPress={() => { triggerHaptic(); setShowImportModal(true); }}>
             <MaterialIcons
               name="link"
               size={24}
@@ -418,7 +419,7 @@ export default function SongsScreen() {
             onChangeText={setSearchQuery}
           />
           {searchQuery !== "" && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
+            <TouchableOpacity onPress={() => { triggerHaptic(); setSearchQuery(""); }}>
               <MaterialIcons
                 name="close"
                 size={24}
@@ -426,7 +427,7 @@ export default function SongsScreen() {
               />
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={toggleSearch}>
+          <TouchableOpacity onPress={() => { triggerHaptic(); toggleSearch(); }}>
             <MaterialIcons
               name="close"
               size={24}
@@ -446,7 +447,7 @@ export default function SongsScreen() {
         renderItem={({ item, index }) => (
           <SongCard
             song={item}
-            onPress={() => PlaySong(item, index)}
+            onPress={() => { triggerHaptic(); PlaySong(item, index); }}
             showOptions
           />
         )}
@@ -493,7 +494,7 @@ export default function SongsScreen() {
           styles.shuffleButton,
           currentSong && styles.shuffleButtonWithMiniPlayer,
         ]}
-        onPress={ShuffleAll}
+        onPress={() => { triggerHaptic(); ShuffleAll(); }}
       >
         <MaterialIcons
           name="shuffle"

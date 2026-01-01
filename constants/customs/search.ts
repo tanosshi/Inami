@@ -6,8 +6,9 @@ export const SEARCH_CONFIG = {
         codename: "enable_search",
         name: "Enable Searching",
         description: "Search for music outside of your library",
-        emoji: "cloud",
+        emoji: "manage-search",
         type: "toggle",
+        overrides: true,
         defaultValue: false,
       },
     ],
@@ -20,7 +21,7 @@ export const SEARCH_CONFIG = {
         name: "Always search",
         description:
           "Search for music outside of your library even when there are similar titled songs available locally",
-        emoji: "",
+        emoji: "saved-search",
         type: "toggle",
         defaultValue: true,
       },
@@ -29,7 +30,7 @@ export const SEARCH_CONFIG = {
         name: "Automatically download liked songs",
         description:
           "Download songs that you like from search results to your local library",
-        emoji: "",
+        emoji: "downloading",
         type: "toggle",
         defaultValue: true,
       },

@@ -15,7 +15,7 @@ export default function HomeScreen() {
     fetchStats,
     loading,
   } = useSongStore();
-  const { playSong, setQueue } = usePlayerStore();
+  const { playSong, setQueue, showPlayerOverlay } = usePlayerStore();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -31,14 +31,14 @@ export default function HomeScreen() {
   const PlaySong = (song: any) => {
     setQueue(songs);
     playSong(song);
-    router.push("/player");
+    showPlayerOverlay();
   };
 
   const PlayLiked = () => {
     if (likedSongs.length > 0) {
       setQueue(likedSongs);
       playSong(likedSongs[0]);
-      router.push("/player");
+      showPlayerOverlay();
     }
   };
 

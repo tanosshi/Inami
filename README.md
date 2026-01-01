@@ -40,20 +40,18 @@ _The **one and only** proper music player, with all the features you need._
 | --------------------------------- | ------------------------------ |
 | Play MP3, FLAC, OGG and OPUS      | ✅ **Complete**                |
 | Playlist builder                  | 🟡 **Almost Complete, halted** |
-| Miniplayer                        | 🟡 **Almost Complete**         |
 | Settings                          | 🟡 **Almost Complete**         |
 | Music notification                | 🟡 **Almost Complete**         |
 | Sync colors based on album cover  | 🟡 **Almost Complete**         |
 | Fix bugged out landing transition | 🟡 **Almost Complete**         |
 | Sleep timer                       | 🔄 **Planned**                 |
 | Music visualizer                  | 🔄 **Planned**                 |
-| Fix unloader on new tab           | 🔄 **Planned**                 |
 | Font changer                      | 🔄 **Planned**                 |
-| Animated icons in bottom nav bar  | 🔄 **Planned**                 |
 | Wallpaper accent color            | 🔄 **Planned**                 |
 | Lyrics screen, Load lyrics        | 🔄 **Planned**                 |
 | Edit tag/ID3 in app               | 🔴 **Finish everything first** |
 | Proper Landscape UI               | 🔴 **Finish everything first** |
+| Animated icons in bottom nav bar  | 🔴 **Last core priority**      |
 
 > All core/base features will be removed from the roadmap once most of them are complete, only special features will remain.
 
@@ -77,6 +75,8 @@ _The **one and only** proper music player, with all the features you need._
 | Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       |
 | Gapless playback                                    | 🟡 **High**                       |
 | (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       |
+| Volume normalizing                                  | 🟡 **High**                       |
+| Smart playlists                                     | 🟢 **Low**                        |
 | Integration with Last.fm                            | 🟢 **Low**                        |
 | View local most played artist/track                 | 🟢 **Low**                        |
 | Sync data, songs and playlists                      | 🟢 **Low**                        |

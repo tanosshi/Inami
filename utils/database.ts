@@ -411,22 +411,43 @@ export const saveThemeSettings = async (
 ) => {
   const database = await getDatabaseSafe();
 
-  const existing = await database.getFirstAsync(
-    "SELECT id FROM settings_theme WHERE id = 1"
+  const existing: any = await database.getFirstAsync(
+    "SELECT id, nav_toggle, show_nav_text_toggle FROM settings_theme WHERE id = 1"
   );
 
+  const isBool = (v: any) => typeof v === "boolean";
+
+  if (!isBool(theme) || theme === undefined || theme === null)
+    theme = existing ? existing.theme : "Black";
+
   if (existing) {
+    const navToggleValue = isBool(navToggle)
+      ? navToggle
+        ? 1
+        : 0
+      : existing.nav_toggle;
+    const showNavTextToggleValue = isBool(showNavTextToggle)
+      ? showNavTextToggle
+        ? 1
+        : 0
+      : existing.show_nav_text_toggle;
     await database.runAsync(
       `UPDATE settings_theme 
        SET theme = ?, nav_toggle = ?, show_nav_text_toggle = ?, updated_at = CURRENT_TIMESTAMP 
        WHERE id = 1`,
-      [theme, navToggle ? 1 : 0, showNavTextToggle ? 1 : 0]
+      [theme, navToggleValue, showNavTextToggleValue]
     );
   } else {
+    const navToggleValue = isBool(navToggle) ? (navToggle ? 1 : 0) : 1;
+    const showNavTextToggleValue = isBool(showNavTextToggle)
+      ? showNavTextToggle
+        ? 1
+        : 0
+      : 1;
     await database.runAsync(
       `INSERT INTO settings_theme (id, theme, nav_toggle, show_nav_text_toggle) 
        VALUES (1, ?, ?, ?)`,
-      [theme, navToggle ? 1 : 0, showNavTextToggle ? 1 : 0]
+      [theme, navToggleValue, showNavTextToggleValue]
     );
   }
 };
@@ -454,6 +475,55 @@ export const getThemeSettings = async () => {
   }
 };
 
+export const saveThemeSetting = async (settingName: string, value: boolean) => {
+  try {
+    const database = await getDatabaseSafe();
+    
+    // Get existing settings to preserve other values
+    const existing: any = await database.getFirstAsync(
+      "SELECT theme, nav_toggle, show_nav_text_toggle FROM settings_theme WHERE id = 1"
+    );
+
+    if (existing) {
+      // Update existing record, preserving other values
+      let updateQuery = "";
+      let updateValues = [];
+
+      switch (settingName) {
+        case "navToggle":
+          updateQuery = `UPDATE settings_theme 
+           SET nav_toggle = ?, updated_at = CURRENT_TIMESTAMP 
+           WHERE id = 1`;
+          updateValues = [value ? 1 : 0];
+          break;
+        case "showNavTextToggle":
+          updateQuery = `UPDATE settings_theme 
+           SET show_nav_text_toggle = ?, updated_at = CURRENT_TIMESTAMP 
+           WHERE id = 1`;
+          updateValues = [value ? 1 : 0];
+          break;
+        default:
+          throw new Error(`Unknown theme setting: ${settingName}`);
+      }
+
+      await database.runAsync(updateQuery, updateValues);
+    } else {
+      // Insert new record with defaults
+      const navToggleValue = settingName === "navToggle" ? (value ? 1 : 0) : 1;
+      const showNavTextToggleValue = settingName === "showNavTextToggle" ? (value ? 1 : 0) : 1;
+
+      await database.runAsync(
+        `INSERT INTO settings_theme (id, theme, nav_toggle, show_nav_text_toggle) 
+         VALUES (1, ?, ?, ?)`,
+        ["Black", navToggleValue, showNavTextToggleValue]
+      );
+    }
+  } catch (error) {
+    console.warn(`Could not save theme setting ${settingName}:`, error);
+    throw error;
+  }
+};
+
 export const saveSetting = async (codename: string, value: boolean) => {
   try {
     const database = await getDatabaseSafe();
@@ -469,7 +539,7 @@ export const saveSetting = async (codename: string, value: boolean) => {
 };
 
 export const saveSettingsBatch = async (
-  settings: Array<{ codename: string; value: boolean }>
+  settings: { codename: string; value: boolean }[]
 ) => {
   if (settings.length === 0) return;
 

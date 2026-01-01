@@ -74,7 +74,9 @@ export const extractMetadata = async (
     if (metadata.common.picture?.[0]) {
       const picture = metadata.common.picture[0];
       const songName =
-        metadata.common.title || fallbackTitle || sourceFile.name;
+        safeString(metadata.common.title) ||
+        safeString(fallbackTitle) ||
+        safeString(sourceFile.name);
       artworkUri = await saveArtwork(
         new Uint8Array(picture.data),
         picture.format,
@@ -110,9 +112,12 @@ export const extractMetadata = async (
     }
 
     const result = {
-      title: metadata.common.title || fallbackTitle || "Unknown Title",
-      artist: metadata.common.artist || "Unknown Artist",
-      album: metadata.common.album || "Unknown Album",
+      title:
+        safeString(metadata.common.title) ||
+        safeString(fallbackTitle) ||
+        "Unknown Title",
+      artist: safeString(metadata.common.artist) || "Unknown Artist",
+      album: safeString(metadata.common.album) || "Unknown Album",
       duration: metadata.format.duration || 0,
       artwork: artworkUri,
       palette,
@@ -139,3 +144,15 @@ function getMimeType(uri: string): string {
   };
   return mimeTypes[extension || ""] || "audio/mpeg";
 }
+
+const safeString = (value: any): string => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return value.toString();
+  if (typeof value === "boolean") return value.toString();
+  try {
+    return String(value);
+  } catch {
+    return value.toString().replace(/[^a-zA-Z]/g, "");
+  }
+};

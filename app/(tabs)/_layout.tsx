@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import { Tabs } from "expo-router";
-import { View, StyleSheet, Animated, Text } from "react-native";
+import { View, StyleSheet, Animated, Text, Platform } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import MiniPlayer from "../../components/MiniPlayer";
 import { usePlayerStore } from "../../store/playerStore";
@@ -144,7 +144,9 @@ export default function TabLayout() {
       const showNavTextToggle = settings?.showNavTextToggle ?? false;
       setShowNavTextToggle(showNavTextToggle);
     };
-    fetchSettings();
+    if (Platform.OS !== "web") {
+      fetchSettings();
+    }
   }, []);
 
   const dynamicStyles = useMemo(

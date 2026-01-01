@@ -1,45 +1,3 @@
-export const COLORS = {
-  background: "#121212",
-  surface: "#1e1e1e",
-  surfaceVariant: "#2a2a2a",
-  surfaceContainer: "#1a1a1a",
-  surfaceContainerHigh: "#242424",
-  surfaceContainerHighest: "#2e2e2e",
-
-  primary: "#fbc02d",
-  primaryContainer: "#695f00",
-  onPrimary: "#cecdc5ff",
-  onPrimaryContainer: "#ffeb9c",
-
-  secondary: "#ccc2a7",
-  secondaryContainer: "#4b4330",
-  onSecondary: "#322f1d",
-  onSecondaryContainer: "#e9dec2",
-
-  tertiary: "#a4cfb3",
-  tertiaryContainer: "#2d4f3b",
-  onTertiary: "#173726",
-  onTertiaryContainer: "#c0ebce",
-
-  error: "#ffb4ab",
-  errorContainer: "#93000a",
-  onError: "#690005",
-  onErrorContainer: "#ffdad6",
-
-  onBackground: "#e6e1e5",
-  onSurface: "#e6e1e5",
-  onSurfaceVariant: "#c9c5ca",
-
-  outline: "#938f94",
-  outlineVariant: "#49454f",
-  inverseSurface: "#e6e1e5",
-  inverseOnSurface: "#313033",
-  inversePrimary: "#7d6400",
-
-  liked: "#f2b8b5",
-  likedContainer: "#8c1d18",
-};
-
 export const SPACING = {
   xs: 4,
   sm: 8,
@@ -50,13 +8,13 @@ export const SPACING = {
 };
 
 export const RADIUS = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  xxl: 28,
-  full: 9999,
+  xs: 1,
+  sm: 2,
+  md: 4,
+  lg: 8,
+  xl: 16,
+  xxl: 24,
+  full: 0,
 };
 
 export const TYPOGRAPHY = {

@@ -18,6 +18,7 @@ import { usePlayerStore } from "../../store/playerStore";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
 import SongCard from "../../components/SongCard";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { triggerHaptic } from "../../utils/haptics";
 
 export default function PlaylistDetailScreen() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function PlaylistDetailScreen() {
     removeSongFromPlaylist,
   } = usePlaylistStore();
   const { songs, fetchSongs } = useSongStore();
-  const { playSong, setQueue } = usePlayerStore();
+  const { playSong, setQueue, showPlayerOverlay } = usePlayerStore();
   const [showAddSongsModal, setShowAddSongsModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [playlistSongs, setPlaylistSongs] = useState<any[]>([]);
@@ -253,14 +254,14 @@ export default function PlaylistDetailScreen() {
     if (playlistSongs.length > 0) {
       setQueue(playlistSongs);
       playSong(playlistSongs[0]);
-      router.push("/player");
+      showPlayerOverlay();
     }
   };
 
   const PlaySong = (song: any) => {
     setQueue(playlistSongs);
     playSong(song);
-    router.push("/player");
+    showPlayerOverlay();
   };
 
   const ShufflePlay = () => {
@@ -268,7 +269,7 @@ export default function PlaylistDetailScreen() {
       const shuffled = [...playlistSongs].sort(() => Math.random() - 0.5);
       setQueue(shuffled);
       playSong(shuffled[0]);
-      router.push("/player");
+      showPlayerOverlay();
     }
   };
 
@@ -289,6 +290,7 @@ export default function PlaylistDetailScreen() {
           text: "Remove",
           style: "destructive",
           onPress: async () => {
+            await triggerHaptic();
             await removeSongFromPlaylist(playlist.id, songId);
             const songsInPlaylist = await getPlaylistSongs(playlist.id);
             setPlaylistSongs(songsInPlaylist);
@@ -309,6 +311,7 @@ export default function PlaylistDetailScreen() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
+            await triggerHaptic();
             if (playlist) {
               await deletePlaylist(playlist.id);
               router.back();
@@ -334,7 +337,7 @@ export default function PlaylistDetailScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Playlist not found</Text>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => { triggerHaptic(); router.back(); }}>
             <Text style={styles.linkText}>Go back</Text>
           </TouchableOpacity>
         </View>
@@ -347,7 +350,7 @@ export default function PlaylistDetailScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => { triggerHaptic(); router.back(); }}
         >
           <MaterialIcons
             name="arrow-back"
@@ -356,7 +359,7 @@ export default function PlaylistDetailScreen() {
           />
         </TouchableOpacity>
         <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.iconButton} onPress={DeletePlaylist}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => { triggerHaptic(); DeletePlaylist(); }}>
             <MaterialIcons
               name="delete-outline"
               size={22}
@@ -384,7 +387,7 @@ export default function PlaylistDetailScreen() {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.shuffleButton} onPress={ShufflePlay}>
+        <TouchableOpacity style={styles.shuffleButton} onPress={() => { triggerHaptic(); ShufflePlay(); }}>
           <MaterialIcons
             name="shuffle"
             size={20}
@@ -392,7 +395,7 @@ export default function PlaylistDetailScreen() {
           />
           <Text style={styles.shuffleText}>Shuffle</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.playAllButton} onPress={PlayAll}>
+        <TouchableOpacity style={styles.playAllButton} onPress={() => { triggerHaptic(); PlayAll(); }}>
           <MaterialIcons
             name="play-arrow"
             size={22}
@@ -402,7 +405,7 @@ export default function PlaylistDetailScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => setShowAddSongsModal(true)}
+          onPress={() => { triggerHaptic(); setShowAddSongsModal(true); }}
         >
           <MaterialIcons
             name="add"
@@ -418,7 +421,7 @@ export default function PlaylistDetailScreen() {
         renderItem={({ item }) => (
           <SongCard
             song={item}
-            onPress={() => PlaySong(item)}
+            onPress={() => { triggerHaptic(); PlaySong(item); }}
             onLongPress={() => RemoveSong(item.id)}
           />
         )}
@@ -445,7 +448,7 @@ export default function PlaylistDetailScreen() {
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setShowAddSongsModal(false)}
+          onPress={() => { triggerHaptic(); setShowAddSongsModal(false); }}
         >
           <TouchableOpacity
             activeOpacity={1}
@@ -454,7 +457,7 @@ export default function PlaylistDetailScreen() {
           >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Songs</Text>
-              <TouchableOpacity onPress={() => setShowAddSongsModal(false)}>
+              <TouchableOpacity onPress={() => { triggerHaptic(); setShowAddSongsModal(false); }}>
                 <MaterialIcons
                   name="close"
                   size={24}
@@ -478,7 +481,7 @@ export default function PlaylistDetailScreen() {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.addSongItem}
-                  onPress={() => AddSong(item.id)}
+                  onPress={() => { triggerHaptic(); AddSong(item.id); }}
                 >
                   <View style={styles.addSongInfo}>
                     <View

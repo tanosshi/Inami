@@ -42,14 +42,26 @@ export default function SongInfo({ song }: SongInfoProps) {
     },
   }));
 
+  const safeString = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return value.toString();
+    if (typeof value === "boolean") return value.toString();
+    try {
+      return String(value);
+    } catch {
+      return "";
+    }
+  };
+
   return (
     <View style={styles.songInfo}>
       <View style={styles.titleContainer}>
         <Text style={styles.songTitle} numberOfLines={1}>
-          {song.title}
+          {safeString(song.title)}
         </Text>
         <Text style={styles.songArtist} numberOfLines={1}>
-          {song.artist}
+          {safeString(song.artist)}
         </Text>
       </View>
     </View>

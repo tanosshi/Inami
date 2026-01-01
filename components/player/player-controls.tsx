@@ -8,6 +8,7 @@ import {
 } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { triggerHaptic } from "../../utils/haptics";
 
 interface PlayerControlsProps {
   isPlaying: boolean;
@@ -88,7 +89,13 @@ export default function PlayerControls({
 
   return (
     <View style={styles.controls}>
-      <TouchableOpacity style={styles.sideControl} onPress={onToggleShuffle}>
+      <TouchableOpacity
+        style={styles.sideControl}
+        onPress={() => {
+          triggerHaptic();
+          onToggleShuffle();
+        }}
+      >
         <Ionicons
           name="shuffle"
           size={24}
@@ -99,20 +106,44 @@ export default function PlayerControls({
           }
         />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.controlButton} onPress={onPrevious}>
+      <TouchableOpacity
+        style={styles.controlButton}
+        onPress={() => {
+          triggerHaptic();
+          onPrevious();
+        }}
+      >
         <FontAwesome5 name="fast-backward" size={20} color={COLORS.onSurface} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.modernPlayButton} onPress={onPlayPause}>
+      <TouchableOpacity
+        style={styles.modernPlayButton}
+        onPress={() => {
+          triggerHaptic();
+          onPlayPause();
+        }}
+      >
         <Ionicons
           name={isPlaying ? "pause" : "play"}
           size={30}
           color={themeValues.COLORS.onSurface}
         />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.controlButton} onPress={onNext}>
+      <TouchableOpacity
+        style={styles.controlButton}
+        onPress={() => {
+          triggerHaptic();
+          onNext();
+        }}
+      >
         <FontAwesome5 name="fast-forward" size={20} color={COLORS.onSurface} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.sideControl} onPress={onToggleRepeat}>
+      <TouchableOpacity
+        style={styles.sideControl}
+        onPress={() => {
+          triggerHaptic();
+          onToggleRepeat();
+        }}
+      >
         <View style={styles.repeatContainer}>
           <Feather
             name="repeat"

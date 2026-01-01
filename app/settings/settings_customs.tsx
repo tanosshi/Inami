@@ -1,16 +1,12 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Entypo } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { getAllSettings, saveSetting } from "../../utils/database";
+import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 import { METADATA_CONFIG } from "../../constants/customs/metadata";
 import { SYNC_CONFIG } from "../../constants/customs/sync";
@@ -18,6 +14,8 @@ import { FM_CONFIG } from "../../constants/customs/fm";
 import { DISCOVERY_CONFIG } from "../../constants/customs/discovery";
 import { SEARCH_CONFIG } from "../../constants/customs/search";
 import { DLMUSIC_CONFIG } from "../../constants/customs/dlmusic";
+
+import { triggerHaptic } from "@/utils/haptics";
 
 type SettingsConfig =
   | typeof METADATA_CONFIG
@@ -35,32 +33,177 @@ function SettingsScreen({
   title: string;
 }) {
   const router = useRouter();
+  const styles = useDynamicStyles(() => ({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: "row" as const,
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+    },
+    backButton: {
+      width: 48,
+      height: 48,
+      borderRadius: RADIUS.full,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    title: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleLarge,
+      color: COLORS.onSurface,
+    },
+    placeholder: {
+      width: 48,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      padding: SPACING.md,
+      paddingBottom: 40,
+    },
+    sectionTitle: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.titleSmall,
+      color: COLORS.primary,
+      marginBottom: SPACING.sm,
+      marginTop: SPACING.md,
+      paddingHorizontal: SPACING.md,
+    },
+    card: {
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.xl,
+      overflow: "hidden" as const,
+    },
+    settingItem: {
+      flexDirection: "row" as const,
+      alignItems: "center",
+      padding: SPACING.md,
+      minHeight: 72,
+    },
+    settingIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: RADIUS.full,
+      backgroundColor: COLORS.primaryContainer,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: SPACING.md,
+    },
+    settingContent: {
+      flex: 1,
+    },
+    settingLabel: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.bodyLarge,
+      color: COLORS.onSurface,
+    },
+    settingDescription: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodyMedium,
+      color: COLORS.onSurfaceVariant,
+      marginTop: 2,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: COLORS.outlineVariant,
+      marginLeft: 72,
+    },
+    footer: {
+      alignItems: "center",
+      paddingVertical: SPACING.xl,
+      marginTop: SPACING.lg,
+    },
+    footerText: {
+      fontFamily: "Inter_600SemiBold",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurfaceVariant,
+    },
+    footerSubtext: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodySmall,
+      color: COLORS.outline,
+      marginTop: SPACING.xs,
+    },
+  }));
 
   const [settingsState, setSettingsState] = React.useState<
     Record<string, boolean>
-  >(() => {
-    const initialState: Record<string, boolean> = {};
-    Object.values(config).forEach((section) => {
-      const settingsArray = section.settings || section.data || [];
-      settingsArray.forEach((setting: any) => {
-        if (setting.type === "toggle" && setting.defaultValue !== null) {
-          initialState[setting.codename] = setting.defaultValue as boolean;
-        }
-      });
-    });
-    return initialState;
-  });
+  >({});
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const dbSettings = await getAllSettings();
+
+        const initialState: Record<string, boolean> = {};
+        Object.values(config).forEach((section: any) => {
+          const settingsArray = Array.isArray(section.settings)
+            ? section.settings
+            : Array.isArray(section.data)
+            ? section.data
+            : [];
+          settingsArray.forEach((setting: any) => {
+            if (setting.type === "toggle" && setting.defaultValue !== null) {
+              initialState[setting.codename] =
+                dbSettings[setting.codename] ??
+                (setting.defaultValue as boolean);
+            }
+          });
+        });
+
+        setSettingsState(initialState);
+      } catch (error) {
+        console.warn(error);
+
+        const fallbackState: Record<string, boolean> = {};
+        Object.values(config).forEach((section: any) => {
+          const settingsArray = Array.isArray(section.settings)
+            ? section.settings
+            : Array.isArray(section.data)
+            ? section.data
+            : [];
+          settingsArray.forEach((setting: any) => {
+            if (setting.type === "toggle" && setting.defaultValue !== null) {
+              fallbackState[setting.codename] = setting.defaultValue as boolean;
+            }
+          });
+        });
+        setSettingsState(fallbackState);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [config]);
 
   const handleSettingPress = (codename: string, type: string) => {
+    triggerHaptic();
     console.log(`Setting pressed: ${codename} (type: ${type})`);
   };
 
-  const handleToggleChange = (codename: string, value: boolean) => {
+  const handleToggleChange = async (codename: string, value: boolean) => {
+    triggerHaptic();
     console.log(`Toggle changed: ${codename} = ${value}`);
+
     setSettingsState((prev) => ({
       ...prev,
       [codename]: value,
     }));
+
+    try {
+      await saveSetting(codename, value);
+      console.log(`Setting ${codename} saved successfully`);
+    } catch (error) {
+      console.warn(`Could not save setting ${codename}:`, error);
+    }
   };
 
   const renderSettingItem = (
@@ -69,7 +212,7 @@ function SettingsScreen({
     index: number,
     isLast: boolean
   ) => {
-    const { codename, name, description, emoji, type } = setting;
+    const { codename, name, description, emoji, type, customEmoji } = setting;
 
     const isToggle = type === "toggle";
     const hasRightArrow = type === "menu" || type === "action";
@@ -81,11 +224,16 @@ function SettingsScreen({
       ? { onPress: () => handleSettingPress(codename, type) }
       : {};
 
+    let EmojiIcon = MaterialIcons;
+    let emojiName = emoji;
+    if (customEmoji === "Entypo") {
+      EmojiIcon = Entypo;
+    }
     return (
       <React.Fragment key={codename}>
         <ItemComponent style={styles.settingItem} {...itemProps}>
           <View style={styles.settingIcon}>
-            <MaterialIcons name={emoji} size={24} color={COLORS.primary} />
+            <EmojiIcon name={emojiName} size={24} color={COLORS.primary} />
           </View>
           <View style={styles.settingContent}>
             <Text style={styles.settingLabel}>{name}</Text>
@@ -104,6 +252,7 @@ function SettingsScreen({
               thumbColor={
                 settingsState[codename] ? COLORS.primary : COLORS.outline
               }
+              disabled={isLoading}
             />
           )}
           {hasRightArrow && (
@@ -138,8 +287,12 @@ function SettingsScreen({
         contentContainerStyle={styles.content}
       >
         {/* RENDER ONE BY ONE */}
-        {Object.entries(config).map(([sectionKey, section]) => {
-          const settingsArray = section.settings || section.data || [];
+        {Object.entries(config).map(([sectionKey, section]: [string, any]) => {
+          const settingsArray = Array.isArray(section.settings)
+            ? section.settings
+            : Array.isArray(section.data)
+            ? section.data
+            : [];
           return (
             <React.Fragment key={sectionKey}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -170,11 +323,9 @@ function SettingsScreen({
 export function SettingsMetadataScreen() {
   return <SettingsScreen config={METADATA_CONFIG} title="Fetch ID3" />;
 }
-
 export function SettingsSyncScreen() {
   return <SettingsScreen config={SYNC_CONFIG} title="Syncing" />;
 }
-
 export function SettingsFmScreen() {
   return <SettingsScreen config={FM_CONFIG} title="Last.fm" />;
 }
@@ -187,102 +338,3 @@ export function SettingsSearchScreen() {
 export function SettingsDLScreen() {
   return <SettingsScreen config={DLMUSIC_CONFIG} title="Download Music" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: RADIUS.full,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleLarge,
-    color: COLORS.onSurface,
-  },
-  placeholder: {
-    width: 48,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: SPACING.md,
-    paddingBottom: 40,
-  },
-  sectionTitle: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.titleSmall,
-    color: COLORS.primary,
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.md,
-  },
-  card: {
-    backgroundColor: COLORS.surfaceContainerHigh,
-    borderRadius: RADIUS.xl,
-    overflow: "hidden",
-  },
-  settingItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: SPACING.md,
-    minHeight: 72,
-  },
-  settingIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.primaryContainer,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: SPACING.md,
-  },
-  settingContent: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.bodyLarge,
-    color: COLORS.onSurface,
-  },
-  settingDescription: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodyMedium,
-    color: COLORS.onSurfaceVariant,
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.outlineVariant,
-    marginLeft: 72,
-  },
-  footer: {
-    alignItems: "center",
-    paddingVertical: SPACING.xl,
-    marginTop: SPACING.lg,
-  },
-  footerText: {
-    fontFamily: "Inter_600SemiBold",
-    ...TYPOGRAPHY.titleMedium,
-    color: COLORS.onSurfaceVariant,
-  },
-  footerSubtext: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.outline,
-    marginTop: SPACING.xs,
-  },
-});

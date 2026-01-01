@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, PanResponder } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  PanResponder,
+  Animated,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 // @ts-ignore
@@ -8,11 +14,15 @@ import { usePlayerStore } from "../store/playerStore";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 import { getThemeSettings } from "../utils/database";
+import { triggerHaptic } from "../utils/haptics";
 
 export default function MiniPlayer() {
   const router = useRouter();
   const themeValues = useThemeValues();
   const [navToggle, setNavToggle] = useState<boolean>(true);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const dragAnim = useRef(new Animated.Value(0)).current;
+  const hapticInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const {
     currentSong,
     isPlaying,
@@ -21,6 +31,7 @@ export default function MiniPlayer() {
     togglePlayPause,
     playNext,
     playPrevious,
+    showPlayerOverlay,
   } = usePlayerStore();
 
   useEffect(() => {
@@ -108,16 +119,28 @@ export default function MiniPlayer() {
 
   const panResponder = React.useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const { dx, dy } = gestureState;
+        return Math.abs(dx) > 5 || Math.abs(dy) > 5;
+      },
       onPanResponderGrant: () => {
-        // gently move it
+        setIsDragging(true);
+        hapticInterval.current = setInterval(() => {
+          triggerHaptic();
+        }, 25);
       },
       onPanResponderMove: (evt, gestureState) => {
-        // gently move it
+        const { dx } = gestureState;
+        dragAnim.setValue(dx);
       },
       onPanResponderRelease: (evt, gestureState) => {
         const { dx } = gestureState;
         const threshold = 50;
+
+        if (hapticInterval.current) {
+          clearInterval(hapticInterval.current);
+          hapticInterval.current = null;
+        }
 
         if (Math.abs(dx) > threshold) {
           if (dx > 0) {
@@ -125,11 +148,28 @@ export default function MiniPlayer() {
           } else {
             playNext();
           }
+        } else {
+          showPlayerOverlay();
         }
+
+        setIsDragging(false);
+        Animated.spring(dragAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
       },
       onPanResponderTerminate: () => {
-        // snap back
+        if (hapticInterval.current) {
+          clearInterval(hapticInterval.current);
+          hapticInterval.current = null;
+        }
+        setIsDragging(false);
+        Animated.spring(dragAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
       },
+      onShouldBlockNativeResponder: () => false,
     })
   ).current;
 
@@ -137,17 +177,31 @@ export default function MiniPlayer() {
 
   const progress = duration > 0 ? (position / duration) * 100 : 0;
 
+  const safeString = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return value.toString();
+    if (typeof value === "boolean") return value.toString();
+    try {
+      return String(value);
+    } catch {
+      return "";
+    }
+  };
+
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={styles.container}>
       {/* Progress Bar */}
       <View style={styles.progressBar}>
         <View style={[styles.progressFill, { width: `${progress}%` }]} />
       </View>
 
-      <TouchableOpacity
-        style={styles.contentTouchable}
-        onPress={() => router.push("/player")}
-        activeOpacity={0.95}
+      <Animated.View
+        style={[
+          styles.contentTouchable,
+          { transform: [{ translateX: dragAnim }] },
+        ]}
+        {...panResponder.panHandlers}
       >
         <View style={styles.content}>
           {/* Artwork */}
@@ -172,10 +226,10 @@ export default function MiniPlayer() {
           {/* Song Info */}
           <View style={styles.info}>
             <Text style={styles.title} numberOfLines={1}>
-              {currentSong.title}
+              {safeString(currentSong.title)}
             </Text>
             <Text style={styles.artist} numberOfLines={1}>
-              {currentSong.artist}
+              {safeString(currentSong.artist)}
             </Text>
           </View>
 
@@ -183,7 +237,7 @@ export default function MiniPlayer() {
           <View style={styles.controls}>
             <TouchableOpacity
               style={styles.controlButton}
-              onPress={togglePlayPause}
+              onPress={() => { triggerHaptic(); togglePlayPause(); }}
             >
               <MaterialIcons
                 name={isPlaying ? "pause" : "play-arrow"}
@@ -193,7 +247,7 @@ export default function MiniPlayer() {
             </TouchableOpacity>
           </View>
         </View>
-      </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }

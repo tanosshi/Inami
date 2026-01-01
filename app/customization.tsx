@@ -10,6 +10,10 @@ import {
   CATEGORY_ICON_MAP,
 } from "../constants/customization";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
+import { triggerHaptic } from "../utils/haptics";
+import { applyTheme } from "../constants/theme";
+import SettingsModal from "./settings/modal-[id]";
+import { saveThemeSettings, saveSettingsBatch } from "../utils/database";
 
 export default function CustomizationScreen() {
   const router = useRouter();
@@ -18,6 +22,9 @@ export default function CustomizationScreen() {
     null
   );
   const [viewMode, setViewMode] = React.useState<"grid" | "rows">("grid");
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [resetModalVisible, setResetModalVisible] = React.useState(false);
+  const [pendingTheme, setPendingTheme] = React.useState<string | null>(null);
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -263,7 +270,54 @@ export default function CustomizationScreen() {
 
   const handleSettingPress = (codename: string, type: string) => {
     console.log(`Customization setting pressed: ${codename} (type: ${type})`);
-    //
+
+    switch (codename) {
+      case "reset_customization":
+        setPendingTheme("reset");
+        setResetModalVisible(true);
+        return;
+      case "nav_style":
+      case "tracks_layout":
+      case "playlists_style":
+      case "discover_layout":
+      case "homescreen":
+      case "fonts":
+        router.push(`/settings/customizations?type=${codename}`);
+        return;
+      default:
+        break;
+    }
+
+    if (
+      type === "action" &&
+      (codename === "amoled_theme" ||
+        codename === "white_mode" ||
+        codename === "gray_theme")
+    ) {
+      let themeName = "";
+      let themeDisplayName = "";
+
+      switch (codename) {
+        case "amoled_theme":
+          themeName = "Black";
+          themeDisplayName = "AMOLED Theme";
+          break;
+        case "white_mode":
+          themeName = "Light";
+          themeDisplayName = "White Mode";
+          break;
+        case "gray_theme":
+          themeName = "Gray";
+          themeDisplayName = "Dark Theme";
+          break;
+      }
+
+      setPendingTheme(themeName);
+      setModalVisible(true);
+      return;
+    }
+
+    console.log(`Other action: ${codename}`);
   };
 
   const handleToggleChange = (codename: string, value: boolean) => {
@@ -272,6 +326,69 @@ export default function CustomizationScreen() {
       ...prev,
       [codename]: value,
     }));
+  };
+
+  const handleModalConfirm = async (action: "theme" | "reset") => {
+    if (action === "theme" && pendingTheme && pendingTheme !== "reset") {
+      applyTheme(pendingTheme);
+      setModalVisible(false);
+      await saveThemeSettings(pendingTheme, undefined as any, undefined as any);
+      setPendingTheme(null);
+      router.replace("/");
+    } else if (action === "reset") {
+      applyTheme("Black");
+      setResetModalVisible(false);
+      setPendingTheme(null);
+      await saveThemeSettings("Black", true, true);
+      const configs = [CUSTOMIZATION_CONFIG];
+      const findToggles = (
+        obj: any
+      ): Array<{ codename: string; defaultValue: boolean }> => {
+        const results: Array<{ codename: string; defaultValue: boolean }> = [];
+
+        if (Array.isArray(obj)) {
+          for (const item of obj) {
+            if (
+              item &&
+              typeof item === "object" &&
+              item.type === "toggle" &&
+              (item.defaultValue === true || item.defaultValue === false) &&
+              item.codename
+            ) {
+              results.push({
+                codename: item.codename,
+                defaultValue: item.defaultValue,
+              });
+            }
+            results.push(...findToggles(item));
+          }
+        } else if (obj && typeof obj === "object") {
+          for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              results.push(...findToggles(obj[key]));
+            }
+          }
+        }
+
+        return results;
+      };
+
+      const toggles = configs.flatMap((config) => findToggles(config));
+      if (toggles.length > 0) {
+        const settingsToSave = toggles.map((toggle) => ({
+          codename: toggle.codename,
+          value: toggle.defaultValue,
+        }));
+        await saveSettingsBatch(settingsToSave);
+      }
+      router.replace("/");
+    }
+  };
+
+  const ModalCancel = () => {
+    setModalVisible(false);
+    setResetModalVisible(false);
+    setPendingTheme(null);
   };
 
   const renderCategoryBlock = (
@@ -308,11 +425,12 @@ export default function CustomizationScreen() {
               ? styles.categoryBlockRowSelected
               : styles.categoryBlockSelected),
         ]}
-        onPress={() =>
+        onPress={() => {
+          triggerHaptic();
           setSelectedCategory(
             selectedCategory === sectionKey ? null : sectionKey
-          )
-        }
+          );
+        }}
       >
         <View style={isRowMode ? styles.categoryIconRow : styles.categoryIcon}>
           <MaterialIcons
@@ -354,13 +472,18 @@ export default function CustomizationScreen() {
     const { codename, name, description, emoji, type } = setting;
 
     const isToggle = type === "toggle";
-    const hasRightArrow = type === "menu" || type === "action";
+    const hasRightArrow = type === "menu";
 
     const isClickable = type === "menu" || type === "action";
 
     const ItemComponent = isClickable ? TouchableOpacity : View;
     const itemProps = isClickable
-      ? { onPress: () => handleSettingPress(codename, type) }
+      ? {
+          onPress: () => {
+            triggerHaptic();
+            handleSettingPress(codename, type);
+          },
+        }
       : {};
 
     return (
@@ -413,7 +536,10 @@ export default function CustomizationScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push("/settings")}
+          onPress={() => {
+            triggerHaptic();
+            router.push("/settings");
+          }}
         >
           <MaterialIcons
             name="arrow-back"
@@ -424,7 +550,10 @@ export default function CustomizationScreen() {
         <Text style={styles.title}>Customize</Text>
         <TouchableOpacity
           style={styles.viewModeButton}
-          onPress={() => setViewMode(viewMode === "grid" ? "rows" : "grid")}
+          onPress={() => {
+            triggerHaptic();
+            setViewMode(viewMode === "grid" ? "rows" : "grid");
+          }}
         >
           <Feather
             name={viewMode === "grid" ? "list" : "grid"}
@@ -461,7 +590,10 @@ export default function CustomizationScreen() {
             <View style={styles.categoryHeader}>
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => setSelectedCategory(null)}
+                onPress={() => {
+                  triggerHaptic();
+                  setSelectedCategory(null);
+                }}
               >
                 <MaterialIcons
                   name="arrow-back"
@@ -501,6 +633,25 @@ export default function CustomizationScreen() {
           <Text style={styles.footerSubtext}>The app is all yours :)</Text>
         </View>
       </ScrollView>
+
+      <SettingsModal
+        visible={modalVisible}
+        onClose={ModalCancel}
+        onConfirm={() => handleModalConfirm("theme")}
+        title="Apply Theme"
+        message={`Are you sure you want to apply this theme?\nThis action will restart the app for you.`}
+        confirmText="Yes"
+        cancelText="Cancel"
+      />
+      <SettingsModal
+        visible={resetModalVisible}
+        onClose={ModalCancel}
+        onConfirm={() => handleModalConfirm("reset")}
+        title="Reset configuration"
+        message={`Are you sure you want to reset the configuration?\nThis action will restart the app for you.`}
+        confirmText="Yes"
+        cancelText="Cancel"
+      />
     </SafeAreaView>
   );
 }

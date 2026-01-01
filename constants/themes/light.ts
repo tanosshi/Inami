@@ -147,7 +147,6 @@ export const TYPOGRAPHY = {
 };
 
 export const ANIMATION = {
-  // "fade" | "shift" | "none"
   tabTransition: "fade" as const,
 };
 

@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NotificationProvider } from "../components/NotificationProvider";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
+import PlayerOverlay from "../components/Player";
 
 import {
   useFonts,
@@ -120,13 +121,6 @@ function RootLayoutContent() {
           >
             <Stack.Screen name="(tabs)" />
             <Stack.Screen
-              name="player"
-              options={{
-                presentation: "modal",
-                animation: "slide_from_bottom",
-              }}
-            />
-            <Stack.Screen
               name="playlist/[id]"
               options={{
                 presentation: "card",
@@ -141,6 +135,7 @@ function RootLayoutContent() {
               }}
             />
           </Stack>
+          <PlayerOverlay />
         </NotificationProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

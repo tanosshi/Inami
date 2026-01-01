@@ -11,6 +11,7 @@ import {
 import { COLORS, RADIUS, SPACING } from "../../constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { triggerHaptic } from "../../utils/haptics";
 
 const { width } = Dimensions.get("window");
 const BIG_SQUARE_SIZE = (width - SPACING.md * 3) * 0.6;
@@ -172,7 +173,7 @@ export default function DiscoverScreen() {
           {/* Big */}
           <TouchableOpacity
             style={styles.bigSquare}
-            onPress={() => handleTilePress("scroll")}
+            onPress={() => { triggerHaptic(); handleTilePress("scroll"); }}
             activeOpacity={0.8}
           >
             <Image
@@ -191,7 +192,7 @@ export default function DiscoverScreen() {
           <View style={styles.smallSquaresContainer}>
             <TouchableOpacity
               style={styles.smallSquare}
-              onPress={() => handleTilePress("new")}
+              onPress={() => { triggerHaptic(); handleTilePress("new"); }}
               activeOpacity={0.8}
             >
               <Image
@@ -207,7 +208,7 @@ export default function DiscoverScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.smallSquare}
-              onPress={() => handleTilePress("popular")}
+              onPress={() => { triggerHaptic(); handleTilePress("popular"); }}
               activeOpacity={0.8}
             >
               <Image
@@ -234,7 +235,7 @@ export default function DiscoverScreen() {
         >
           <Text style={styles.sectionTitle}>Something For You</Text>
           <TouchableOpacity
-            onPress={() => handleTilePress("refresh")}
+            onPress={() => { triggerHaptic(); handleTilePress("refresh"); }}
             activeOpacity={0.8}
           >
             <MaterialIcons

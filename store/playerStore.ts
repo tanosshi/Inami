@@ -31,6 +31,7 @@ interface PlayerState {
   repeat: "off" | "all" | "one";
   player: AudioPlayer | null;
   webAudio: HTMLAudioElement | null;
+  showPlayer: boolean;
   playSong: (song: Song) => Promise<void>;
   setQueue: (songs: Song[]) => void;
   togglePlayPause: () => Promise<void>;
@@ -41,6 +42,8 @@ interface PlayerState {
   toggleRepeat: () => void;
   updatePosition: (position: number) => void;
   stopPlayback: () => Promise<void>;
+  showPlayerOverlay: () => void;
+  hidePlayerOverlay: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -54,6 +57,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   repeat: "off",
   player: null,
   webAudio: null,
+  showPlayer: false,
 
   playSong: async (song: Song) => {
     const { player: existingPlayer, webAudio: existingWebAudio, queue } = get();
@@ -266,5 +270,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
 
     updateNotificationState();
+  },
+
+  showPlayerOverlay: () => {
+    set({ showPlayer: true });
+  },
+
+  hidePlayerOverlay: () => {
+    set({ showPlayer: false });
   },
 }));
