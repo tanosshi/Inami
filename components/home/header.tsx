@@ -114,7 +114,7 @@ export default function Header({ onSettingsPress }: HeaderProps) {
     <View style={styles.header}>
       <View>
         <Text style={styles.greeting}>{getGreeting()}</Text>
-        <Text style={styles.title}>Myoraei</Text>
+        <Text style={styles.title}>Inami</Text>
       </View>
       <SettingsButton onPress={onSettingsPress} />
     </View>

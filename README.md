@@ -1,6 +1,6 @@
-<img src="thumbnail.png" alt="Myoraei thumb" style="border-radius: 10px; margin: 10px;">
+<img src="thumbnail.png" alt="Inami thumb" style="border-radius: 10px; margin: 10px;">
 
-# Myoraei
+# Inami
 
 🚧 **Work in Progress**, in very early stage right now; everything is prone to change.
 
@@ -8,11 +8,11 @@ _The **one and only** proper music player, with all the features you need._
 
 <div align="center">
 
-[📖 Documentation](#) • [💡 Request Feature](https://github.com/tanosshi/Myoraei/issues)
+[📖 Documentation](#) • [💡 Request Feature](https://github.com/tanosshi/Inami/issues)
 
 </div>
 
-## How Myoraei will stand out from others
+## How Inami will stand out from others
 
 - Everything is customizable, from every aspect of the app including the app logo. If you do not want something, toggle it off.
 - Run fully offline, hybrid synced or fully online. It all depends on your likings.
@@ -69,6 +69,7 @@ _The **one and only** proper music player, with all the features you need._
 | Make every part easily customizable (theme.ts)      | 🔴 **Important**                  |
 | Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  |
 | Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  |
+| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  |
 | Tag cloud feature                                   | 🔴 **Finish auto fetch first**    |
 | Custom logo and app name                            | 🟡 **High**                       |
 | Music recommendations, offline version after        | 🟡 **High**                       |
@@ -95,7 +96,7 @@ _The **one and only** proper music player, with all the features you need._
 
 #### '⁉' indicates that i'll think about it after core functions are done.
 
-> It is most likely that Myoraei will weigh more than 1GB after install with all the features implemented, enabled and **cached** in app.
+> It is most likely that Inami will weigh more than 1GB after install with all the features implemented, enabled and **cached** in app.
 
 ## </div>
 
@@ -133,7 +134,7 @@ Inspired by [auxio](https://github.com/OxygenCobalt/Auxio) and [Metro](https://g
 
 ## 🗂️ License
 
-Myoraei is released under the GNU General Public License v3.0
+Inami is released under the GNU General Public License v3.0
 (GPLv3), which can be found [here](LICENSE)
 
 > I am not associated with anything you do in this app.

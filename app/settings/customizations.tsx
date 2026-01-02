@@ -148,7 +148,7 @@ export default function SettingsScreen() {
         console.warn(`Could not save theme setting ${codename}:`, error);
       }
     }
-    
+
     try {
       await saveSetting(codename, value);
       console.log(`Setting ${codename} saved successfully`);
@@ -445,7 +445,7 @@ export default function SettingsScreen() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Myoraei</Text>
+          <Text style={styles.footerText}>Inami</Text>
           <Text style={styles.footerSubtext}>made by tanos</Text>
         </View>
       </ScrollView>

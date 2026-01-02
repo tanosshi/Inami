@@ -1,6 +1,6 @@
-<img src="thumbnail.png" alt="Myoraei thumb" width="800px" style="border-radius: 10px; margin: 10px;">
+<img src="thumbnail.png" alt="Inami thumb" width="800px" style="border-radius: 10px; margin: 10px;">
 
-# Myoraei
+# Inami
 
 _This file was made incase the structure wasn't clear, or gets confusing._
 

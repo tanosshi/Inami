@@ -239,7 +239,7 @@ export default function LandingPage() {
           >
             <Triangle width={400} height={400} strokeWidth={3} />
           </Animated.View>
-          <Text style={styles.welcomeText}>Music, redefined. Myoraei</Text>
+          <Text style={styles.welcomeText}>Music, redefined. Inami</Text>
           <View style={styles.languageRow}>
             <Entypo
               name="language"

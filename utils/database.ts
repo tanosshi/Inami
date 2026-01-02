@@ -18,7 +18,7 @@ export const initDatabase = async () => {
 
   isInitializing = true;
   try {
-    db = await SQLite.openDatabaseAsync("Myoraei.db");
+    db = await SQLite.openDatabaseAsync("Inami.db");
 
     await db.execAsync("PRAGMA journal_mode=WAL;"); // Enable WAL mode for better concurrency and reduce locking issues
     await db.execAsync("PRAGMA busy_timeout=5000;"); // Set busy timeout to wait for locks to be released (5 seconds)
@@ -301,7 +301,7 @@ export const getPlaylistSongs = async (playlistId: string) => {
 };
 
 export const clearDatabase = async () => {
-  const database = await SQLite.openDatabaseAsync("Myoraei.db");
+  const database = await SQLite.openDatabaseAsync("Inami.db");
   await database.execAsync("DROP TABLE IF EXISTS songs");
   await database.execAsync("DROP TABLE IF EXISTS playlists");
   await database.execAsync("DROP TABLE IF EXISTS playlist_songs");
@@ -478,7 +478,7 @@ export const getThemeSettings = async () => {
 export const saveThemeSetting = async (settingName: string, value: boolean) => {
   try {
     const database = await getDatabaseSafe();
-    
+
     // Get existing settings to preserve other values
     const existing: any = await database.getFirstAsync(
       "SELECT theme, nav_toggle, show_nav_text_toggle FROM settings_theme WHERE id = 1"
@@ -510,7 +510,8 @@ export const saveThemeSetting = async (settingName: string, value: boolean) => {
     } else {
       // Insert new record with defaults
       const navToggleValue = settingName === "navToggle" ? (value ? 1 : 0) : 1;
-      const showNavTextToggleValue = settingName === "showNavTextToggle" ? (value ? 1 : 0) : 1;
+      const showNavTextToggleValue =
+        settingName === "showNavTextToggle" ? (value ? 1 : 0) : 1;
 
       await database.runAsync(
         `INSERT INTO settings_theme (id, theme, nav_toggle, show_nav_text_toggle) 

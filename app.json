@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Myoraei",
-    "slug": "myoraei",
+    "name": "Inami",
+    "slug": "inami",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myoraei",
+    "scheme": "inami",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "android": {
@@ -26,7 +26,7 @@
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_MEDIA_AUDIO"
       ],
-      "package": "com.tanos.Myoraei"
+      "package": "com.tanos.Inami"
     },
     "androidStatusBar": {
       "backgroundColor": "#222A34"
@@ -76,6 +76,6 @@
         "projectId": "f5749736-798f-4522-b4ad-83a1a4d1be13"
       }
     },
-    "owner": "myoraei"
+    "owner": "inami"
   }
 }

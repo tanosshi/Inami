@@ -164,7 +164,7 @@ export const CUSTOMIZATION_CONFIG = {
     ],
   },
   app: {
-    title: "Myoraei",
+    title: "Inami",
     settings: [
       {
         codename: "homescreen",

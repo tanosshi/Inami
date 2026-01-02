@@ -393,7 +393,7 @@ export default function SettingsScreen() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Myoraei</Text>
+          <Text style={styles.footerText}>Inami</Text>
           <Text style={styles.footerSubtext}>made by tanos</Text>
         </View>
       </ScrollView>
