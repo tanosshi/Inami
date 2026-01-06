@@ -36,6 +36,13 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "ios": {
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
     "plugins": [
       "expo-router",
       [
@@ -44,15 +51,6 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your music library.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save music to your library.",
           "isAccessMediaLocationEnabled": true
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/icon.png",
-          "color": "#000000",
-          "defaultChannel": "playback",
-          "sounds": []
         }
       ],
       [
@@ -65,7 +63,17 @@
         }
       ],
       "expo-asset",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -73,9 +81,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f5749736-798f-4522-b4ad-83a1a4d1be13"
+        "projectId": "09cb28b9-86b7-47af-b295-d236ff5dc870"
       }
     },
-    "owner": "inami"
   }
 }

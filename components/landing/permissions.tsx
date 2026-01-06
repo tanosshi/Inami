@@ -7,13 +7,34 @@ import {
   Alert,
   StyleSheet,
   Easing,
+  Platform,
+  PermissionsAndroid,
 } from "react-native";
 import { Octicons, MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
-import { requestNotificationPermissions } from "../../utils/notificationService";
 import { requestPermissions as requestStoragePermissions } from "../../utils/mediaScanner";
+
+// Simple notification permission request for Android 13+
+async function requestNotificationPermissions(): Promise<boolean> {
+  if (Platform.OS !== "android") return true;
+
+  if (Platform.Version >= 33) {
+    try {
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      return result === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  // rest should be automatic
+  return true;
+}
 
 type FirstProps = {
   onSkip?: () => void;

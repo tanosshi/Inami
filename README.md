@@ -41,7 +41,6 @@ _The **one and only** proper music player, with all the features you need._
 | Play MP3, FLAC, OGG and OPUS      | ✅ **Complete**                |
 | Playlist builder                  | 🟡 **Almost Complete, halted** |
 | Settings                          | 🟡 **Almost Complete**         |
-| Music notification                | 🟡 **Almost Complete**         |
 | Sync colors based on album cover  | 🟡 **Almost Complete**         |
 | Fix bugged out landing transition | 🟡 **Almost Complete**         |
 | Sleep timer                       | 🔄 **Planned**                 |

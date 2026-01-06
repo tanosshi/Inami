@@ -1,12 +1,7 @@
 import { create } from "zustand";
 import { Platform } from "react-native";
-import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from "expo-audio";
 import * as db from "../utils/database";
-import {
-  updateNotificationState,
-  initializeNotificationService,
-  setupNotificationListeners,
-} from "../utils/notificationService";
+import { getAudioPro } from "../utils/audioSetup";
 
 interface Song {
   id: string;
@@ -29,7 +24,6 @@ interface PlayerState {
   duration: number;
   shuffle: boolean;
   repeat: "off" | "all" | "one";
-  player: AudioPlayer | null;
   webAudio: HTMLAudioElement | null;
   showPlayer: boolean;
   playSong: (song: Song) => Promise<void>;
@@ -55,18 +49,15 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   duration: 0,
   shuffle: false,
   repeat: "off",
-  player: null,
   webAudio: null,
   showPlayer: false,
 
   playSong: async (song: Song) => {
-    const { player: existingPlayer, webAudio: existingWebAudio, queue } = get();
+    const { webAudio: existingWebAudio, queue } = get();
 
     if (existingWebAudio) {
       existingWebAudio.pause();
       existingWebAudio.src = "";
-    } else if (existingPlayer) {
-      existingPlayer.remove();
     }
 
     try {
@@ -94,48 +85,33 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
         set({
           webAudio: audio,
-          player: null,
           currentSong: song,
           currentIndex: index >= 0 ? index : 0,
           isPlaying: true,
         });
-
-        // Update notification
-        updateNotificationState();
       } else {
-        await setAudioModeAsync({
-          playsInSilentMode: true,
-          shouldPlayInBackground: true,
-        });
+        const AudioPro = getAudioPro();
+        if (!AudioPro) return;
 
-        const newPlayer = createAudioPlayer({ uri: song.uri });
+        const track = {
+          id: song.id,
+          url: song.uri,
+          title: song.title,
+          artist: song.artist || "Unknown Artist",
+          album: song.album || "Unknown Album",
+          artwork: song.artwork || "",
+        };
 
-        newPlayer.addListener("playbackStatusUpdate", (status) => {
-          set({
-            position: (status.currentTime || 0) * 1000,
-            duration: (status.duration || 0) * 1000,
-            isPlaying: status.playing,
-          });
-
-          if (status.didJustFinish) {
-            get().playNext();
-          }
-        });
-
-        newPlayer.play();
+        AudioPro.play(track);
 
         const index = queue.findIndex((s) => s.id === song.id);
 
         set({
-          player: newPlayer,
           webAudio: null,
           currentSong: song,
           currentIndex: index >= 0 ? index : 0,
           isPlaying: true,
         });
-
-        // Update notification
-        updateNotificationState();
       }
 
       try {
@@ -153,7 +129,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   togglePlayPause: async () => {
-    const { player, webAudio, isPlaying } = get();
+    const { webAudio, isPlaying } = get();
 
     try {
       if (Platform.OS === "web") {
@@ -163,18 +139,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         } else {
           await webAudio.play();
         }
+        set({ isPlaying: !isPlaying });
       } else {
-        if (!player) return;
-        if (isPlaying) {
-          player.pause();
-        } else {
-          player.play();
-        }
-      }
-      set({ isPlaying: !isPlaying });
+        const AudioPro = getAudioPro();
+        if (!AudioPro) return;
 
-      // Update notification
-      updateNotificationState();
+        if (isPlaying) AudioPro.pause();
+        else AudioPro.resume();
+
+        set({ isPlaying: !isPlaying });
+      }
     } catch (error) {
       console.error("Error toggling playback:", error);
     }
@@ -221,15 +195,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   seekTo: async (position: number) => {
-    const { player, webAudio } = get();
+    const { webAudio } = get();
 
     try {
       if (Platform.OS === "web") {
         if (!webAudio) return;
         webAudio.currentTime = position / 1000;
       } else {
-        if (!player) return;
-        await player.seekTo(position / 1000);
+        const AudioPro = getAudioPro();
+        if (!AudioPro) return;
+        AudioPro.seekTo(position);
       }
       set({ position });
     } catch (error) {
@@ -254,22 +229,25 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   stopPlayback: async () => {
-    const { player } = get();
+    const { webAudio } = get();
 
-    if (player) {
-      player.remove();
+    if (Platform.OS === "web") {
+      if (webAudio) {
+        webAudio.pause();
+        webAudio.src = "";
+      }
+    } else {
+      const AudioPro = getAudioPro();
+      if (AudioPro) AudioPro.clear();
     }
 
     set({
-      player: null,
       webAudio: null,
       currentSong: null,
       isPlaying: false,
       position: 0,
       duration: 0,
     });
-
-    updateNotificationState();
   },
 
   showPlayerOverlay: () => {

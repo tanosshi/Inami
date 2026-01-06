@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Platform } from "react-native";
-import {
-  initializeNotificationService,
-  setupNotificationListeners,
-} from "../utils/notificationService";
+import { setupAudio } from "../utils/audioSetup";
 
 interface NotificationProviderProps {
   children: React.ReactNode;
@@ -12,31 +9,18 @@ interface NotificationProviderProps {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   children,
 }) => {
-  const [isInitialized, setIsInitialized] = useState(false);
-
   useEffect(() => {
-    const setupNotifications = async () => {
+    const initAudio = async () => {
       try {
-        const success = await initializeNotificationService();
-        if (success) {
-          const subscription = setupNotificationListeners();
-
-          return () => {
-            subscription?.remove();
-          };
+        if (Platform.OS !== "web") {
+          await setupAudio();
         }
-        setIsInitialized(true);
       } catch (error) {
-        console.error(error);
-        setIsInitialized(true);
+        console.error("Failed to initialize audio:", error);
       }
     };
 
-    const cleanup = setupNotifications();
-
-    return () => {
-      cleanup?.then((cleanupFn) => cleanupFn?.());
-    };
+    initAudio();
   }, []);
 
   return <>{children}</>;
