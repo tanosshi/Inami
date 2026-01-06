@@ -1,9 +1,14 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import DropdownMenu from "../DropdownMenu";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import {
+  isSleepTimerActive,
+  formatRemainingTime,
+} from "../../utils/sleepTimer";
+import SleepTimerModal from "./SleepTimerModal";
 
 interface PlayerHeaderProps {
   onBackPressed: () => void;
@@ -11,6 +16,7 @@ interface PlayerHeaderProps {
 
 export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
   const themeValues = useThemeValues();
+  const [sleepTimerModalVisible, sleeptimerVisible] = useState(false);
 
   const styles = useDynamicStyles(() => ({
     header: {
@@ -84,37 +90,45 @@ export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
     },
     {
       id: "sleep-timer",
-      title: "Sleep Timer",
+      title: isSleepTimerActive()
+        ? `Sleep Timer (${formatRemainingTime()})`
+        : "Sleep Timer",
       icon: "timer",
-      onPress: () => {},
+      onPress: () => sleeptimerVisible(true),
     },
   ];
 
   return (
-    <View style={styles.header}>
-      <TouchableOpacity style={styles.headerButton} onPress={onBackPressed}>
-        <MaterialIcons
-          name="keyboard-arrow-down"
-          size={28}
-          color={themeValues.COLORS.onSurface}
+    <>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerButton} onPress={onBackPressed}>
+          <MaterialIcons
+            name="keyboard-arrow-down"
+            size={28}
+            color={themeValues.COLORS.onSurface}
+          />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerLabel}>Playing from</Text>
+          <Text style={styles.headerTitle}>Your Library</Text>
+        </View>
+        <DropdownMenu
+          trigger={
+            <View style={styles.headerButton}>
+              <MaterialIcons
+                name="more-vert"
+                size={24}
+                color={themeValues.COLORS.onSurface}
+              />
+            </View>
+          }
+          menuItems={menuItems}
         />
-      </TouchableOpacity>
-      <View style={styles.headerCenter}>
-        <Text style={styles.headerLabel}>Playing from</Text>
-        <Text style={styles.headerTitle}>Your Library</Text>
       </View>
-      <DropdownMenu
-        trigger={
-          <View style={styles.headerButton}>
-            <MaterialIcons
-              name="more-vert"
-              size={24}
-              color={themeValues.COLORS.onSurface}
-            />
-          </View>
-        }
-        menuItems={menuItems}
+      <SleepTimerModal
+        visible={sleepTimerModalVisible}
+        onClose={() => sleeptimerVisible(false)}
       />
-    </View>
+    </>
   );
 }
