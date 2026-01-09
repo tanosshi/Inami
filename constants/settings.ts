@@ -1,4 +1,25 @@
 export const SETTINGS_CONFIG = {
+  library: {
+    title: "Library",
+    settings: [
+      {
+        codename: "music_folders",
+        name: "Music Folders",
+        description: "Select folders to scan for music",
+        emoji: "folder-open",
+        type: "menu",
+        defaultValue: null,
+      },
+      {
+        codename: "clear_songs_database",
+        name: "Clear Song Database",
+        description: "Remove all songs from library",
+        emoji: "delete-sweep",
+        type: "menu",
+        defaultValue: null,
+      },
+    ],
+  },
   playback: {
     title: "Playback",
     settings: [

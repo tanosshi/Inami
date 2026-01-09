@@ -1,7 +1,7 @@
-import { Platform } from "react-native";
-import * as MediaLibrary from "expo-media-library";
+import { Platform, PermissionsAndroid } from "react-native";
 import * as db from "./database";
 import { extractMetadata } from "./metadataExtractor";
+import { scanAllMusicFolders, AudioFile } from "./folderManager";
 
 export interface AudioAsset {
   id: string;
@@ -12,107 +12,167 @@ export interface AudioAsset {
 }
 
 export const requestPermissions = async (): Promise<boolean> => {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS !== "android") return false;
 
-  const { status } = await MediaLibrary.requestPermissionsAsync();
-  return status === "granted";
+  try {
+    if (Platform.Version >= 33) {
+      const result = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
+      ]);
+      return (
+        result[PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO] ===
+        PermissionsAndroid.RESULTS.GRANTED
+      );
+    } else {
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+      );
+      return result === PermissionsAndroid.RESULTS.GRANTED;
+    }
+  } catch (error) {
+    console.error("Error requesting storage permissions:", error);
+    return false;
+  }
+};
+
+const generateSongId = (uri: string): string => {
+  let hash = 0;
+  for (let i = 0; i < uri.length; i++) {
+    const char = uri.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return `song_${Math.abs(hash).toString(16)}_${Date.now().toString(36)}`;
+};
+
+const cleanFilename = (filename: string): string => {
+  return filename
+    .replace(/\[.*?\]/g, "")
+    .replace(/\.(mp3|wav|m4a|flac|ogg|aac|wma)$/i, "")
+    .trim();
+};
+
+const CONCURRENT_BATCH_SIZE = 5;
+const processAudioFile = async (
+  audioFile: AudioFile
+): Promise<{
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  duration: number;
+  uri: string;
+  artwork: string | null;
+  is_liked: boolean;
+  palette: string[] | null;
+  play_count: number;
+} | null> => {
+  try {
+    const fileName = cleanFilename(audioFile.name);
+    let metadata;
+
+    try {
+      metadata = await extractMetadata(audioFile.uri, fileName);
+    } catch {
+      console.warn(
+        `Failed to extract metadata for ${audioFile.name}, using fallbacks.`
+      );
+      let title = fileName;
+      let artist = "Unknown Artist";
+
+      if (title.includes(" - ")) {
+        const parts = title.split(" - ");
+        if (parts.length >= 2) {
+          artist = parts[0].trim();
+          title = parts.slice(1).join(" - ").trim();
+        }
+      }
+
+      metadata = {
+        title,
+        artist,
+        album: "Unknown Album",
+        duration: 0,
+        artwork: undefined,
+        palette: undefined,
+      };
+    }
+
+    return {
+      id: generateSongId(audioFile.uri),
+      title: metadata.title,
+      artist: metadata.artist,
+      album: metadata.album,
+      duration: metadata.duration || 0,
+      uri: audioFile.uri,
+      artwork: metadata.artwork || null,
+      is_liked: false,
+      palette: metadata.palette || null,
+      play_count: 0,
+    };
+  } catch {
+    console.error(`Error processing ${audioFile.name}`);
+    return null;
+  }
+};
+
+const processBatch = async (
+  files: AudioFile[],
+  onProgress?: (current: number, total: number, totalFiles: number) => void,
+  startIndex: number = 0,
+  totalFiles: number = files.length
+): Promise<void> => {
+  const results = await Promise.all(
+    files.map(async (file, index) => {
+      const song = await processAudioFile(file);
+      if (onProgress) {
+        onProgress(startIndex + index + 1, totalFiles, totalFiles);
+      }
+      return song;
+    })
+  );
+
+  for (const song of results) {
+    if (song) {
+      try {
+        await db.addSong(song);
+      } catch (error) {
+        console.warn(`Failed to add song ${song.title}:`, error);
+      }
+    }
+  }
 };
 
 export const scanDeviceMusic = async (
   onProgress?: (current: number, total: number) => void
 ): Promise<void> => {
   try {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      throw new Error("Media library permission not granted");
+    const audioFiles = await scanAllMusicFolders();
+
+    if (audioFiles.length === 0) return;
+
+    console.log(`${audioFiles.length} audio files in folders`);
+
+    const existingSongs = await db.getAllSongs();
+    const existingUris = new Set(existingSongs.map((s) => s.uri));
+
+    const newFiles = audioFiles.filter((f) => !existingUris.has(f.uri));
+
+    if (newFiles.length === 0) {
+      if (onProgress) onProgress(audioFiles.length, audioFiles.length);
+      return;
     }
 
-    const audioAssets = await MediaLibrary.getAssetsAsync({
-      mediaType: "audio",
-      first: 1000,
-      sortBy: [MediaLibrary.SortBy.creationTime],
-    });
-
-    let allAssets = audioAssets.assets;
-    let hasNextPage = audioAssets.hasNextPage;
-    let endCursor = audioAssets.endCursor;
-
-    // Fetch all pages
-    while (hasNextPage) {
-      const nextPage = await MediaLibrary.getAssetsAsync({
-        mediaType: "audio",
-        first: 1000,
-        after: endCursor,
-        sortBy: [MediaLibrary.SortBy.creationTime],
-      });
-      allAssets = [...allAssets, ...nextPage.assets];
-      hasNextPage = nextPage.hasNextPage;
-      endCursor = nextPage.endCursor;
-    }
-
-    console.log(`Found ${allAssets.length} audio files`);
-
-    // Process and add to database
-    for (let i = 0; i < allAssets.length; i++) {
-      const asset = allAssets[i];
-
-      if (onProgress) {
-        onProgress(i + 1, allAssets.length);
-      }
-
-      const existingSong = await db.getSongById(asset.id);
-      if (existingSong) {
-        continue;
-      }
-
-      const fileName = asset.filename
-        .replace(/\[.*?\]/g, "")
-        .replace(/\.(mp3|wav|m4a|flac|ogg)$/i, "")
-        .trim();
-      let metadata;
-
-      try {
-        metadata = await extractMetadata(asset.uri, fileName);
-      } catch (error) {
-        console.warn(
-          `Failed to extract metadata for ${asset.filename}, using fallbacks. Error:`,
-          error
-        );
-        let title = fileName;
-        let artist = "Unknown Artist";
-
-        if (title.includes(" - ")) {
-          const parts = title.split(" - ");
-          if (parts.length >= 2) {
-            artist = parts[0].trim();
-            title = parts.slice(1).join(" - ").trim();
-          }
-        }
-
-        metadata = {
-          title,
-          artist,
-          album: "Unknown Album",
-          duration: asset.duration,
-          artwork: undefined,
-          palette: undefined,
-        };
-      }
-
-      const song = {
-        id: asset.id,
-        title: metadata.title,
-        artist: metadata.artist,
-        album: metadata.album,
-        duration: metadata.duration || asset.duration,
-        uri: asset.uri,
-        artwork: metadata.artwork || null,
-        is_liked: false,
-        palette: metadata.palette || null,
-        play_count: 0,
-      };
-
-      await db.addSong(song);
+    for (let i = 0; i < newFiles.length; i += CONCURRENT_BATCH_SIZE) {
+      const batch = newFiles.slice(i, i + CONCURRENT_BATCH_SIZE);
+      await processBatch(
+        batch,
+        (current) => {
+          if (onProgress) onProgress(i + current, newFiles.length);
+        },
+        i,
+        newFiles.length
+      );
     }
 
     console.log("Scan complete!");
@@ -122,6 +182,38 @@ export const scanDeviceMusic = async (
   }
 };
 
-export const refreshLibrary = async (): Promise<void> => {
-  await scanDeviceMusic();
+export const refreshLibrary = async (
+  onProgress?: (current: number, total: number) => void
+): Promise<void> => {
+  try {
+    const existingSongs = await db.getAllSongs();
+    const audioFiles = await scanAllMusicFolders();
+
+    const currentFileUris = new Set(audioFiles.map((f) => f.uri));
+    const existingUris = new Set(existingSongs.map((s) => s.uri));
+
+    const songsToRemove = existingSongs.filter(
+      (song) => !currentFileUris.has(song.uri)
+    );
+
+    for (const song of songsToRemove) await db.deleteSong(song.id);
+
+    const newFiles = audioFiles.filter((f) => !existingUris.has(f.uri));
+
+    if (newFiles.length > 0) {
+      for (let i = 0; i < newFiles.length; i += CONCURRENT_BATCH_SIZE) {
+        const batch = newFiles.slice(i, i + CONCURRENT_BATCH_SIZE);
+        await processBatch(
+          batch,
+          (current) => {
+            if (onProgress) onProgress(i + current, newFiles.length);
+          },
+          i,
+          newFiles.length
+        );
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
 };

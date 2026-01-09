@@ -43,7 +43,6 @@ _The **one and only** proper music player, with all the features you need._
 | Settings                          | 🟡 **Almost Complete**         |
 | Sync colors based on album cover  | 🟡 **Almost Complete**         |
 | Fix bugged out landing transition | 🟡 **Almost Complete**         |
-| Sleep timer                       | 🔄 **Planned**                 |
 | Music visualizer                  | 🔄 **Planned**                 |
 | Font changer                      | 🔄 **Planned**                 |
 | Wallpaper accent color            | 🔄 **Planned**                 |
@@ -75,6 +74,7 @@ _The **one and only** proper music player, with all the features you need._
 | Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       |
 | Gapless playback                                    | 🟡 **High**                       |
 | (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       |
+| Music energy score of the day                       | 🟡 **High**                       |
 | Volume normalizing                                  | 🟡 **High**                       |
 | Smart playlists                                     | 🟢 **Low**                        |
 | Integration with Last.fm                            | 🟢 **Low**                        |

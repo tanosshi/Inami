@@ -57,6 +57,14 @@ export const initDatabase = async () => {
         FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS music_folders (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        uri TEXT NOT NULL,
+        is_enabled INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS settings_theme (
         id INTEGER PRIMARY KEY DEFAULT 1,
         theme TEXT NOT NULL DEFAULT 'Black',
@@ -75,6 +83,7 @@ export const initDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_songs_liked ON songs(is_liked);
       CREATE INDEX IF NOT EXISTS idx_songs_play_count ON songs(play_count DESC);
       CREATE INDEX IF NOT EXISTS idx_playlist_songs ON playlist_songs(playlist_id, position);
+      CREATE INDEX IF NOT EXISTS idx_music_folders_enabled ON music_folders(is_enabled);
     `);
   } finally {
     isInitializing = false;
@@ -307,6 +316,12 @@ export const clearDatabase = async () => {
   await database.execAsync("DROP TABLE IF EXISTS playlist_songs");
 };
 
+export const clearSongsDatabase = async () => {
+  const database = await SQLite.openDatabaseAsync("Inami.db");
+  await database.execAsync("DELETE FROM songs");
+  await database.execAsync("DELETE FROM playlist_songs");
+};
+
 export const addSongToPlaylist = async (
   playlistId: string,
   songId: string,
@@ -412,13 +427,13 @@ export const saveThemeSettings = async (
   const database = await getDatabaseSafe();
 
   const existing: any = await database.getFirstAsync(
-    "SELECT id, nav_toggle, show_nav_text_toggle FROM settings_theme WHERE id = 1"
+    "SELECT id, theme, nav_toggle, show_nav_text_toggle FROM settings_theme WHERE id = 1"
   );
 
   const isBool = (v: any) => typeof v === "boolean";
+  const isValidTheme = (v: any) => typeof v === "string" && v.length > 0;
 
-  if (!isBool(theme) || theme === undefined || theme === null)
-    theme = existing ? existing.theme : "Black";
+  const themeValue = isValidTheme(theme) ? theme : existing?.theme ?? "Black";
 
   if (existing) {
     const navToggleValue = isBool(navToggle)
@@ -435,7 +450,7 @@ export const saveThemeSettings = async (
       `UPDATE settings_theme 
        SET theme = ?, nav_toggle = ?, show_nav_text_toggle = ?, updated_at = CURRENT_TIMESTAMP 
        WHERE id = 1`,
-      [theme, navToggleValue, showNavTextToggleValue]
+      [themeValue, navToggleValue, showNavTextToggleValue]
     );
   } else {
     const navToggleValue = isBool(navToggle) ? (navToggle ? 1 : 0) : 1;
@@ -447,7 +462,7 @@ export const saveThemeSettings = async (
     await database.runAsync(
       `INSERT INTO settings_theme (id, theme, nav_toggle, show_nav_text_toggle) 
        VALUES (1, ?, ?, ?)`,
-      [theme, navToggleValue, showNavTextToggleValue]
+      [themeValue, navToggleValue, showNavTextToggleValue]
     );
   }
 };
@@ -621,5 +636,109 @@ export const getAllSettings = async (): Promise<Record<string, boolean>> => {
   } catch (error) {
     console.warn("Could not fetch all settings:", error);
     return {};
+  }
+};
+
+export interface MusicFolder {
+  id: string;
+  name: string;
+  uri: string;
+  is_enabled: boolean;
+  created_at: string;
+}
+
+export const getAllMusicFolders = async (): Promise<MusicFolder[]> => {
+  try {
+    const database = await getDatabaseSafe();
+    const folders: any[] = await database.getAllAsync(
+      "SELECT * FROM music_folders ORDER BY created_at DESC"
+    );
+    return folders.map((folder) => ({
+      ...folder,
+      is_enabled: folder.is_enabled === 1,
+    }));
+  } catch (error) {
+    console.warn("Fetch error:", error);
+    return [];
+  }
+};
+
+export const getEnabledMusicFolders = async (): Promise<MusicFolder[]> => {
+  try {
+    const database = await getDatabaseSafe();
+    const folders: any[] = await database.getAllAsync(
+      "SELECT * FROM music_folders WHERE is_enabled = 1 ORDER BY created_at DESC"
+    );
+    return folders.map((folder) => ({
+      ...folder,
+      is_enabled: true,
+    }));
+  } catch (error) {
+    console.warn("Fetch error:", error);
+    return [];
+  }
+};
+
+export const addMusicFolder = async (folder: {
+  id: string;
+  name: string;
+  uri: string;
+}): Promise<void> => {
+  try {
+    const database = await getDatabaseSafe();
+    await database.runAsync(
+      `INSERT OR REPLACE INTO music_folders (id, name, uri, is_enabled) 
+       VALUES (?, ?, ?, 1)`,
+      [folder.id, folder.name, folder.uri]
+    );
+  } catch (error) {
+    console.warn("Add error:", error);
+    throw error;
+  }
+};
+
+export const removeMusicFolder = async (id: string): Promise<void> => {
+  try {
+    const database = await getDatabaseSafe();
+    await database.runAsync("DELETE FROM music_folders WHERE id = ?", [id]);
+  } catch (error) {
+    console.warn("Remove error:", error);
+    throw error;
+  }
+};
+
+export const toggleMusicFolder = async (
+  id: string,
+  isEnabled: boolean
+): Promise<void> => {
+  try {
+    const database = await getDatabaseSafe();
+    await database.runAsync(
+      "UPDATE music_folders SET is_enabled = ? WHERE id = ?",
+      [isEnabled ? 1 : 0, id]
+    );
+  } catch (error) {
+    console.warn("Toggle error:", error);
+    throw error;
+  }
+};
+
+export const getMusicFolderByUri = async (
+  uri: string
+): Promise<MusicFolder | null> => {
+  try {
+    const database = await getDatabaseSafe();
+    const folder: any = await database.getFirstAsync(
+      "SELECT * FROM music_folders WHERE uri = ?",
+      [uri]
+    );
+    if (!folder) return null;
+    return {
+      ...folder,
+      is_enabled: folder.is_enabled === 1,
+    };
+  } catch (error) {
+    console.warn("Fetch error:", error);
+    return null;
   }
 };

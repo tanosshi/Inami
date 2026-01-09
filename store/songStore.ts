@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { File } from "expo-file-system/next";
 import * as db from "../utils/database";
 
 interface Song {
@@ -58,10 +59,58 @@ export const useSongStore = create<SongState>((set, get) => ({
       set({ initialized: true });
 
       await get().fetchSongs();
+
+      const songs = get().songs;
+      const invalidSongs: { id: string; title: string; reason: string }[] = [];
+
+      console.log(`Checking ${songs.length} songs...`);
+
+      for (const song of songs) {
+        if (
+          !song.uri.startsWith("file://") &&
+          song.uri.startsWith("content://")
+        )
+          continue;
+
+        try {
+          const file = new File(song.uri);
+          const exists = file.exists;
+          if (!exists) {
+            invalidSongs.push({
+              id: song.id,
+              title: song.title,
+              reason: `Audio file not found at: ${song.uri}`,
+            });
+          }
+        } catch (error: any) {
+          const errorMessage = error?.message?.toLowerCase() || "";
+          if (
+            errorMessage.includes("no such file") ||
+            errorMessage.includes("not found") ||
+            errorMessage.includes("enoent") ||
+            errorMessage.includes("does not exist")
+          ) {
+            invalidSongs.push({
+              id: song.id,
+              title: song.title,
+              reason: `File access error: ${error.message}`,
+            });
+          }
+        }
+      }
+
+      if (invalidSongs.length > 0) {
+        for (const { id, title, reason } of invalidSongs) {
+          console.log(`Removing "${title}" (${id}) - ${reason}`);
+          await db.deleteSong(id);
+        }
+        await get().fetchSongs();
+      }
+
       await get().fetchLikedSongs();
       await get().fetchStats();
     } catch (error: any) {
-      console.error("Failed to initialize store:", error);
+      console.error(error);
       set({ error: error.message });
     }
   },

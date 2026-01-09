@@ -1,4 +1,5 @@
 import { File, Paths, Directory } from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { parseBuffer } from "music-metadata-browser";
 import ImageColors from "react-native-image-colors";
 
@@ -40,6 +41,59 @@ async function saveArtwork(
   return artworkFile.uri;
 }
 
+const isSafUri = (uri: string): boolean => {
+  return uri.startsWith("content://");
+};
+
+const MAX_FILE_SIZE_FOR_METADATA = 50 * 1024 * 1024;
+
+async function getFileSizeForSafUri(uri: string): Promise<number | null> {
+  try {
+    const info = await FileSystem.getInfoAsync(uri, { size: true });
+    if (info.exists && "size" in info) return info.size;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function readFileAsBuffer(uri: string): Promise<Uint8Array> {
+  if (isSafUri(uri)) {
+    const fileSize = await getFileSizeForSafUri(uri);
+    if (fileSize && fileSize > MAX_FILE_SIZE_FOR_METADATA) {
+      throw new Error(
+        `File too large for metadata extraction: ${Math.round(
+          fileSize / 1024 / 1024
+        )}MB`
+      );
+    }
+    const content = await FileSystem.StorageAccessFramework.readAsStringAsync(
+      uri,
+      { encoding: FileSystem.EncodingType.Base64 }
+    );
+
+    const binaryString = atob(content);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++)
+      bytes[i] = binaryString.charCodeAt(i);
+    return bytes;
+  } else {
+    const sourceFile = new File(uri);
+    const isInCache = uri.includes("/cache/") || uri.includes("/Cache/");
+    let fileToRead: File;
+
+    if (isInCache && sourceFile.exists) fileToRead = sourceFile;
+    else {
+      const cachedFile = new File(Paths.cache, sourceFile.name);
+      sourceFile.copy(cachedFile);
+      fileToRead = cachedFile;
+    }
+
+    const arrayBuffer = await fileToRead.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+  }
+}
+
 export const extractMetadata = async (
   uri: string,
   fallbackTitle?: string
@@ -53,30 +107,18 @@ export const extractMetadata = async (
   };
 
   try {
-    const sourceFile = new File(uri);
+    const buffer = await readFileAsBuffer(uri);
+    const mimeType = getMimeType(uri);
+    const metadata = await parseBuffer(buffer, mimeType);
 
-    const isInCache = uri.includes("/cache/") || uri.includes("/Cache/");
-    let fileToRead: File;
-
-    if (isInCache && sourceFile.exists) {
-      fileToRead = sourceFile;
-    } else {
-      const cachedFile = new File(Paths.cache, sourceFile.name);
-      sourceFile.copy(cachedFile);
-      fileToRead = cachedFile;
-    }
-
-    const arrayBuffer = await fileToRead.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
-    const metadata = await parseBuffer(buffer, getMimeType(fileToRead.uri));
+    const songName =
+      safeString(metadata.common.title) ||
+      safeString(fallbackTitle) ||
+      extractFilenameFromUri(uri);
 
     let artworkUri: string | undefined;
     if (metadata.common.picture?.[0]) {
       const picture = metadata.common.picture[0];
-      const songName =
-        safeString(metadata.common.title) ||
-        safeString(fallbackTitle) ||
-        safeString(sourceFile.name);
       artworkUri = await saveArtwork(
         new Uint8Array(picture.data),
         picture.format,
@@ -129,6 +171,31 @@ export const extractMetadata = async (
     return defaultMetadata;
   }
 };
+
+function extractFilenameFromUri(uri: string): string {
+  try {
+    const decoded = decodeURIComponent(uri);
+
+    if (isSafUri(uri)) {
+      const parts = decoded.split("/");
+      const lastPart = parts[parts.length - 1];
+
+      if (lastPart.includes(":")) {
+        const pathPart = lastPart.split(":").pop();
+        if (pathPart) {
+          const segments = pathPart.split("/");
+          return segments[segments.length - 1] || pathPart;
+        }
+      }
+      return lastPart;
+    } else {
+      const parts = decoded.split("/");
+      return parts[parts.length - 1] || "unknown";
+    }
+  } catch {
+    return "unknown";
+  }
+}
 
 function getMimeType(uri: string): string {
   const extension = uri.split(".").pop()?.toLowerCase();

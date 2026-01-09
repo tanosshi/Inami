@@ -82,14 +82,14 @@ function RootLayoutContent() {
           getAllSettings(),
         ]);
 
-        console.log("[Database] Settings:", JSON.stringify(settings, null, 2));
+        /* console.log("[Database] Settings:", JSON.stringify(settings, null, 2));
         console.log("[Database] Theme:", JSON.stringify(theme, null, 2));
         console.log("[Database] Stats:", JSON.stringify(stats, null, 2));
         console.log("[Database] Songs:", JSON.stringify(songs, null, 2));
         console.log(
           "[Database] Playlists:",
           JSON.stringify(playlists, null, 2)
-        );
+        );*/
       } catch (e) {
         console.warn("[Database] Could not log database:", e);
       }

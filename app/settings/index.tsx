@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Switch,
   ViewStyle,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -14,11 +15,19 @@ import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { SETTINGS_CONFIG } from "../../constants/settings";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { triggerHaptic } from "@/utils/haptics";
-import { getAllSettings, saveSetting } from "../../utils/database";
+import {
+  getAllSettings,
+  saveSetting,
+  getAllMusicFolders,
+  clearSongsDatabase,
+} from "../../utils/database";
 import * as FileSystem from "expo-file-system/legacy";
+import SelectFolder from "../../components/settings/selectFolder";
 
 export default function SettingsScreen() {
   const [cacheSize, setCacheSize] = React.useState<number | null>(null);
+  const [folderModalVisible, setFolderModalVisible] = React.useState(false);
+  const [folderCount, setFolderCount] = React.useState(0);
 
   const getDirectorySize = async (dirUri: string): Promise<number> => {
     let total = 0;
@@ -59,6 +68,20 @@ export default function SettingsScreen() {
     loadCacheSize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadFolderCount = React.useCallback(async () => {
+    try {
+      const folders = await getAllMusicFolders();
+      setFolderCount(folders.filter((f) => f.is_enabled).length);
+    } catch {
+      setFolderCount(0);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadFolderCount();
+  }, [loadFolderCount]);
+
   const router = useRouter();
   const themeValues = useThemeValues();
   const [versionTapCount, setVersionTapCount] = React.useState(0);
@@ -211,6 +234,31 @@ export default function SettingsScreen() {
     console.log(`Setting pressed: ${codename} (type: ${type})`);
 
     switch (codename) {
+      case "music_folders":
+        setFolderModalVisible(true);
+        break;
+      case "clear_songs_database":
+        Alert.alert(
+          "Clear Song Database",
+          "This will remove all songs from your library. Your music files will not be deleted. Are you sure?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Clear",
+              style: "destructive",
+              onPress: async () => {
+                try {
+                  await clearSongsDatabase();
+                  Alert.alert("Success", "Song database has been cleared.");
+                } catch (error) {
+                  console.error("Error clearing database:", error);
+                  Alert.alert("Error", "Failed to clear song database.");
+                }
+              },
+            },
+          ]
+        );
+        break;
       case "version":
         VersionTap();
         break;
@@ -297,6 +345,11 @@ export default function SettingsScreen() {
         const mb = cacheSize / (1024 * 1024);
         shownDescription = `${mb.toFixed(1)} MB used`;
       }
+    } else if (codename === "music_folders") {
+      shownDescription =
+        folderCount > 0
+          ? `${folderCount} folder${folderCount !== 1 ? "s" : ""} selected`
+          : "Select folders to scan for music";
     }
 
     const ItemComponent = isClickable ? TouchableOpacity : View;
@@ -397,6 +450,13 @@ export default function SettingsScreen() {
           <Text style={styles.footerSubtext}>made by tanos</Text>
         </View>
       </ScrollView>
+      <SelectFolder
+        visible={folderModalVisible}
+        onClose={() => {
+          setFolderModalVisible(false);
+          loadFolderCount();
+        }}
+      />
     </SafeAreaView>
   );
 }

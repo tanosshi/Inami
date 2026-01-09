@@ -146,10 +146,13 @@ export default function SongCard({
       {/* Song Info */}
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>
-          {safeString(song.title)}
+          {safeString(song.title) || "Unknown Title"}
         </Text>
         <Text style={styles.subtitle} numberOfLines={1}>
-          {safeString(song.artist)} {song.album !== "Unknown Album" && `• ${safeString(song.album)}`}
+          {safeString(song.artist) || "Unknown Artist"}
+          {song.album && song.album !== "Unknown Album"
+            ? ` • ${safeString(song.album)}`
+            : ""}
         </Text>
       </View>
 
@@ -161,7 +164,13 @@ export default function SongCard({
           )}
         {/* probably plans to replace like with the 3 dots */}
         {showOptions && (
-          <TouchableOpacity style={styles.likeButton} onPress={() => { triggerHaptic(); handleLike(); }}>
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={() => {
+              triggerHaptic();
+              handleLike();
+            }}
+          >
             <MaterialIcons
               name={song.is_liked ? "favorite" : "favorite-border"}
               size={22}
