@@ -8,7 +8,7 @@ export const COLORS = {
 
   primary: "#f9a825",
   primaryContainer: "#fae8b0ff",
-  onPrimary: "#595a48ff",
+  onPrimary: "#82836dff",
   onPrimaryContainer: "#4a3600",
 
   secondary: "#6b5f3d",

@@ -5,6 +5,7 @@ import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 import FirstLandingPage from "./permissions";
 import SecondLandingPage from "./pickFeatures";
 import ThirdLandingPage from "./nowForYou";
+import FourthLandingPage from "./musicFolders";
 
 type TransitionProps = {
   onTransitionComplete?: () => void;
@@ -17,13 +18,14 @@ const getPageFromHash = (hash: string): number | null => {
     permissions: 0,
     pickfeatures: 1,
     nowforyou: 2,
+    musicfolders: 3,
   };
   const hashName = hash.replace("#", "").toLowerCase().trim();
   const page = hashMap[hashName];
   return page ?? null;
 };
 
-const TOTAL_PAGES = 3;
+const TOTAL_PAGES = 4;
 
 export default function LandingTransition(props: TransitionProps) {
   const { onTransitionComplete, initialPage = 0 } = props;
@@ -127,6 +129,9 @@ export default function LandingTransition(props: TransitionProps) {
         </View>
         <View style={styles.pageWrapper}>
           <ThirdLandingPage onLikeThis={goToNext} />
+        </View>
+        <View style={styles.pageWrapper}>
+          <FourthLandingPage onComplete={goToNext} />
         </View>
       </Animated.View>
     );

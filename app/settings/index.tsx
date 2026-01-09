@@ -132,11 +132,12 @@ export default function SettingsScreen() {
       paddingHorizontal: SPACING.md,
     },
     card: {
-      backgroundColor: COLORS.surfaceContainerHigh,
+      backgroundColor: `${COLORS.surfaceContainer}4D`,
       borderRadius: RADIUS.xl,
       overflow: "hidden" as ViewStyle["overflow"],
     },
     settingItem: {
+      opacity: 0.9,
       flexDirection: "row" as ViewStyle["flexDirection"],
       alignItems: "center" as ViewStyle["alignItems"],
       padding: SPACING.md,
@@ -166,7 +167,7 @@ export default function SettingsScreen() {
       marginTop: 2,
     },
     divider: {
-      height: 1,
+      height: 0,
       backgroundColor: COLORS.outlineVariant,
       marginLeft: 72,
     },

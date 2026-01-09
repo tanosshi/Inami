@@ -12,11 +12,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import * as FileSystem from "expo-file-system/legacy";
 import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
-import SongCard from "../../components/SongCard";
+import SongCard from "../SongCard";
 import {
   COLORS,
   RADIUS,
@@ -28,15 +27,10 @@ import { extractMetadata } from "../../utils/metadataExtractor";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { triggerHaptic } from "../../utils/haptics";
 
-import {
-  isAudioFile,
-  sanitizeFileName,
-  scanDirectoryForAudio,
-} from "../../components/songs/helpers";
-import { FolderScanModal, ImportUrlModal } from "../../components/songs/modals";
+import { sanitizeFileName, scanDirectoryForAudio } from "../songs/helpers";
+import { FolderScanModal, ImportUrlModal } from "../songs/modals";
 
-export default function SongsScreen() {
-  const router = useRouter();
+export default function songs() {
   const themeValues = useThemeValues();
   const { songs, fetchSongs, addSong, importFromURL } = useSongStore();
   const { playSong, setQueue, currentSong, showPlayerOverlay } =
@@ -59,34 +53,34 @@ export default function SongsScreen() {
       backgroundColor: COLORS.background,
     },
     header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.md,
     },
     headerLeft: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       gap: SPACING.sm,
     },
     searchButton: {
       width: 40,
       height: 40,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     title: {
       fontFamily: "Inter_600SemiBold",
       ...TYPOGRAPHY.headlineLarge,
-      fontWeight: "100",
+      fontWeight: "100" as const,
       color: COLORS.onSurface,
       marginTop: 12,
       marginLeft: 27,
       marginBottom: 17,
     },
     headerActions: {
-      flexDirection: "row",
+      flexDirection: "row" as const,
       gap: SPACING.xs,
     },
     iconButton: {
@@ -94,15 +88,15 @@ export default function SongsScreen() {
       height: 48,
       borderRadius: RADIUS.full,
       backgroundColor: COLORS.surfaceContainerHigh,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     searchWrapper: {
-      overflow: "hidden",
+      overflow: "hidden" as const,
     },
     searchContainer: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       backgroundColor: COLORS.surfaceContainerHigh,
       marginHorizontal: SPACING.md,
       marginBottom: SPACING.sm,
@@ -122,7 +116,7 @@ export default function SongsScreen() {
       ...TYPOGRAPHY.labelLarge,
       color: COLORS.onSurfaceVariant,
       paddingHorizontal: SPACING.md,
-      display: "none",
+      display: "none" as const,
       paddingVertical: SPACING.md,
     },
     listContent: {
@@ -130,8 +124,8 @@ export default function SongsScreen() {
       paddingBottom: 140,
     },
     emptyState: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
       paddingVertical: 80,
     },
     emptyTitle: {
@@ -145,18 +139,18 @@ export default function SongsScreen() {
       ...TYPOGRAPHY.bodyMedium,
       color: COLORS.onSurfaceVariant,
       marginTop: SPACING.sm,
-      textAlign: "center",
+      textAlign: "center" as const,
     },
     shuffleButton: {
-      position: "absolute",
+      position: "absolute" as const,
       bottom: 22,
       right: SPACING.lg,
       width: 56,
       height: 56,
       borderRadius: RADIUS.lg,
       backgroundColor: COLORS.primary,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
       elevation: 6,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 3 },
@@ -355,7 +349,7 @@ export default function SongsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
@@ -376,7 +370,7 @@ export default function SongsScreen() {
           style={[
             styles.iconButton,
             {
-              flexDirection: "row",
+              flexDirection: "row" as const,
               borderRadius: RADIUS.xxl,
               paddingHorizontal: SPACING.md,
               width: "auto",
@@ -471,6 +465,7 @@ export default function SongsScreen() {
       <FlatList
         data={filteredSongs}
         keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => (
           <SongCard
             song={item}

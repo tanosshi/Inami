@@ -47,7 +47,7 @@ const handleTilePress = (tileType: string) => {
   // todo
 };
 
-export default function DiscoverScreen() {
+export default function discover() {
   const themeValues = useThemeValues();
 
   const styles = useDynamicStyles(() => ({
@@ -59,12 +59,12 @@ export default function DiscoverScreen() {
     header: {
       color: COLORS.onSurface,
       fontSize: 32,
-      fontWeight: "bold",
+      fontWeight: "bold" as const,
       marginTop: SPACING.md,
       marginBottom: SPACING.lg,
     },
     featuredContainer: {
-      flexDirection: "row",
+      flexDirection: "row" as const,
       gap: SPACING.sm,
       marginBottom: SPACING.lg,
     },
@@ -73,9 +73,9 @@ export default function DiscoverScreen() {
       height: BIG_SQUARE_SIZE,
       backgroundColor: COLORS.surfaceContainerHighest,
       borderRadius: 16,
-      justifyContent: "center",
-      alignItems: "center",
-      overflow: "hidden",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      overflow: "hidden" as const,
     },
     smallSquaresContainer: {
       flex: 1,
@@ -85,46 +85,50 @@ export default function DiscoverScreen() {
       flex: 1,
       backgroundColor: COLORS.surfaceContainerHighest,
       borderRadius: 12,
-      justifyContent: "center",
-      alignItems: "center",
-      overflow: "hidden",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      overflow: "hidden" as const,
     },
     tileImage: {
-      position: "absolute",
+      position: "absolute" as const,
       top: 0,
       left: 0,
-      width: "100%",
-      height: "100%",
+      width: "100%" as const,
+      height: "100%" as const,
     },
     tileOverlay: {
       backgroundColor: "rgba(0, 0, 0, 0.5)",
       paddingHorizontal: SPACING.sm,
       paddingVertical: SPACING.xs,
       borderRadius: RADIUS.sm,
-      position: "absolute",
+      position: "absolute" as const,
       bottom: SPACING.sm,
       left: SPACING.sm,
     },
     squareText: {
-      color: COLORS.onSurface,
+      color: COLORS.primary,
+      filter: "brightness(500%)",
+      opacity: 0.8,
       fontSize: 20,
-      fontWeight: "600",
+      fontWeight: "600" as const,
     },
     squareTextSmall: {
-      color: COLORS.onSurface,
+      color: COLORS.primary,
+      filter: "brightness(500%)",
+      opacity: 0.8,
       fontSize: 16,
-      fontWeight: "600",
+      fontWeight: "600" as const,
     },
     sectionTitle: {
       color: COLORS.onSurface,
       fontSize: 22,
-      fontWeight: "bold",
+      fontWeight: "bold" as const,
       marginTop: SPACING.md,
       marginBottom: SPACING.md,
     },
     fyRow: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       backgroundColor: COLORS.surfaceContainer,
       borderRadius: 12,
       padding: SPACING.sm,
@@ -143,7 +147,7 @@ export default function DiscoverScreen() {
     fyTitle: {
       color: COLORS.onSurface,
       fontSize: 16,
-      fontWeight: "600",
+      fontWeight: "600" as const,
       marginBottom: 4,
     },
     fyArtist: {
@@ -153,7 +157,7 @@ export default function DiscoverScreen() {
   }));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <Text style={styles.header}>Discover</Text>
@@ -173,7 +177,10 @@ export default function DiscoverScreen() {
           {/* Big */}
           <TouchableOpacity
             style={styles.bigSquare}
-            onPress={() => { triggerHaptic(); handleTilePress("scroll"); }}
+            onPress={() => {
+              triggerHaptic();
+              handleTilePress("scroll");
+            }}
             activeOpacity={0.8}
           >
             <Image
@@ -192,7 +199,10 @@ export default function DiscoverScreen() {
           <View style={styles.smallSquaresContainer}>
             <TouchableOpacity
               style={styles.smallSquare}
-              onPress={() => { triggerHaptic(); handleTilePress("new"); }}
+              onPress={() => {
+                triggerHaptic();
+                handleTilePress("new");
+              }}
               activeOpacity={0.8}
             >
               <Image
@@ -208,7 +218,10 @@ export default function DiscoverScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.smallSquare}
-              onPress={() => { triggerHaptic(); handleTilePress("popular"); }}
+              onPress={() => {
+                triggerHaptic();
+                handleTilePress("popular");
+              }}
               activeOpacity={0.8}
             >
               <Image
@@ -235,7 +248,10 @@ export default function DiscoverScreen() {
         >
           <Text style={styles.sectionTitle}>Something For You</Text>
           <TouchableOpacity
-            onPress={() => { triggerHaptic(); handleTilePress("refresh"); }}
+            onPress={() => {
+              triggerHaptic();
+              handleTilePress("refresh");
+            }}
             activeOpacity={0.8}
           >
             <MaterialIcons

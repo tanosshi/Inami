@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
 import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
-import Home from "../../components/Home";
+import Home from "../Home";
 
-export default function HomeScreen() {
-  const router = useRouter();
+export default function home() {
   const {
     songs,
     likedSongs,

@@ -76,7 +76,7 @@ function SettingsScreen({
       paddingHorizontal: SPACING.md,
     },
     card: {
-      backgroundColor: COLORS.surfaceContainerHigh,
+      backgroundColor: `${COLORS.surfaceContainer}4D`,
       borderRadius: RADIUS.xl,
       overflow: "hidden" as const,
     },
@@ -184,6 +184,27 @@ function SettingsScreen({
     loadSettings();
   }, [config]);
 
+  const getOverrideCodename = (): string | null => {
+    for (const section of Object.values(config)) {
+      const settingsArray = Array.isArray((section as any).settings)
+        ? (section as any).settings
+        : Array.isArray((section as any).data)
+        ? (section as any).data
+        : [];
+      for (const setting of settingsArray) {
+        if (setting.overrides === true) {
+          return setting.codename;
+        }
+      }
+    }
+    return null;
+  };
+
+  const overrideCodename = getOverrideCodename();
+  const isOverrideEnabled = overrideCodename
+    ? settingsState[overrideCodename] ?? false
+    : true;
+
   const handleSettingPress = (codename: string, type: string) => {
     triggerHaptic();
     console.log(`Setting pressed: ${codename} (type: ${type})`);
@@ -212,17 +233,23 @@ function SettingsScreen({
     index: number,
     isLast: boolean
   ) => {
-    const { codename, name, description, emoji, type, customEmoji } = setting;
+    const { codename, name, description, emoji, type, customEmoji, overrides } =
+      setting;
 
     const isToggle = type === "toggle";
     const hasRightArrow = type === "menu" || type === "action";
 
     const isClickable = type === "menu" || type === "action";
 
-    const ItemComponent = isClickable ? TouchableOpacity : View;
-    const itemProps = isClickable
-      ? { onPress: () => handleSettingPress(codename, type) }
-      : {};
+    const isOverrideSetting = overrides === true;
+    const isDisabled =
+      !isOverrideSetting && overrideCodename && !isOverrideEnabled;
+
+    const ItemComponent = isClickable && !isDisabled ? TouchableOpacity : View;
+    const itemProps =
+      isClickable && !isDisabled
+        ? { onPress: () => handleSettingPress(codename, type) }
+        : {};
 
     let EmojiIcon = MaterialIcons;
     let emojiName = emoji;
@@ -231,14 +258,40 @@ function SettingsScreen({
     }
     return (
       <React.Fragment key={codename}>
-        <ItemComponent style={styles.settingItem} {...itemProps}>
-          <View style={styles.settingIcon}>
-            <EmojiIcon name={emojiName} size={24} color={COLORS.primary} />
+        <ItemComponent
+          style={[styles.settingItem, isDisabled && { opacity: 0.4 }]}
+          {...itemProps}
+        >
+          <View
+            style={[
+              styles.settingIcon,
+              isDisabled && { backgroundColor: COLORS.surfaceVariant },
+            ]}
+          >
+            <EmojiIcon
+              name={emojiName}
+              size={24}
+              color={isDisabled ? COLORS.outline : COLORS.primary}
+            />
           </View>
           <View style={styles.settingContent}>
-            <Text style={styles.settingLabel}>{name}</Text>
+            <Text
+              style={[
+                styles.settingLabel,
+                isDisabled && { color: COLORS.outline },
+              ]}
+            >
+              {name}
+            </Text>
             {description && (
-              <Text style={styles.settingDescription}>{description}</Text>
+              <Text
+                style={[
+                  styles.settingDescription,
+                  isDisabled && { color: COLORS.outline },
+                ]}
+              >
+                {description}
+              </Text>
             )}
           </View>
           {isToggle && (
@@ -252,14 +305,14 @@ function SettingsScreen({
               thumbColor={
                 settingsState[codename] ? COLORS.primary : COLORS.outline
               }
-              disabled={isLoading}
+              disabled={isLoading || isDisabled}
             />
           )}
           {hasRightArrow && (
             <MaterialIcons
               name="chevron-right"
               size={24}
-              color={COLORS.onSurfaceVariant}
+              color={isDisabled ? COLORS.outline : COLORS.onSurfaceVariant}
             />
           )}
         </ItemComponent>

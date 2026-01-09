@@ -34,7 +34,7 @@ export default function EmptyState() {
         size={64}
         color={themeValues.COLORS.onSurfaceVariant}
       />
-      <Text style={styles.emptyTitle}>No music yet</Text>
+      <Text style={styles.emptyTitle}>No data yet</Text>
       <Text style={styles.emptyText}>Go to Songs tab to add music</Text>
     </View>
   );

@@ -1,27 +1,54 @@
-import React, { useRef, useEffect, useMemo, useState } from "react";
-import { Tabs } from "expo-router";
-import { View, StyleSheet, Animated, Text, Platform } from "react-native";
+import React, {
+  useRef,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
+import {
+  View,
+  StyleSheet,
+  Animated,
+  Text,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import MiniPlayer from "../../components/MiniPlayer";
 import { usePlayerStore } from "../../store/playerStore";
-import { COLORS, RADIUS, ANIMATION, TAB_CONFIG } from "../../constants/theme";
+import { useTabStore } from "../../store/tabStore";
+import { COLORS, RADIUS, TAB_CONFIG } from "../../constants/theme";
 import { getThemeSettings } from "../../utils/database";
+import SwipeableTabs, {
+  SwipeableTabsRef,
+} from "../../components/SwipeableTabs";
+
+import { Home, Songs, Playlists, Discover } from "../../components/tabs";
 
 const AnimatedTabIcon = ({
   name,
   color,
   focused,
   previousFocused,
+  dragProgress,
+  isNextTab,
+  isPrevTab,
 }: {
   name: keyof typeof MaterialIcons.glyphMap;
   color: string;
   focused: boolean;
   previousFocused: React.MutableRefObject<boolean>;
+  dragProgress: number;
+  isNextTab: boolean;
+  isPrevTab: boolean;
 }) => {
   const scale = useRef(new Animated.Value(focused ? 1 : 0.85)).current;
   const opacity = useRef(new Animated.Value(focused ? 1 : 0.7)).current;
   const translateY = useRef(new Animated.Value(0)).current;
   const bgOpacity = useRef(new Animated.Value(focused ? 1 : 0)).current;
+
+  const pillScaleX = useRef(new Animated.Value(1)).current;
+  const pillTranslateX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const wasNotFocused = !previousFocused.current;
@@ -83,6 +110,31 @@ const AnimatedTabIcon = ({
     previousFocused.current = focused;
   }, [focused, bgOpacity, opacity, scale, translateY, previousFocused]);
 
+  useEffect(() => {
+    if (focused && dragProgress !== 0) {
+      const stretchAmount = 1 + Math.abs(dragProgress) * 0.4;
+      const translateAmount = -dragProgress * 8;
+
+      pillScaleX.setValue(stretchAmount);
+      pillTranslateX.setValue(translateAmount);
+    } else if (focused) {
+      Animated.parallel([
+        Animated.spring(pillScaleX, {
+          toValue: 1,
+          useNativeDriver: true,
+          damping: 15,
+          stiffness: 200,
+        }),
+        Animated.spring(pillTranslateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 15,
+          stiffness: 200,
+        }),
+      ]).start();
+    }
+  }, [dragProgress, focused, pillScaleX, pillTranslateX]);
+
   const iconContainerStyle = useMemo(
     () => ({
       width: 64,
@@ -90,7 +142,7 @@ const AnimatedTabIcon = ({
       borderRadius: RADIUS.lg,
       justifyContent: "center" as const,
       alignItems: "center" as const,
-      overflow: "hidden" as const,
+      overflow: "visible" as const,
     }),
     []
   );
@@ -109,7 +161,10 @@ const AnimatedTabIcon = ({
         style={[
           StyleSheet.absoluteFill,
           iconBackgroundStyle,
-          { opacity: bgOpacity },
+          {
+            opacity: bgOpacity,
+            transform: [{ scaleX: pillScaleX }, { translateX: pillTranslateX }],
+          },
         ]}
       />
       <Animated.View
@@ -124,15 +179,102 @@ const AnimatedTabIcon = ({
   );
 };
 
+const TabBarItem = ({
+  name,
+  title,
+  iconName,
+  focused,
+  onPress,
+  previousFocused,
+  showLabel,
+  dragProgress,
+  isNextTab,
+  isPrevTab,
+}: {
+  name: string;
+  title: string;
+  iconName: keyof typeof MaterialIcons.glyphMap;
+  focused: boolean;
+  onPress: () => void;
+  previousFocused: React.MutableRefObject<boolean>;
+  showLabel: boolean;
+  dragProgress: number;
+  isNextTab: boolean;
+  isPrevTab: boolean;
+}) => {
+  return (
+    <TouchableOpacity
+      style={tabBarStyles.tabItem}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <AnimatedTabIcon
+        name={iconName}
+        color={focused ? COLORS.primary : COLORS.onSurfaceVariant}
+        focused={focused}
+        previousFocused={previousFocused}
+        dragProgress={dragProgress}
+        isNextTab={isNextTab}
+        isPrevTab={isPrevTab}
+      />
+      {showLabel && focused && (
+        <Text style={tabBarStyles.tabLabel}>{title}</Text>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const tabBarStyles = StyleSheet.create({
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+  },
+  tabLabel: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 8,
+    marginTop: 5,
+    color: COLORS.primary,
+    opacity: 0.5,
+  },
+});
+
 export default function TabLayout() {
   const currentSong = usePlayerStore((state) => state.currentSong);
+  const swipeableRef = useRef<SwipeableTabsRef>(null);
+  const storeTabIndex = useTabStore((state) => state.currentTabIndex);
+  const setStoreTabIndex = useTabStore((state) => state.setTabIndex);
+  const prevStoreTabIndex = useRef(storeTabIndex);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [dragProgress, setDragProgress] = useState(0);
+  const [navToggle, setNavToggle] = useState<boolean>(true);
+  const [showNavTextToggle, setShowNavTextToggle] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (storeTabIndex !== prevStoreTabIndex.current) {
+      prevStoreTabIndex.current = storeTabIndex;
+      if (storeTabIndex !== currentIndex) {
+        swipeableRef.current?.goToIndex(storeTabIndex);
+      }
+    }
+  }, [storeTabIndex, currentIndex]);
 
   const homePrevFocused = useRef(true);
   const songsPrevFocused = useRef(false);
   const playlistsPrevFocused = useRef(false);
+  const discoverPrevFocused = useRef(false);
 
-  const [navToggle, setNavToggle] = useState<boolean>(true);
-  const [showNavTextToggle, setShowNavTextToggle] = useState<boolean>(true);
+  const prevFocusRefs = useMemo(
+    () => [
+      homePrevFocused,
+      songsPrevFocused,
+      playlistsPrevFocused,
+      discoverPrevFocused,
+    ],
+    []
+  );
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -149,6 +291,50 @@ export default function TabLayout() {
     }
   }, []);
 
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      setCurrentIndex(index);
+
+      setStoreTabIndex(index);
+      prevStoreTabIndex.current = index;
+    },
+    [setStoreTabIndex]
+  );
+
+  const handleDragProgress = useCallback((progress: number) => {
+    setDragProgress(progress);
+  }, []);
+
+  const handleTabPress = useCallback((index: number) => {
+    swipeableRef.current?.goToIndex(index);
+  }, []);
+
+  const tabConfigs = useMemo(
+    () => [
+      {
+        name: "index",
+        title: TAB_CONFIG.forYou.name,
+        icon: TAB_CONFIG.forYou.icon,
+      },
+      {
+        name: "songs",
+        title: TAB_CONFIG.songs.name,
+        icon: TAB_CONFIG.songs.icon,
+      },
+      {
+        name: "playlists",
+        title: TAB_CONFIG.playlists.name,
+        icon: TAB_CONFIG.playlists.icon,
+      },
+      {
+        name: "discover",
+        title: TAB_CONFIG.discover.name,
+        icon: TAB_CONFIG.discover.icon,
+      },
+    ],
+    []
+  );
+
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
@@ -156,135 +342,61 @@ export default function TabLayout() {
           flex: 1,
           backgroundColor: COLORS.background,
         },
+        contentContainer: {
+          flex: 1,
+        },
         tabBar: {
+          flexDirection: "row",
           backgroundColor: navToggle
             ? COLORS.surfaceContainer
             : COLORS.background,
-          borderTopWidth: 0,
-          elevation: 0,
           height: 80,
           paddingTop: 12,
           paddingBottom: 16,
-        },
-        tabLabel: {
-          fontFamily: "Inter_500Medium",
-          fontSize: 8,
-          marginTop: 5,
-          color: COLORS.primary,
-          opacity: 0.5,
-        },
-        tabItem: {
-          paddingVertical: 0,
-        },
-        iconContainer: {
-          width: 64,
-          height: 32,
-          borderRadius: RADIUS.lg,
-          justifyContent: "center",
-          alignItems: "center",
-          overflow: "hidden",
-        },
-        iconBackground: {
-          backgroundColor: COLORS.secondaryContainer,
-          borderRadius: RADIUS.lg,
-        },
-        iconContainerActive: {
-          backgroundColor: COLORS.secondaryContainer,
+          borderTopWidth: 0,
         },
       }),
     [navToggle]
   );
 
-  const screenOptions = useMemo(
-    () => ({
-      headerShown: false,
-      tabBarStyle: dynamicStyles.tabBar,
-      tabBarActiveTintColor: COLORS.primary,
-      tabBarInactiveTintColor: COLORS.onSurfaceVariant,
-      tabBarLabelStyle: dynamicStyles.tabLabel,
-      tabBarItemStyle: dynamicStyles.tabItem,
-      tabBarShowLabel: showNavTextToggle,
-      animation: ANIMATION.tabTransition,
-      sceneStyle: { backgroundColor: COLORS.background },
-      lazy: false,
-      freezeOnBlur: true,
-      tabBarLabel: ({
-        focused,
-        children,
-      }: {
-        focused: boolean;
-        children: React.ReactNode;
-      }) => {
-        if (!showNavTextToggle) return null;
-        if (!focused) return null;
-
-        return <Text style={dynamicStyles.tabLabel}>{children}</Text>;
-      },
-    }),
-    [dynamicStyles, showNavTextToggle]
-  );
-
   return (
     <View style={dynamicStyles.container}>
-      <Tabs screenOptions={screenOptions}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: TAB_CONFIG.forYou.name,
-            tabBarIcon: ({ color, focused }) => (
-              <AnimatedTabIcon
-                name={TAB_CONFIG.forYou.icon}
-                color={color}
-                focused={focused}
-                previousFocused={homePrevFocused}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="songs"
-          options={{
-            title: TAB_CONFIG.songs.name,
-            tabBarIcon: ({ color, focused }) => (
-              <AnimatedTabIcon
-                name={TAB_CONFIG.songs.icon}
-                color={color}
-                focused={focused}
-                previousFocused={songsPrevFocused}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="playlists"
-          options={{
-            title: TAB_CONFIG.playlists.name,
-            tabBarIcon: ({ color, focused }) => (
-              <AnimatedTabIcon
-                name={TAB_CONFIG.playlists.icon}
-                color={color}
-                focused={focused}
-                previousFocused={playlistsPrevFocused}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="discover"
-          options={{
-            title: TAB_CONFIG.discover.name,
-            tabBarIcon: ({ color, focused }) => (
-              <AnimatedTabIcon
-                name={TAB_CONFIG.discover.icon}
-                color={color}
-                focused={focused}
-                previousFocused={playlistsPrevFocused}
-              />
-            ),
-          }}
-        />
-      </Tabs>
-      {currentSong && <MiniPlayer />}
+      <View style={dynamicStyles.contentContainer}>
+        <SwipeableTabs
+          ref={swipeableRef}
+          currentIndex={currentIndex}
+          onIndexChange={handleIndexChange}
+          onDragProgress={handleDragProgress}
+          enabled={true}
+        >
+          <Home />
+          <Songs />
+          <Playlists />
+          <Discover />
+        </SwipeableTabs>
+      </View>
+
+      {currentSong && (
+        <MiniPlayer tabBarColor={dynamicStyles.tabBar.backgroundColor} />
+      )}
+
+      <View style={dynamicStyles.tabBar}>
+        {tabConfigs.map((tab, index) => (
+          <TabBarItem
+            key={tab.name}
+            name={tab.name}
+            title={tab.title}
+            iconName={tab.icon}
+            focused={currentIndex === index}
+            onPress={() => handleTabPress(index)}
+            previousFocused={prevFocusRefs[index]}
+            showLabel={showNavTextToggle}
+            dragProgress={dragProgress}
+            isNextTab={index === currentIndex + 1}
+            isPrevTab={index === currentIndex - 1}
+          />
+        ))}
+      </View>
     </View>
   );
 }

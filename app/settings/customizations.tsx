@@ -41,7 +41,7 @@ const CONFIG_MAP: Record<
 > = {
   nav_style: { config: NAV_STYLE_CONFIG, title: "Navigation Style" },
   tracks_layout: { config: TRACKS_LAYOUT_CONFIG, title: "Tracks Layout" },
-  playlists_layout: {
+  playlists_style: {
     config: PLAYLISTS_LAYOUT_CONFIG,
     title: "Playlists Layout",
   },
@@ -311,7 +311,7 @@ export default function SettingsScreen() {
       paddingHorizontal: SPACING.md,
     },
     card: {
-      backgroundColor: COLORS.surfaceContainerHigh,
+      backgroundColor: `${COLORS.surfaceContainer}4D`,
       borderRadius: RADIUS.xl,
       overflow: "hidden" as ViewStyle["overflow"],
     },

@@ -9,18 +9,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-// @ts-ignore
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { usePlaylistStore } from "../../store/playlistStore";
-import PlaylistCard from "../../components/PlaylistCard";
+import PlaylistCard from "../PlaylistCard";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
-import { CreatePlaylistModal } from "../../components/playlists/modals";
+import { CreatePlaylistModal } from "../playlists/modals";
 
-export default function PlaylistsScreen() {
+export default function playlists() {
   const router = useRouter();
   const themeValues = useThemeValues();
   const { playlists, fetchPlaylists, createPlaylist } = usePlaylistStore();
@@ -36,9 +35,9 @@ export default function PlaylistsScreen() {
       backgroundColor: COLORS.background,
     },
     header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.md,
     },
@@ -48,7 +47,7 @@ export default function PlaylistsScreen() {
       color: COLORS.onSurface,
     },
     headerActions: {
-      flexDirection: "row",
+      flexDirection: "row" as const,
       gap: SPACING.sm,
     },
     iconButton: {
@@ -56,19 +55,19 @@ export default function PlaylistsScreen() {
       height: 48,
       borderRadius: RADIUS.full,
       backgroundColor: COLORS.surfaceContainerHigh,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     fabButton: {
       width: 48,
       height: 48,
       borderRadius: RADIUS.lg,
       backgroundColor: COLORS.primary,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     row: {
-      justifyContent: "space-between",
+      justifyContent: "space-between" as const,
       paddingHorizontal: SPACING.md,
       marginBottom: SPACING.md,
     },
@@ -77,8 +76,8 @@ export default function PlaylistsScreen() {
       paddingBottom: 140,
     },
     emptyState: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
       paddingVertical: 80,
     },
     emptyTitle: {
@@ -106,7 +105,7 @@ export default function PlaylistsScreen() {
     setRefreshing(false);
   };
 
-  const CreatePlaylist = async () => {
+  const handleCreatePlaylist = async () => {
     if (!playlistName.trim()) {
       Alert.alert("Error", "Please enter a playlist name");
       return;
@@ -141,7 +140,6 @@ export default function PlaylistsScreen() {
         await FileSystem.readAsStringAsync(asset.uri);
         const importedPlaylistName = asset.name.replace(/\.[^/.]+$/, "");
 
-        // ! M3U parsing todo
         await createPlaylist({
           name: importedPlaylistName,
           description: "Imported from M3U",
@@ -160,7 +158,7 @@ export default function PlaylistsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Playlists</Text>
@@ -191,6 +189,7 @@ export default function PlaylistsScreen() {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <PlaylistCard playlist={item} onPress={() => PlaylistPress(item)} />
         )}
@@ -225,7 +224,7 @@ export default function PlaylistsScreen() {
         playlistDescription={playlistDescription}
         setPlaylistDescription={setPlaylistDescription}
         creating={creating}
-        onCreate={CreatePlaylist}
+        onCreate={handleCreatePlaylist}
       />
     </SafeAreaView>
   );

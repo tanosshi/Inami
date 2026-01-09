@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons, Feather } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 // @ts-ignore
 import { useRouter } from "expo-router";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
@@ -21,7 +21,6 @@ export default function CustomizationScreen() {
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(
     null
   );
-  const [viewMode, setViewMode] = React.useState<"grid" | "rows">("grid");
   const [modalVisible, setModalVisible] = React.useState(false);
   const [resetModalVisible, setResetModalVisible] = React.useState(false);
   const [pendingTheme, setPendingTheme] = React.useState<string | null>(null);
@@ -53,13 +52,6 @@ export default function CustomizationScreen() {
     placeholder: {
       width: 48,
     },
-    viewModeButton: {
-      width: 48,
-      height: 48,
-      borderRadius: RADIUS.full,
-      justifyContent: "center",
-      alignItems: "center",
-    },
     scrollView: {
       flex: 1,
     },
@@ -67,115 +59,42 @@ export default function CustomizationScreen() {
       padding: SPACING.md,
       paddingBottom: 40,
     },
-    categoryGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: SPACING.md,
-      marginBottom: SPACING.lg,
+    categoryHorizontalContainer: {
+      marginBottom: SPACING.md,
+      maxHeight: 40,
     },
-    categoryList: {
-      flexDirection: "column",
-      marginBottom: SPACING.lg,
-    },
-    categoryBlock: {
-      width: "30%",
-      backgroundColor: COLORS.surfaceContainerHigh,
-      borderRadius: RADIUS.lg,
-      padding: SPACING.md,
+    categoryHorizontalContent: {
+      paddingHorizontal: SPACING.md,
       alignItems: "center",
-      justifyContent: "center",
-      minHeight: 120,
-      borderWidth: 2,
-      borderColor: "transparent",
     },
-    categoryBlockSelected: {
+    categoryChip: {
+      paddingHorizontal: SPACING.md + 2,
+      paddingVertical: SPACING.xs + 2,
+      backgroundColor: COLORS.surfaceContainerHigh,
+      borderRadius: RADIUS.full,
+      marginRight: SPACING.sm,
+      borderWidth: 1,
+      borderColor: "transparent",
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    categoryChipSelected: {
       backgroundColor: COLORS.primaryContainer,
       borderColor: COLORS.primary,
     },
-    categoryBlockRow: {
-      flexDirection: "row",
-      backgroundColor: COLORS.surfaceContainerHigh,
-      borderRadius: RADIUS.lg,
-      padding: SPACING.md,
-      alignItems: "center",
-      minHeight: 72,
-      borderWidth: 2,
-      borderColor: "transparent",
+    categoryChipIcon: {
+      marginRight: SPACING.xs,
     },
-    categoryBlockRowFirst: {
-      flexDirection: "row",
-      backgroundColor: COLORS.surfaceContainerHigh,
-      borderTopLeftRadius: RADIUS.lg,
-      borderTopRightRadius: RADIUS.lg,
-      borderBottomLeftRadius: 0,
-      borderBottomRightRadius: 0,
-      padding: SPACING.md,
-      alignItems: "center",
-      minHeight: 72,
-      borderWidth: 2,
-      borderColor: "transparent",
-    },
-    categoryBlockRowMiddle: {
-      flexDirection: "row",
-      backgroundColor: COLORS.surfaceContainerHigh,
-      borderRadius: 0,
-      padding: SPACING.md,
-      alignItems: "center",
-      minHeight: 72,
-      borderWidth: 2,
-      borderColor: "transparent",
-    },
-    categoryBlockRowLast: {
-      flexDirection: "row",
-      backgroundColor: COLORS.surfaceContainerHigh,
-      borderTopLeftRadius: 0,
-      borderTopRightRadius: 0,
-      borderBottomLeftRadius: RADIUS.lg,
-      borderBottomRightRadius: RADIUS.lg,
-      padding: SPACING.md,
-      alignItems: "center",
-      minHeight: 72,
-      borderWidth: 2,
-      borderColor: "transparent",
-    },
-    categoryBlockRowSelected: {
-      backgroundColor: COLORS.primaryContainer,
-      borderColor: COLORS.primary,
-    },
-    categoryIcon: {
-      marginBottom: SPACING.sm,
-    },
-    categoryIconRow: {
-      marginRight: SPACING.md,
-    },
-    categoryTitle: {
-      fontFamily: "Inter_600SemiBold",
-      ...TYPOGRAPHY.titleSmall,
-      color: COLORS.onSurface,
-      textAlign: "center",
-      marginBottom: SPACING.xs,
-    },
-    categoryTitleSelected: {
-      color: COLORS.onPrimaryContainer,
-    },
-    categoryTitleRow: {
-      fontFamily: "Inter_600SemiBold",
-      ...TYPOGRAPHY.bodyLarge,
-      color: COLORS.onSurface,
-      textAlign: "left",
-      flex: 1,
-    },
-    categoryTitleRowSelected: {
-      color: COLORS.onPrimaryContainer,
-    },
-    categoryCount: {
-      fontFamily: "Inter_400Regular",
-      ...TYPOGRAPHY.bodySmall,
+    categoryChipText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelSmall,
       color: COLORS.onSurfaceVariant,
-      textAlign: "center",
+    },
+    categoryChipTextSelected: {
+      color: COLORS.onPrimaryContainer,
     },
     selectedCategorySection: {
-      marginTop: SPACING.lg,
+      marginTop: 0,
     },
     categoryHeader: {
       flexDirection: "row",
@@ -187,7 +106,7 @@ export default function CustomizationScreen() {
       fontFamily: "Inter_600SemiBold",
       ...TYPOGRAPHY.titleMedium,
       color: COLORS.onSurface,
-      marginLeft: SPACING.md,
+      marginLeft: -SPACING.xs,
     },
     sectionTitle: {
       fontFamily: "Inter_500Medium",
@@ -391,78 +310,6 @@ export default function CustomizationScreen() {
     setPendingTheme(null);
   };
 
-  const renderCategoryBlock = (
-    sectionKey: string,
-    section: any,
-    index: number,
-    total: number
-  ) => {
-    const isRowMode = viewMode === "rows";
-    const isFirst = index === 0;
-    const isLast = index === total - 1;
-
-    const getRowBlockStyle = () => {
-      if (!isRowMode) return styles.categoryBlock;
-
-      if (isFirst && isLast) {
-        return styles.categoryBlockRow;
-      } else if (isFirst) {
-        return styles.categoryBlockRowFirst;
-      } else if (isLast) {
-        return styles.categoryBlockRowLast;
-      } else {
-        return styles.categoryBlockRowMiddle;
-      }
-    };
-
-    return (
-      <TouchableOpacity
-        key={sectionKey}
-        style={[
-          getRowBlockStyle(),
-          selectedCategory === sectionKey &&
-            (isRowMode
-              ? styles.categoryBlockRowSelected
-              : styles.categoryBlockSelected),
-        ]}
-        onPress={() => {
-          triggerHaptic();
-          setSelectedCategory(
-            selectedCategory === sectionKey ? null : sectionKey
-          );
-        }}
-      >
-        <View style={isRowMode ? styles.categoryIconRow : styles.categoryIcon}>
-          <MaterialIcons
-            name={CATEGORY_ICON_MAP[sectionKey] || "category"}
-            size={isRowMode ? 24 : 32}
-            color={
-              selectedCategory === sectionKey
-                ? themeValues.COLORS.primary
-                : themeValues.COLORS.onSurfaceVariant
-            }
-          />
-        </View>
-        <Text
-          style={[
-            isRowMode ? styles.categoryTitleRow : styles.categoryTitle,
-            selectedCategory === sectionKey &&
-              (isRowMode
-                ? styles.categoryTitleRowSelected
-                : styles.categoryTitleSelected),
-          ]}
-        >
-          {section.title}
-        </Text>
-        {!isRowMode && (
-          <Text style={styles.categoryCount}>
-            {section.settings.length} settings
-          </Text>
-        )}
-      </TouchableOpacity>
-    );
-  };
-
   const renderSettingItem = (
     setting: any,
     sectionKey: string,
@@ -548,59 +395,61 @@ export default function CustomizationScreen() {
           />
         </TouchableOpacity>
         <Text style={styles.title}>Customize</Text>
-        <TouchableOpacity
-          style={styles.viewModeButton}
-          onPress={() => {
-            triggerHaptic();
-            setViewMode(viewMode === "grid" ? "rows" : "grid");
-          }}
-        >
-          <Feather
-            name={viewMode === "grid" ? "list" : "grid"}
-            size={20}
-            color={themeValues.COLORS.onSurface}
-          />
-        </TouchableOpacity>
+        <View style={styles.placeholder} />
       </View>
+
+      {/* Horizontal Category Selector */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryHorizontalContainer}
+        contentContainerStyle={styles.categoryHorizontalContent}
+      >
+        {Object.entries(CUSTOMIZATION_CONFIG).map(([sectionKey, section]) => (
+          <TouchableOpacity
+            key={sectionKey}
+            style={[
+              styles.categoryChip,
+              selectedCategory === sectionKey && styles.categoryChipSelected,
+            ]}
+            onPress={() => {
+              triggerHaptic();
+              setSelectedCategory(
+                selectedCategory === sectionKey ? null : sectionKey
+              );
+            }}
+          >
+            <MaterialIcons
+              name={CATEGORY_ICON_MAP[sectionKey] || "category"}
+              size={16}
+              color={
+                selectedCategory === sectionKey
+                  ? themeValues.COLORS.primary
+                  : themeValues.COLORS.onSurfaceVariant
+              }
+              style={styles.categoryChipIcon}
+            />
+            <Text
+              style={[
+                styles.categoryChipText,
+                selectedCategory === sectionKey &&
+                  styles.categoryChipTextSelected,
+              ]}
+            >
+              {section.title}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        {/* Category Blocks */}
-        <View
-          style={
-            viewMode === "grid" ? styles.categoryGrid : styles.categoryList
-          }
-        >
-          {Object.entries(CUSTOMIZATION_CONFIG).map(
-            ([sectionKey, section], index) =>
-              renderCategoryBlock(
-                sectionKey,
-                section,
-                index,
-                Object.keys(CUSTOMIZATION_CONFIG).length
-              )
-          )}
-        </View>
-
         {/* selected category settings */}
         {selectedCategory && (
           <View style={styles.selectedCategorySection}>
             <View style={styles.categoryHeader}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => {
-                  triggerHaptic();
-                  setSelectedCategory(null);
-                }}
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={themeValues.COLORS.onSurface}
-                />
-              </TouchableOpacity>
               <Text style={styles.selectedCategoryTitle}>
                 {
                   CUSTOMIZATION_CONFIG[

@@ -47,8 +47,8 @@ const getColorsForTheme = (theme: ThemeType) => {
 
 export default function LandingPage({ onLikeThis }: NowForYouProps) {
   const { refreshTheme } = useTheme();
-  const [navToggle, setnavToggle] = useState(true);
-  const [showNavTextToggle, setShowNavTextToggle] = useState(true);
+  const [navToggle, setnavToggle] = useState(false);
+  const [showNavTextToggle, setShowNavTextToggle] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<ThemeType>("Black");
   const [previousTheme, setPreviousTheme] = useState<ThemeType | null>(null);
   const crossFadeAnim = useRef(new Animated.Value(1)).current;

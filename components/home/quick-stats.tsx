@@ -1,11 +1,9 @@
 import React from "react";
-// @ts-ignore
-import { useRouter } from "expo-router";
 import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { useTabStore, TAB_INDEXES } from "../../store/tabStore";
 
 interface Stats {
   total_songs: number;
@@ -22,8 +20,7 @@ interface QuickStatsProps {
 }
 
 export default function QuickStats({ stats }: QuickStatsProps) {
-  const navigation = useNavigation();
-  const router = useRouter();
+  const setTabIndex = useTabStore((state) => state.setTabIndex);
   const themeValues = useThemeValues();
 
   const styles = useDynamicStyles(() => ({
@@ -78,7 +75,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
 
         <TouchableOpacity
           style={styles.statChip}
-          onPress={() => router.push("/(tabs)/songs")}
+          onPress={() => setTabIndex(TAB_INDEXES.songs)}
         >
           <MaterialIcons
             name="library-music"
@@ -92,7 +89,7 @@ export default function QuickStats({ stats }: QuickStatsProps) {
 
         <TouchableOpacity
           style={styles.statChip}
-          onPress={() => router.push("/(tabs)/playlists")}
+          onPress={() => setTabIndex(TAB_INDEXES.playlists)}
         >
           <MaterialIcons
             name="queue-music"

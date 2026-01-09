@@ -104,16 +104,14 @@ _The **one and only** proper music player, with all the features you need._
 
 | Feature               | Importance       |
 | --------------------- | ---------------- |
-| AMOLED dark mode      | 🔴 **Max**       |
-| White mode            | 🔴 **Important** |
-| Regular dark mode     | 🟡 **High**      |
-| Playful pink          | 🟡 **High**      |
-| AMOLED red            | 🟡 **High**      |
+| Regular dark mode     | 🔴 **Fix**       |
+| Playful pink          | 🔴 **Important** |
+| Spotify replica       | 🟡 **High**      |
 | Sharp dark mode       | 🟡 **High**      |
-| Spotify replica       | 🟢 **Last**      |
 | YouTube Music replica | 🟢 **Last**      |
 
 > These are presets, user's can make their own or customize existing ones.
+> Themes will include custom fonts, colors, icons and more.
 
 </div>
 

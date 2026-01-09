@@ -158,10 +158,9 @@ export default function SongCard({
 
       {/* Actions (todo fix duration display) */}
       <View style={styles.actions}>
-        {song.duration &&
-          formatDuration(song.duration).toString() !== "0:00" && (
-            <Text style={styles.duration}>{formatDuration(song.duration)}</Text>
-          )}
+        {song.duration > 0 && formatDuration(song.duration) !== "0:00" && (
+          <Text style={styles.duration}>{formatDuration(song.duration)}</Text>
+        )}
         {/* probably plans to replace like with the 3 dots */}
         {showOptions && (
           <TouchableOpacity

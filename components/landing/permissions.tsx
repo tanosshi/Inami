@@ -15,6 +15,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { requestPermissions as requestStoragePermissions } from "../../utils/mediaScanner";
+import {
+  checkAllFilesAccess,
+  openAllFilesAccessSettings,
+} from "../../utils/folderManager";
 
 // Simple notification permission request for Android 13+
 async function requestNotificationPermissions(): Promise<boolean> {
@@ -45,10 +49,14 @@ export default function LandingPage({ onSkip }: FirstProps) {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const [notificationGranted, setNotificationGranted] = useState(false);
   const [storageGranted, setStorageGranted] = useState(false);
+  const [allFilesGranted, setAllFilesGranted] = useState(false);
   const [isRequestingNotification, setIsRequestingNotification] =
     useState(false);
   const [isRequestingStorage, setIsRequestingStorage] = useState(false);
+  const [isRequestingAllFiles, setIsRequestingAllFiles] = useState(false);
   const hasAutoAdvancedRef = useRef(false);
+  const needsAllFilesAccess =
+    Platform.OS === "android" && Platform.Version >= 30;
 
   const styles = useDynamicStyles(() => ({
     iconRow: {
@@ -120,23 +128,6 @@ export default function LandingPage({ onSkip }: FirstProps) {
       justifyContent: "center" as const,
       alignItems: "center" as const,
     },
-    skipButton: {
-      position: "absolute" as const,
-      left: SPACING.sm + 5,
-      bottom: SPACING.lg,
-      backgroundColor: "transparent",
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.md,
-      borderRadius: RADIUS.full,
-      zIndex: 10,
-    },
-    skipButtonText: {
-      fontFamily: "Inter_500Medium",
-      ...TYPOGRAPHY.labelLarge,
-      color: COLORS.onSecondaryContainer,
-      opacity: 0.7,
-      textAlign: "left" as const,
-    },
     permsB: {
       backgroundColor: COLORS.primaryContainer,
       width: "100%" as const,
@@ -157,6 +148,11 @@ export default function LandingPage({ onSkip }: FirstProps) {
       color: COLORS.primary,
       textAlign: "center" as const,
     },
+    permsBAllFilesText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      textAlign: "center" as const,
+    },
     buttonText: {
       fontFamily: "Inter_500Medium",
       ...TYPOGRAPHY.labelLarge,
@@ -165,12 +161,23 @@ export default function LandingPage({ onSkip }: FirstProps) {
   }));
 
   useEffect(() => {
-    if (
-      notificationGranted &&
-      storageGranted &&
-      onSkip &&
-      !hasAutoAdvancedRef.current
-    ) {
+    const checkAllFilesStatus = async () => {
+      if (needsAllFilesAccess) {
+        const hasAccess = await checkAllFilesAccess();
+        setAllFilesGranted(hasAccess);
+      } else {
+        setAllFilesGranted(true);
+      }
+    };
+    checkAllFilesStatus();
+  }, [needsAllFilesAccess]);
+
+  useEffect(() => {
+    const allPermissionsGranted = needsAllFilesAccess
+      ? notificationGranted && storageGranted && allFilesGranted
+      : notificationGranted && storageGranted;
+
+    if (allPermissionsGranted && onSkip && !hasAutoAdvancedRef.current) {
       hasAutoAdvancedRef.current = true;
       const timer = setTimeout(() => {
         if (onSkip) {
@@ -179,7 +186,13 @@ export default function LandingPage({ onSkip }: FirstProps) {
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [notificationGranted, storageGranted, onSkip]);
+  }, [
+    notificationGranted,
+    storageGranted,
+    allFilesGranted,
+    onSkip,
+    needsAllFilesAccess,
+  ]);
 
   const handleRequestNotificationPermission = async () => {
     setIsRequestingNotification(true);
@@ -219,6 +232,28 @@ export default function LandingPage({ onSkip }: FirstProps) {
     }
   };
 
+  const handleRequestAllFilesAccess = async () => {
+    setIsRequestingAllFiles(true);
+    try {
+      await openAllFilesAccessSettings();
+      setTimeout(async () => {
+        const hasAccess = await checkAllFilesAccess();
+        setAllFilesGranted(hasAccess);
+        setIsRequestingAllFiles(false);
+        if (!hasAccess) {
+          Alert.alert(
+            "Permission Required",
+            "Please enable 'All files access' for Inami to scan your music folders."
+          );
+        }
+      }, 1000);
+    } catch (error) {
+      console.error("Error requesting all files access:", error);
+      setIsRequestingAllFiles(false);
+      Alert.alert("Error", "Failed to open settings");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.bottomSection} collapsable={false}>
@@ -253,6 +288,14 @@ export default function LandingPage({ onSkip }: FirstProps) {
               color={themeValues.COLORS.onPrimary}
               style={[styles.iconatBox, { marginLeft: SPACING.xl }]}
             />
+            {needsAllFilesAccess && (
+              <MaterialIcons
+                name="folder-special"
+                size={64}
+                color={themeValues.COLORS.onPrimary}
+                style={[styles.iconatBox, { marginLeft: SPACING.xl }]}
+              />
+            )}
           </View>
         </View>
 
@@ -292,10 +335,34 @@ export default function LandingPage({ onSkip }: FirstProps) {
                 : "Grant storage permission"}
             </Text>
           </TouchableOpacity>
+          {needsAllFilesAccess && (
+            <TouchableOpacity
+              style={[
+                styles.permsB,
+                styles.permsBAllFiles,
+                { marginTop: SPACING.md },
+                allFilesGranted && styles.permsBGranted,
+                isRequestingAllFiles && styles.permsBDisabled,
+              ]}
+              onPress={handleRequestAllFilesAccess}
+              disabled={isRequestingAllFiles || allFilesGranted}
+            >
+              <Text
+                style={
+                  allFilesGranted
+                    ? styles.permsBText
+                    : styles.permsBAllFilesText
+                }
+              >
+                {isRequestingAllFiles
+                  ? "Opening settings..."
+                  : allFilesGranted
+                  ? "All files access granted ✓"
+                  : "Grant all files access"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
-          <Text style={styles.skipButtonText}>Skip Permissions</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

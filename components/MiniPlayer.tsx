@@ -16,7 +16,11 @@ import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 import { getThemeSettings } from "../utils/database";
 import { triggerHaptic } from "../utils/haptics";
 
-export default function MiniPlayer() {
+interface MiniPlayerProps {
+  tabBarColor?: string;
+}
+
+export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
   const router = useRouter();
   const themeValues = useThemeValues();
   const [navToggle, setNavToggle] = useState<boolean>(true);
@@ -50,7 +54,7 @@ export default function MiniPlayer() {
       bottom: 80,
       left: 0,
       right: 0,
-      backgroundColor: navToggle ? COLORS.surfaceContainer : COLORS.background,
+      backgroundColor: tabBarColor || COLORS.background,
       borderTopLeftRadius: RADIUS.lg,
       borderTopRightRadius: RADIUS.lg,
       overflow: "hidden" as const,
@@ -237,7 +241,10 @@ export default function MiniPlayer() {
           <View style={styles.controls}>
             <TouchableOpacity
               style={styles.controlButton}
-              onPress={() => { triggerHaptic(); togglePlayPause(); }}
+              onPress={() => {
+                triggerHaptic();
+                togglePlayPause();
+              }}
             >
               <MaterialIcons
                 name={isPlaying ? "pause" : "play-arrow"}

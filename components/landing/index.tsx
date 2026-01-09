@@ -14,6 +14,7 @@ const getPageFromHash = (hash: string): number | null => {
     permissions: 0,
     pickfeatures: 1,
     nowforyou: 2,
+    musicfolders: 3,
   };
   const hashName = hash.replace("#", "").toLowerCase();
   return hashMap[hashName] ?? null;
@@ -90,13 +91,13 @@ export default function LandingPage() {
       marginBottom: SPACING.md,
       width: "100%" as const,
     },
-    skipButton: {
+    import: {
       backgroundColor: "transparent",
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.md,
       borderRadius: RADIUS.full,
     },
-    skipButtonText: {
+    importText: {
       fontFamily: "Inter_500Medium",
       ...TYPOGRAPHY.labelLarge,
       color: COLORS.onSurfaceVariant,
@@ -251,8 +252,8 @@ export default function LandingPage() {
         </View>
 
         <View style={styles.bottomRow}>
-          <TouchableOpacity style={styles.skipButton}>
-            <Text style={styles.skipButtonText}>Skip</Text>
+          <TouchableOpacity style={styles.import}>
+            <Text style={styles.importText}>Import</Text>
           </TouchableOpacity>
           <View>
             <TouchableOpacity
