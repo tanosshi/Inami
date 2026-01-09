@@ -39,7 +39,8 @@ export default function SongsScreen() {
   const router = useRouter();
   const themeValues = useThemeValues();
   const { songs, fetchSongs, addSong, importFromURL } = useSongStore();
-  const { playSong, setQueue, currentSong } = usePlayerStore();
+  const { playSong, setQueue, currentSong, showPlayerOverlay } =
+    usePlayerStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -214,7 +215,7 @@ export default function SongsScreen() {
   const PlaySong = (song: any, index: number) => {
     setQueue(filteredSongs);
     playSong(song);
-    router.push("/player");
+    showPlayerOverlay();
   };
 
   const PickFolder = async () => {
@@ -357,7 +358,13 @@ export default function SongsScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.searchButton} onPress={() => { triggerHaptic(); toggleSearch(); }}>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => {
+              triggerHaptic();
+              toggleSearch();
+            }}
+          >
             <MaterialIcons
               name="search"
               size={24}
@@ -377,14 +384,24 @@ export default function SongsScreen() {
             },
           ]}
         >
-          <TouchableOpacity onPress={() => { triggerHaptic(); PickFolder(); }}>
+          <TouchableOpacity
+            onPress={() => {
+              triggerHaptic();
+              PickFolder();
+            }}
+          >
             <MaterialIcons
               name="folder-open"
               size={24}
               color={themeValues.COLORS.onSurfaceVariant}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { triggerHaptic(); setShowImportModal(true); }}>
+          <TouchableOpacity
+            onPress={() => {
+              triggerHaptic();
+              setShowImportModal(true);
+            }}
+          >
             <MaterialIcons
               name="link"
               size={24}
@@ -419,7 +436,12 @@ export default function SongsScreen() {
             onChangeText={setSearchQuery}
           />
           {searchQuery !== "" && (
-            <TouchableOpacity onPress={() => { triggerHaptic(); setSearchQuery(""); }}>
+            <TouchableOpacity
+              onPress={() => {
+                triggerHaptic();
+                setSearchQuery("");
+              }}
+            >
               <MaterialIcons
                 name="close"
                 size={24}
@@ -427,7 +449,12 @@ export default function SongsScreen() {
               />
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={() => { triggerHaptic(); toggleSearch(); }}>
+          <TouchableOpacity
+            onPress={() => {
+              triggerHaptic();
+              toggleSearch();
+            }}
+          >
             <MaterialIcons
               name="close"
               size={24}
@@ -447,7 +474,10 @@ export default function SongsScreen() {
         renderItem={({ item, index }) => (
           <SongCard
             song={item}
-            onPress={() => { triggerHaptic(); PlaySong(item, index); }}
+            onPress={() => {
+              triggerHaptic();
+              PlaySong(item, index);
+            }}
             showOptions
           />
         )}
@@ -494,7 +524,10 @@ export default function SongsScreen() {
           styles.shuffleButton,
           currentSong && styles.shuffleButtonWithMiniPlayer,
         ]}
-        onPress={() => { triggerHaptic(); ShuffleAll(); }}
+        onPress={() => {
+          triggerHaptic();
+          ShuffleAll();
+        }}
       >
         <MaterialIcons
           name="shuffle"

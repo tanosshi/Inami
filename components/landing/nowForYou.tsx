@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -31,57 +31,72 @@ type NowForYouProps = {
   onLikeThis?: () => void;
 };
 
+type ThemeType = "Black" | "Light" | "Gray";
+
+const getColorsForTheme = (theme: ThemeType) => {
+  switch (theme) {
+    case "Light":
+      return LightColors;
+    case "Gray":
+      return GrayColors;
+    case "Black":
+    default:
+      return COLORS;
+  }
+};
+
 export default function LandingPage({ onLikeThis }: NowForYouProps) {
   const { refreshTheme } = useTheme();
   const [navToggle, setnavToggle] = useState(true);
   const [showNavTextToggle, setShowNavTextToggle] = useState(true);
-  const [selectedTheme, setSelectedTheme] = useState<
-    "Black" | "Light" | "Gray"
-  >("Black");
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const [currentTheme, setCurrentTheme] = useState<ThemeType>("Black");
+  const [previousTheme, setPreviousTheme] = useState<ThemeType | null>(null);
+  const crossFadeAnim = useRef(new Animated.Value(1)).current;
+  const isAnimating = useRef(false);
 
-  const getThemeColors = () => {
-    switch (selectedTheme) {
-      case "Light":
-        return LightColors;
-      case "Gray":
-        return GrayColors;
-      case "Black":
-      default:
-        return COLORS;
-    }
-  };
+  const themeColors = getColorsForTheme(currentTheme);
+  const previousThemeColors = previousTheme
+    ? getColorsForTheme(previousTheme)
+    : null;
 
-  const themeColors = getThemeColors();
+  const handleThemeChange = (theme: ThemeType) => {
+    if (theme === currentTheme || isAnimating.current) return;
 
-  const handleThemeChange = (theme: "Black" | "Light" | "Gray") => {
-    if (theme === selectedTheme) return;
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
+    isAnimating.current = true;
+    setPreviousTheme(currentTheme);
+    crossFadeAnim.setValue(0);
+    setCurrentTheme(theme);
+
+    Animated.timing(crossFadeAnim, {
+      toValue: 1,
+      duration: 250,
       easing: Easing.out(Easing.ease),
       useNativeDriver: true,
     }).start(({ finished }) => {
       if (finished) {
-        setSelectedTheme(theme);
-        requestAnimationFrame(() => {
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 150,
-            easing: Easing.in(Easing.ease),
-            useNativeDriver: true,
-          }).start();
-        });
+        setPreviousTheme(null);
+        isAnimating.current = false;
       }
     });
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {previousThemeColors && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: previousThemeColors.background },
+          ]}
+        />
+      )}
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: themeColors.background, opacity: fadeAnim },
+          {
+            backgroundColor: themeColors.background,
+            opacity: previousTheme ? crossFadeAnim : 1,
+          },
         ]}
       />
       <View style={styles.bottomSection} collapsable={false}>
@@ -116,7 +131,7 @@ export default function LandingPage({ onLikeThis }: NowForYouProps) {
             style={[
               coloringBoxStyles.coloringBox,
               coloringBoxStyles.coloringBoxWithGap,
-              selectedTheme === "Black" && coloringBoxStyles.selectedBox,
+              currentTheme === "Black" && coloringBoxStyles.selectedBox,
             ]}
             onPress={() => handleThemeChange("Black")}
             activeOpacity={0.8}
@@ -164,7 +179,7 @@ export default function LandingPage({ onLikeThis }: NowForYouProps) {
             style={[
               lightColoringBoxStyles.coloringBox,
               lightColoringBoxStyles.coloringBoxWithGap,
-              selectedTheme === "Light" && lightColoringBoxStyles.selectedBox,
+              currentTheme === "Light" && lightColoringBoxStyles.selectedBox,
             ]}
             onPress={() => handleThemeChange("Light")}
             activeOpacity={0.8}
@@ -213,7 +228,7 @@ export default function LandingPage({ onLikeThis }: NowForYouProps) {
           <TouchableOpacity
             style={[
               grayColoringBoxStyles.coloringBox,
-              selectedTheme === "Gray" && grayColoringBoxStyles.selectedBox,
+              currentTheme === "Gray" && grayColoringBoxStyles.selectedBox,
             ]}
             onPress={() => handleThemeChange("Gray")}
             activeOpacity={0.8}
@@ -313,7 +328,7 @@ export default function LandingPage({ onLikeThis }: NowForYouProps) {
               onPress={async () => {
                 try {
                   await saveThemeSettings(
-                    selectedTheme,
+                    currentTheme,
                     navToggle,
                     showNavTextToggle
                   );

@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Animated,
   Switch,
@@ -12,17 +11,8 @@ import {
 import { Octicons, MaterialIcons, FontAwesome6 } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
-import { getThemeSettings, saveSettingsBatch } from "../../utils/database";
-import {
-  COLORS as LightColors,
-  SPACING as LightSpacing,
-  RADIUS as LightRadius,
-} from "../../constants/themes/light";
-import {
-  COLORS as GrayColors,
-  SPACING as GraySpacing,
-  RADIUS as GrayRadius,
-} from "../../constants/themes/gray";
+import { saveSettingsBatch } from "../../utils/database";
+import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 import { SETTINGS_CONFIG } from "../../constants/settings";
 import { CUSTOMIZATION_CONFIG } from "../../constants/customization";
@@ -86,6 +76,7 @@ const features: Feature[] = [
 ];
 
 export default function LandingPage({ onSkip }: FirstProps) {
+  const themeValues = useThemeValues();
   const [isFinishing, setIsFinishing] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const [featureStates, setFeatureStates] = useState<Record<string, boolean>>({
@@ -96,12 +87,167 @@ export default function LandingPage({ onSkip }: FirstProps) {
     enable_dlmusic: true,
   });
 
-  const [selectedTheme, setSelectedTheme] = useState<
-    "Black" | "Light" | "Gray"
-  >("Black");
-  const [themeColors, setThemeColors] = useState(COLORS);
-  const [themeSpacing, setThemeSpacing] = useState(SPACING);
-  const [themeRadius, setThemeRadius] = useState(RADIUS);
+  const styles = useDynamicStyles(() => ({
+    iconRow: {
+      flexDirection: "row" as const,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    main: {
+      marginTop: SPACING.xxl + 12,
+    },
+    icon: {
+      left: 0,
+      paddingLeft: SPACING.sm + 3,
+      paddingTop: SPACING.xl + 8,
+      position: "absolute" as const,
+      opacity: 0.8,
+    },
+    top: {
+      marginTop: SPACING.sm,
+      paddingTop: SPACING.xl,
+      paddingBottom: SPACING.md,
+      paddingHorizontal: SPACING.sm + 3,
+      alignItems: "flex-end" as const,
+      position: "relative" as const,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    flexSpacer: {
+      flex: 1,
+    },
+    bottomSection: {
+      flex: 1,
+      justifyContent: "flex-start" as const,
+      alignItems: "center" as const,
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.xl,
+    },
+    iconatBox: {
+      filter: "brightness(100)",
+    },
+    welcomeText: {
+      fontFamily: "Inter_400Regular",
+      fontSize: 28,
+      color: COLORS.onSurface,
+      textAlign: "left" as const,
+      alignSelf: "flex-start" as const,
+      width: "90%" as const,
+    },
+    descText: {
+      top: -SPACING.xl,
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.titleMedium,
+      color: COLORS.onSurfaceVariant,
+    },
+    bottomRow: {
+      flexDirection: "column" as const,
+      justifyContent: "flex-end" as const,
+      alignItems: "center" as const,
+      marginBottom: SPACING.md,
+      width: "100%" as const,
+    },
+    iconBox: {
+      width: "100%" as const,
+      height: "58%" as const,
+      top: -SPACING.xxl,
+      backgroundColor: COLORS.surface,
+      borderRadius: RADIUS.xl,
+      marginVertical: SPACING.xl,
+      opacity: 0.55,
+      overflow: "hidden" as const,
+    },
+    featuresScroll: {
+      flex: 1,
+    },
+    featuresContainer: {
+      padding: SPACING.md,
+      gap: SPACING.sm,
+    },
+    featureItem: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      paddingVertical: SPACING.sm,
+      gap: SPACING.md,
+    },
+    featureIconContainer: {
+      width: 40,
+      height: 40,
+      backgroundColor: COLORS.primaryContainer,
+      borderRadius: RADIUS.md,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    featureContent: {
+      flex: 1,
+      gap: 2,
+    },
+    featureName: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onSurface,
+    },
+    featureDescription: {
+      fontFamily: "Inter_400Regular",
+      ...TYPOGRAPHY.bodySmall,
+      color: COLORS.onSurfaceVariant,
+    },
+    skipButton: {
+      position: "absolute" as const,
+      left: SPACING.sm + 5,
+      bottom: SPACING.lg,
+      backgroundColor: "transparent",
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.md,
+      borderRadius: RADIUS.full,
+      zIndex: 10,
+    },
+    skipButtonText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onSecondaryContainer,
+      opacity: 0.7,
+      textAlign: "left" as const,
+    },
+    permsB: {
+      backgroundColor: COLORS.primaryContainer,
+      width: "100%" as const,
+      paddingHorizontal: SPACING.xl,
+      paddingVertical: SPACING.sm + SPACING.xs,
+      borderRadius: RADIUS.full,
+    },
+    permsBText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.primary,
+      textAlign: "center" as const,
+    },
+    buttonText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onPrimary,
+    },
+    finishButton: {
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.sm,
+      width: "90%" as const,
+      backgroundColor: COLORS.primaryContainer,
+      borderRadius: RADIUS.full,
+      position: "absolute" as const,
+      left: SPACING.lg,
+      bottom: SPACING.xl,
+    },
+    finishButtonText: {
+      fontFamily: "Inter_500Medium",
+      ...TYPOGRAPHY.labelLarge,
+      color: COLORS.onSurfaceVariant,
+      textAlign: "center" as const,
+      fontSize: 12,
+      letterSpacing: 0.5,
+    },
+  }));
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -114,41 +260,6 @@ export default function LandingPage({ onSkip }: FirstProps) {
         fadeAnim.setValue(0);
       }
     });
-  }, []);
-
-  useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const themeSettings = await getThemeSettings();
-        if (themeSettings) {
-          const theme = themeSettings.theme as "Black" | "Light" | "Gray";
-          setSelectedTheme(theme);
-
-          switch (theme) {
-            case "Light":
-              setThemeColors(LightColors);
-              setThemeSpacing(LightSpacing);
-              setThemeRadius(LightRadius);
-              break;
-            case "Gray":
-              setThemeColors(GrayColors);
-              setThemeSpacing(GraySpacing);
-              setThemeRadius(GrayRadius);
-              break;
-            case "Black":
-            default:
-              setThemeColors(COLORS);
-              setThemeSpacing(SPACING);
-              setThemeRadius(RADIUS);
-              break;
-          }
-        }
-      } catch (error) {
-        console.error("Error loading theme settings:", error);
-      }
-    };
-
-    loadTheme();
   }, []);
 
   const handleToggle = (featureId: string, value: boolean) => {
@@ -227,7 +338,7 @@ export default function LandingPage({ onSkip }: FirstProps) {
   const renderIcon = (feature: Feature) => {
     const iconProps = {
       size: 20,
-      color: themeColors.primary,
+      color: themeValues.COLORS.primary,
     };
 
     switch (feature.iconLibrary) {
@@ -236,42 +347,32 @@ export default function LandingPage({ onSkip }: FirstProps) {
       case "FontAwesome6":
         return <FontAwesome6 name={feature.icon} {...iconProps} />;
       case "Octicons":
-        return <Octicons name={feature.icon} {...iconProps} />;
+        return <Octicons name={feature.icon as any} {...iconProps} />;
       default:
         return <MaterialIcons name="settings" {...iconProps} />;
     }
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: themeColors.background }]}
-    >
+    <SafeAreaView style={styles.container}>
       <View style={styles.bottomSection} collapsable={false}>
         <View style={styles.top}>
           <FontAwesome6
             style={styles.icon}
             name="wand-magic-sparkles"
             size={28}
-            color={themeColors.onSurface}
+            color={themeValues.COLORS.onSurface}
           />
 
           <View style={styles.main}>
-            <Text
-              style={[styles.welcomeText, { color: themeColors.onSurface }]}
-            >
-              Now the interesting part
-            </Text>
-            <Text
-              style={[styles.descText, { color: themeColors.onSurfaceVariant }]}
-            >
+            <Text style={styles.welcomeText}>Now the interesting part</Text>
+            <Text style={styles.descText}>
               Are there any features you would like to enable? More features can
               be enabled in settings later.
             </Text>
           </View>
         </View>
-        <View
-          style={[styles.iconBox, { backgroundColor: themeColors.surface }]}
-        >
+        <View style={styles.iconBox}>
           <ScrollView
             style={styles.featuresScroll}
             contentContainerStyle={styles.featuresContainer}
@@ -279,29 +380,12 @@ export default function LandingPage({ onSkip }: FirstProps) {
           >
             {features.map((feature, index) => (
               <View key={feature.id} style={styles.featureItem}>
-                <View
-                  style={[
-                    styles.featureIconContainer,
-                    { backgroundColor: themeColors.primaryContainer },
-                  ]}
-                >
+                <View style={styles.featureIconContainer}>
                   {renderIcon(feature)}
                 </View>
                 <View style={styles.featureContent}>
-                  <Text
-                    style={[
-                      styles.featureName,
-                      { color: themeColors.onSurface },
-                    ]}
-                  >
-                    {feature.name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.featureDescription,
-                      { color: themeColors.onSurfaceVariant },
-                    ]}
-                  >
+                  <Text style={styles.featureName}>{feature.name}</Text>
+                  <Text style={styles.featureDescription}>
                     {feature.description}
                   </Text>
                 </View>
@@ -309,13 +393,13 @@ export default function LandingPage({ onSkip }: FirstProps) {
                   value={featureStates[feature.id] || false}
                   onValueChange={(value) => handleToggle(feature.id, value)}
                   trackColor={{
-                    false: themeColors.surfaceVariant,
-                    true: themeColors.primaryContainer,
+                    false: themeValues.COLORS.surfaceVariant,
+                    true: themeValues.COLORS.primaryContainer,
                   }}
                   thumbColor={
                     featureStates[feature.id]
-                      ? themeColors.primary
-                      : themeColors.onSurfaceVariant
+                      ? themeValues.COLORS.primary
+                      : themeValues.COLORS.onSurfaceVariant
                   }
                 />
               </View>
@@ -325,10 +409,7 @@ export default function LandingPage({ onSkip }: FirstProps) {
       </View>
       {/* Finish Button */}
       <TouchableOpacity
-        style={[
-          styles.finishButton,
-          { backgroundColor: themeColors.primaryContainer },
-        ]}
+        style={styles.finishButton}
         onPress={handleFinish}
         disabled={isFinishing}
       >
@@ -343,182 +424,15 @@ export default function LandingPage({ onSkip }: FirstProps) {
             <MaterialIcons
               name="autorenew"
               size={18}
-              color={themeColors.onSurfaceVariant}
+              color={themeValues.COLORS.onSurfaceVariant}
               style={{ marginRight: 8, transform: [{ rotate: "360deg" }] }}
             />
-            <Text
-              style={[
-                styles.finishButtonText,
-                { color: themeColors.onSurfaceVariant },
-              ]}
-            >
-              Saving...
-            </Text>
+            <Text style={styles.finishButtonText}>Saving...</Text>
           </View>
         ) : (
-          <Text
-            style={[
-              styles.finishButtonText,
-              { color: themeColors.onSurfaceVariant },
-            ]}
-          >
-            Finish
-          </Text>
+          <Text style={styles.finishButtonText}>Next</Text>
         )}
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  iconRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  main: {
-    marginTop: SPACING.xxl + 12,
-  },
-  icon: {
-    left: 0,
-    paddingLeft: SPACING.sm + 3,
-    paddingTop: SPACING.xl + 8,
-    position: "absolute",
-    opacity: 0.8,
-  },
-  top: {
-    marginTop: SPACING.sm,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.md,
-    paddingHorizontal: SPACING.sm + 3,
-    alignItems: "flex-end",
-    position: "relative",
-  },
-  container: {
-    flex: 1,
-  },
-  flexSpacer: {
-    flex: 1,
-  },
-  bottomSection: {
-    flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
-  },
-  iconatBox: {
-    filter: "brightness(100)",
-  },
-  welcomeText: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 28,
-    textAlign: "left",
-    alignSelf: "flex-start",
-    width: "90%",
-  },
-  descText: {
-    top: -SPACING.xl,
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.titleMedium,
-  },
-  bottomRow: {
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginBottom: SPACING.md,
-    width: "100%",
-  },
-  iconBox: {
-    width: "100%",
-    height: "58%",
-    top: -SPACING.xxl,
-    borderRadius: RADIUS.xl,
-    marginVertical: SPACING.xl,
-    opacity: 0.55,
-    overflow: "hidden",
-  },
-  featuresScroll: {
-    flex: 1,
-  },
-  featuresContainer: {
-    padding: SPACING.md,
-    gap: SPACING.sm,
-  },
-  featureItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: SPACING.sm,
-    gap: SPACING.md,
-  },
-  featureIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.md,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  featureContent: {
-    flex: 1,
-    gap: 2,
-  },
-  featureName: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.labelLarge,
-  },
-  featureDescription: {
-    fontFamily: "Inter_400Regular",
-    ...TYPOGRAPHY.bodySmall,
-  },
-  skipButton: {
-    position: "absolute",
-    left: SPACING.sm + 5,
-    bottom: SPACING.lg,
-    backgroundColor: "transparent",
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.full,
-    zIndex: 10,
-  },
-  skipButtonText: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.labelLarge,
-    color: COLORS.onSecondaryContainer,
-    opacity: 0.7,
-    textAlign: "left",
-  },
-  permsB: {
-    backgroundColor: COLORS.primaryContainer,
-    width: "100%",
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.sm + SPACING.xs,
-    borderRadius: RADIUS.full,
-  },
-  permsBText: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.labelLarge,
-    color: COLORS.primary,
-    textAlign: "center",
-  },
-  buttonText: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.labelLarge,
-    color: COLORS.onPrimary,
-  },
-  finishButton: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-    width: "90%",
-    borderRadius: RADIUS.full,
-    position: "absolute",
-    left: SPACING.lg,
-    bottom: SPACING.xl,
-  },
-  finishButtonText: {
-    fontFamily: "Inter_500Medium",
-    ...TYPOGRAPHY.labelLarge,
-    textAlign: "center",
-    fontSize: 12,
-    letterSpacing: 0.5,
-  },
-});

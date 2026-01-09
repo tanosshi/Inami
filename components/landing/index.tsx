@@ -12,8 +12,8 @@ const getPageFromHash = (hash: string): number | null => {
   if (!hash || hash === "#") return null;
   const hashMap: { [key: string]: number } = {
     permissions: 0,
-    nowforyou: 1,
-    pickfeatures: 2,
+    pickfeatures: 1,
+    nowforyou: 2,
   };
   const hashName = hash.replace("#", "").toLowerCase();
   return hashMap[hashName] ?? null;

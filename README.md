@@ -36,20 +36,19 @@ _The **one and only** proper music player, with all the features you need._
 
 ## 📦 Features
 
-| Feature                           | Priority                       |
-| --------------------------------- | ------------------------------ |
-| Play MP3, FLAC, OGG and OPUS      | ✅ **Complete**                |
-| Playlist builder                  | 🟡 **Almost Complete, halted** |
-| Settings                          | 🟡 **Almost Complete**         |
-| Sync colors based on album cover  | 🟡 **Almost Complete**         |
-| Fix bugged out landing transition | 🟡 **Almost Complete**         |
-| Music visualizer                  | 🔄 **Planned**                 |
-| Font changer                      | 🔄 **Planned**                 |
-| Wallpaper accent color            | 🔄 **Planned**                 |
-| Lyrics screen, Load lyrics        | 🔄 **Planned**                 |
-| Edit tag/ID3 in app               | 🔴 **Finish everything first** |
-| Proper Landscape UI               | 🔴 **Finish everything first** |
-| Animated icons in bottom nav bar  | 🔴 **Last core priority**      |
+| Feature                          | Priority                       |
+| -------------------------------- | ------------------------------ |
+| Play MP3, FLAC, OGG and OPUS     | ✅ **Complete**                |
+| Playlist builder                 | 🟡 **Almost Complete, halted** |
+| Settings                         | 🟡 **Almost Complete**         |
+| Sync colors based on album cover | 🟡 **Almost Complete**         |
+| Music visualizer                 | 🔄 **Planned**                 |
+| Font changer                     | 🔄 **Planned**                 |
+| Wallpaper accent color           | 🔄 **Planned**                 |
+| Lyrics screen, Load lyrics       | 🔄 **Planned**                 |
+| Edit tag/ID3 in app              | 🔴 **Finish everything first** |
+| Proper Landscape UI              | 🔴 **Finish everything first** |
+| Animated icons in bottom nav bar | 🔴 **Last core priority**      |
 
 > All core/base features will be removed from the roadmap once most of them are complete, only special features will remain.
 
