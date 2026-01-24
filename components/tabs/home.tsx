@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
-import Home from "../Home";
+import { usePlaylistStore } from "../../store/playlistStore";
+import HomeComponent from "../Home";
 
-export default function home() {
+export default function HomeTab() {
   const {
     songs,
     likedSongs,
@@ -14,15 +15,29 @@ export default function home() {
     loading,
   } = useSongStore();
   const { playSong, setQueue, showPlayerOverlay } = usePlayerStore();
+  const { playlists, fetchPlaylists } = usePlaylistStore();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchSongs(), fetchLikedSongs(), fetchStats()]);
-  }, [fetchSongs, fetchLikedSongs, fetchStats]);
+    if (songs.length === 0 || !stats) {
+      Promise.all([
+        fetchSongs(),
+        fetchLikedSongs(),
+        fetchStats(),
+        fetchPlaylists(),
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchSongs(), fetchLikedSongs(), fetchStats()]);
+    await Promise.all([
+      fetchSongs(),
+      fetchLikedSongs(),
+      fetchStats(),
+      fetchPlaylists(),
+    ]);
     setRefreshing(false);
   };
 
@@ -41,7 +56,7 @@ export default function home() {
   };
 
   return (
-    <Home
+    <HomeComponent
       songs={songs}
       likedSongs={likedSongs}
       stats={stats}
@@ -50,6 +65,7 @@ export default function home() {
       onRefresh={onRefresh}
       onPlaySong={PlaySong}
       onPlayLiked={PlayLiked}
+      playlists={playlists}
     />
   );
 }

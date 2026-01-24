@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Shadow } from "react-native-shadow-2";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { useTabStore, TAB_INDEXES } from "../../store/tabStore";
@@ -24,21 +25,40 @@ export default function QuickStats({ stats }: QuickStatsProps) {
   const themeValues = useThemeValues();
 
   const styles = useDynamicStyles(() => ({
+    container: {
+      position: "relative" as const,
+    },
     statsContainer: {
-      paddingRight: SPACING.md,
+      paddingHorizontal: SPACING.md,
     },
     statsRow: {
       flexDirection: "row" as const,
       gap: SPACING.sm,
       marginBottom: SPACING.lg,
     },
+    leftShadow: {
+      position: "absolute" as const,
+      left: -60,
+      top: 0,
+      bottom: 0,
+      width: SPACING.xxl,
+      zIndex: 1,
+    },
+    rightShadow: {
+      position: "absolute" as const,
+      right: -60,
+      top: 0,
+      bottom: 0,
+      width: SPACING.xxl,
+      zIndex: 1,
+    },
     statChip: {
       flexDirection: "row" as const,
       alignItems: "center" as const,
-      backgroundColor: COLORS.surfaceContainerHigh,
+      backgroundColor: COLORS.surfaceContainer,
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.sm,
-      borderRadius: RADIUS.sm,
+      borderRadius: RADIUS.md,
       gap: SPACING.sm,
     },
     statChipActive: {
@@ -55,64 +75,84 @@ export default function QuickStats({ stats }: QuickStatsProps) {
   }));
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.statsContainer}
-    >
-      <View style={styles.statsRow}>
-        <TouchableOpacity
-          style={[styles.statChip]}
-          onPress={() => Alert.alert("wait", "wait")}
-        >
-          <MaterialIcons
-            name="history"
-            size={18}
-            color={themeValues.COLORS.onSurfaceVariant}
-          />
-          <Text style={[styles.statChipText]}>History</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <Shadow
+        distance={24}
+        startColor={COLORS.background}
+        containerStyle={styles.leftShadow}
+        offset={[0, 0]}
+      >
+        <View style={{ width: SPACING.xxl, height: "100%" }} />
+      </Shadow>
 
-        <TouchableOpacity
-          style={styles.statChip}
-          onPress={() => setTabIndex(TAB_INDEXES.songs)}
-        >
-          <MaterialIcons
-            name="library-music"
-            size={18}
-            color={themeValues.COLORS.onSurfaceVariant}
-          />
-          <Text style={styles.statChipText}>
-            {stats?.total_songs || 0} songs
-          </Text>
-        </TouchableOpacity>
+      <Shadow
+        distance={24}
+        startColor={COLORS.background}
+        containerStyle={styles.rightShadow}
+        offset={[0, 0]}
+      >
+        <View style={{ width: SPACING.xxl, height: "100%" }} />
+      </Shadow>
 
-        <TouchableOpacity
-          style={styles.statChip}
-          onPress={() => setTabIndex(TAB_INDEXES.playlists)}
-        >
-          <MaterialIcons
-            name="queue-music"
-            size={18}
-            color={themeValues.COLORS.onSurfaceVariant}
-          />
-          <Text style={styles.statChipText}>
-            {stats?.total_playlists || 0} playlists
-          </Text>
-        </TouchableOpacity>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.statsContainer}
+      >
+        <View style={styles.statsRow}>
+          <TouchableOpacity
+            style={[styles.statChip]}
+            onPress={() => Alert.alert("wait", "wait")}
+          >
+            <MaterialIcons
+              name="history"
+              size={18}
+              color={themeValues.COLORS.onSurfaceVariant}
+            />
+            <Text style={[styles.statChipText]}>History</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.statChip]}
-          onPress={() => Alert.alert("wait", "wait")}
-        >
-          <MaterialIcons
-            name="repeat"
-            size={18}
-            color={themeValues.COLORS.onSurfaceVariant}
-          />
-          <Text style={[styles.statChipText]}>Most played</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <TouchableOpacity
+            style={styles.statChip}
+            onPress={() => setTabIndex(TAB_INDEXES.songs)}
+          >
+            <MaterialIcons
+              name="library-music"
+              size={18}
+              color={themeValues.COLORS.onSurfaceVariant}
+            />
+            <Text style={styles.statChipText}>
+              {stats?.total_songs || 0} songs
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.statChip}
+            onPress={() => setTabIndex(TAB_INDEXES.playlists)}
+          >
+            <MaterialIcons
+              name="queue-music"
+              size={18}
+              color={themeValues.COLORS.onSurfaceVariant}
+            />
+            <Text style={styles.statChipText}>
+              {stats?.total_playlists || 0} playlists
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.statChip]}
+            onPress={() => Alert.alert("wait", "wait")}
+          >
+            <MaterialIcons
+              name="repeat"
+              size={18}
+              color={themeValues.COLORS.onSurfaceVariant}
+            />
+            <Text style={[styles.statChipText]}>Most played</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 }

@@ -12,6 +12,7 @@ import {
   Animated,
   PanResponder,
   StyleSheet,
+  PanResponderGestureState,
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -44,9 +45,6 @@ const SwipeableTabs = forwardRef<SwipeableTabsRef, SwipeableTabsProps>(
     const currentIndexRef = useRef(currentIndex);
     const enabledRef = useRef(enabled);
 
-    const scaleAnim = useRef(new Animated.Value(1)).current;
-    const opacityAnim = useRef(new Animated.Value(1)).current;
-
     useEffect(() => {
       currentIndexRef.current = currentIndex;
     }, [currentIndex]);
@@ -60,8 +58,8 @@ const SwipeableTabs = forwardRef<SwipeableTabsRef, SwipeableTabsProps>(
         Animated.spring(translateX, {
           toValue: -currentIndex * SCREEN_WIDTH,
           useNativeDriver: true,
-          damping: 20,
-          stiffness: 200,
+          damping: 25,
+          stiffness: 150,
           mass: 0.8,
         }).start();
       }
@@ -74,8 +72,8 @@ const SwipeableTabs = forwardRef<SwipeableTabsRef, SwipeableTabsProps>(
           Animated.spring(translateX, {
             toValue: -clampedIndex * SCREEN_WIDTH,
             useNativeDriver: true,
-            damping: 20,
-            stiffness: 200,
+            damping: 25,
+            stiffness: 150,
             mass: 0.8,
           }).start();
         } else {
@@ -93,105 +91,66 @@ const SwipeableTabs = forwardRef<SwipeableTabsRef, SwipeableTabsProps>(
     const panResponder = useRef(
       PanResponder.create({
         onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponder: (_, gestureState) => {
-          const isHorizontalSwipe =
-            Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.5;
-          const hasMovedEnough = Math.abs(gestureState.dx) > 10;
-          return enabledRef.current && isHorizontalSwipe && hasMovedEnough;
-        },
-        onPanResponderGrant: () => {
+        onMoveShouldSetPanResponder: useCallback(
+          (_: any, gestureState: PanResponderGestureState) => {
+            const isHorizontalSwipe =
+              Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.5;
+            const hasMovedEnough = Math.abs(gestureState.dx) > 5;
+            return enabledRef.current && isHorizontalSwipe && hasMovedEnough;
+          },
+          []
+        ),
+        onPanResponderGrant: useCallback(() => {
           setIsDragging(true);
           dragOffset.current = -currentIndexRef.current * SCREEN_WIDTH;
+        }, []),
+        onPanResponderMove: useCallback(
+          (_: any, gestureState: PanResponderGestureState) => {
+            const newPosition = dragOffset.current + gestureState.dx;
 
-          Animated.parallel([
-            Animated.spring(scaleAnim, {
-              toValue: 0.98,
-              useNativeDriver: true,
-              damping: 20,
-              stiffness: 300,
-            }),
-            Animated.timing(opacityAnim, {
-              toValue: 0.95,
-              duration: 100,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        },
-        onPanResponderMove: (_, gestureState) => {
-          const newPosition = dragOffset.current + gestureState.dx;
+            const minPosition = -(totalPages - 1) * SCREEN_WIDTH;
+            const maxPosition = 0;
 
-          const minPosition = -(totalPages - 1) * SCREEN_WIDTH;
-          const maxPosition = 0;
+            let resistedPosition = newPosition;
+            if (newPosition > maxPosition) {
+              resistedPosition =
+                maxPosition + (newPosition - maxPosition) * 0.3;
+            } else if (newPosition < minPosition) {
+              resistedPosition =
+                minPosition + (newPosition - minPosition) * 0.3;
+            }
 
-          let resistedPosition = newPosition;
-          if (newPosition > maxPosition) {
-            resistedPosition = maxPosition + (newPosition - maxPosition) * 0.3;
-          } else if (newPosition < minPosition) {
-            resistedPosition = minPosition + (newPosition - minPosition) * 0.3;
-          }
+            translateX.setValue(resistedPosition);
+          },
+          [totalPages, translateX]
+        ),
+        onPanResponderRelease: useCallback(
+          (_: any, gestureState: PanResponderGestureState) => {
+            setIsDragging(false);
 
-          translateX.setValue(resistedPosition);
+            const { dx, vx } = gestureState;
+            let newIndex = currentIndexRef.current;
 
-          const progress = Math.max(
-            -1,
-            Math.min(1, gestureState.dx / SWIPE_THRESHOLD)
-          );
-          onDragProgress?.(progress);
-        },
-        onPanResponderRelease: (_, gestureState) => {
+            const shouldSwipeLeft =
+              dx < -SWIPE_THRESHOLD ||
+              (vx < -SWIPE_VELOCITY_THRESHOLD && dx < 0);
+            const shouldSwipeRight =
+              dx > SWIPE_THRESHOLD || (vx > SWIPE_VELOCITY_THRESHOLD && dx > 0);
+
+            if (shouldSwipeLeft && newIndex < totalPages - 1) {
+              newIndex = currentIndexRef.current + 1;
+            } else if (shouldSwipeRight && newIndex > 0) {
+              newIndex = currentIndexRef.current - 1;
+            }
+
+            goToIndex(newIndex);
+          },
+          [goToIndex, totalPages]
+        ),
+        onPanResponderTerminate: useCallback(() => {
           setIsDragging(false);
-          onDragProgress?.(0);
-
-          Animated.parallel([
-            Animated.spring(scaleAnim, {
-              toValue: 1,
-              useNativeDriver: true,
-              damping: 15,
-              stiffness: 200,
-            }),
-            Animated.timing(opacityAnim, {
-              toValue: 1,
-              duration: 150,
-              useNativeDriver: true,
-            }),
-          ]).start();
-
-          const { dx, vx } = gestureState;
-          let newIndex = currentIndexRef.current;
-
-          const shouldSwipeLeft =
-            dx < -SWIPE_THRESHOLD || (vx < -SWIPE_VELOCITY_THRESHOLD && dx < 0);
-          const shouldSwipeRight =
-            dx > SWIPE_THRESHOLD || (vx > SWIPE_VELOCITY_THRESHOLD && dx > 0);
-
-          if (shouldSwipeLeft && newIndex < totalPages - 1) {
-            newIndex = currentIndexRef.current + 1;
-          } else if (shouldSwipeRight && newIndex > 0) {
-            newIndex = currentIndexRef.current - 1;
-          }
-
-          goToIndex(newIndex);
-        },
-        onPanResponderTerminate: () => {
-          setIsDragging(false);
-          onDragProgress?.(0);
-
-          Animated.parallel([
-            Animated.spring(scaleAnim, {
-              toValue: 1,
-              useNativeDriver: true,
-              damping: 15,
-              stiffness: 200,
-            }),
-            Animated.timing(opacityAnim, {
-              toValue: 1,
-              duration: 150,
-              useNativeDriver: true,
-            }),
-          ]).start();
-
           goToIndex(currentIndexRef.current);
-        },
+        }, [goToIndex]),
       })
     ).current;
     return (
@@ -201,8 +160,7 @@ const SwipeableTabs = forwardRef<SwipeableTabsRef, SwipeableTabsProps>(
             styles.pagesContainer,
             {
               width: SCREEN_WIDTH * totalPages,
-              transform: [{ translateX }, { scale: scaleAnim }],
-              opacity: opacityAnim,
+              transform: [{ translateX }],
             },
           ]}
           {...panResponder.panHandlers}

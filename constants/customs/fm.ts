@@ -20,15 +20,23 @@ export const FM_CONFIG = {
     settings: [
       {
         codename: "fm_username",
-        name: "Last.fm Username",
-        description: "Your Last.fm username for recommendations",
+        name: "Username",
+        description: "Download your profile data",
         emoji: "supervised-user-circle",
         type: "action",
         defaultValue: undefined,
       },
       {
+        codename: "fm_key",
+        name: "API Key",
+        description: "Your Last.fm API key in case of failures",
+        emoji: "key",
+        type: "action",
+        defaultValue: undefined,
+      },
+      {
         codename: "fm_login",
-        name: "Last.fm Login",
+        name: "Scrobbling",
         description: "Log in to your Last.fm account to scrobble tracks",
         emoji: "login",
         type: "action",

@@ -5,8 +5,11 @@ import {
   Feather,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { COLORS, SPACING, RADIUS } from "../../constants/theme";
-import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { COLORS, SPACING, RADIUS } from "../../../constants/theme";
+import {
+  useDynamicStyles,
+  useThemeValues,
+} from "../../../hooks/useDynamicStyles";
 
 interface Song {
   id: string;

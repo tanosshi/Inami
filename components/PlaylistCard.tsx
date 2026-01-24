@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 
@@ -26,29 +27,37 @@ export default function PlaylistCard({ playlist, onPress }: PlaylistCardProps) {
   const styles = useDynamicStyles(() => ({
     container: {
       width: CARD_WIDTH,
-      backgroundColor: COLORS.surfaceContainerHigh,
       borderRadius: RADIUS.lg,
-      padding: SPACING.md,
+      overflow: "hidden" as const,
     },
-    artwork: {
+    artworkContainer: {
       width: "100%" as const,
-      height: 100,
+      aspectRatio: 1,
       backgroundColor: COLORS.primaryContainer,
-      borderRadius: RADIUS.md,
       justifyContent: "center" as const,
       alignItems: "center" as const,
-      marginBottom: SPACING.md,
+    },
+    artworkImage: {
+      width: "100%" as const,
+      height: "100%" as const,
+    },
+    vignette: {
+      position: "absolute" as const,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingTop: 10,
+      paddingBottom: SPACING.sm,
+      paddingHorizontal: SPACING.sm,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
     name: {
       fontFamily: "Inter_600SemiBold",
       ...TYPOGRAPHY.titleSmall,
-      color: COLORS.onSurface,
-    },
-    count: {
-      fontFamily: "Inter_400Regular",
-      ...TYPOGRAPHY.bodySmall,
-      color: COLORS.onSurfaceVariant,
-      marginTop: SPACING.xs,
+      color: "#FFFFFF",
+      textShadowColor: "rgba(0, 0, 0, 0.75)",
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
     },
   }));
 
@@ -58,19 +67,26 @@ export default function PlaylistCard({ playlist, onPress }: PlaylistCardProps) {
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <View style={styles.artwork}>
-        <MaterialIcons
-          name="queue-music"
-          size={40}
-          color={themeValues.COLORS.primary}
-        />
+      <View style={styles.artworkContainer}>
+        {playlist.artwork ? (
+          <Image
+            source={{ uri: playlist.artwork }}
+            style={styles.artworkImage}
+            contentFit="cover"
+          />
+        ) : (
+          <MaterialIcons
+            name="queue-music"
+            size={40}
+            color={themeValues.COLORS.primary}
+          />
+        )}
+        <View style={styles.vignette}>
+          <Text style={styles.name} numberOfLines={1}>
+            {playlist.name}
+          </Text>
+        </View>
       </View>
-      <Text style={styles.name} numberOfLines={1}>
-        {playlist.name}
-      </Text>
-      <Text style={styles.count}>
-        {playlist.song_count} {playlist.song_count === 1 ? "song" : "songs"}
-      </Text>
     </TouchableOpacity>
   );
 }

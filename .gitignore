@@ -23,6 +23,7 @@ android/
 expo-env.d.ts
 next-env.d.ts
 .env*.local
+secrets.local.*
 
 # Native / mobile
 .kotlin/
@@ -74,9 +75,6 @@ chainlit.md
 # Deployment
 .vercel
 
-# Data
-agenthub/agents/youtube/db
-
 # Archives / binaries
 **/*.zip
 **/*.tar
@@ -88,6 +86,3 @@ agenthub/agents/youtube/db
 
 # Cache
 .cache/
-
-# Misc
-app-example

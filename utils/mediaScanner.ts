@@ -1,7 +1,13 @@
 import { Platform, PermissionsAndroid } from "react-native";
 import * as db from "./database";
 import { extractMetadata } from "./metadataExtractor";
-import { scanAllMusicFolders, AudioFile } from "./folderManager";
+import {
+  scanAllMusicFolders,
+  scanDirectoryForAudio,
+  removeFolder,
+  AudioFile,
+} from "./folderManager";
+import { useSongStore } from "../store/songStore";
 
 export interface AudioAsset {
   id: string;
@@ -216,4 +222,79 @@ export const refreshLibrary = async (
   } catch (error) {
     throw error;
   }
+};
+
+const scannedThisSession = new Set<string>();
+export const scanEnabledFoldersOnStartup = async (): Promise<void> => {
+  try {
+    const enabledFolders = await db.getEnabledMusicFolders();
+    if (!enabledFolders || enabledFolders.length === 0) return;
+
+    let existingSongs = await db.getAllSongs();
+    const existingUris = new Set(existingSongs.map((s) => s.uri));
+
+    for (const folder of enabledFolders) {
+      if (scannedThisSession.has(folder.uri)) continue;
+
+      try {
+        const files = await scanDirectoryForAudio(folder.uri, true);
+
+        if (!files || files.length === 0) {
+          console.log(`[startup-scan] no files found in folder ${folder.uri}`);
+          scannedThisSession.add(folder.uri);
+          continue;
+        }
+
+        const newFiles = files.filter((f) => !existingUris.has(f.uri));
+        if (newFiles.length > 0) {
+          for (let i = 0; i < newFiles.length; i += CONCURRENT_BATCH_SIZE) {
+            const batch = newFiles.slice(i, i + CONCURRENT_BATCH_SIZE);
+            await processBatch(batch, undefined, i, newFiles.length);
+          }
+          for (const f of newFiles) existingUris.add(f.uri);
+        }
+
+        scannedThisSession.add(folder.uri);
+      } catch {
+        try {
+          let folderPathPart = decodeURIComponent(folder.uri || "");
+          folderPathPart = folderPathPart.split("/").pop() || folderPathPart;
+          if (folderPathPart.includes(":"))
+            folderPathPart = folderPathPart.split(":").pop() || folderPathPart;
+          folderPathPart = folderPathPart.replace(/%2F/g, "/");
+          folderPathPart = folderPathPart.replace(/%20/g, " ");
+
+          const allSongs = await db.getAllSongs();
+          const songsToRemove: string[] = [];
+          for (const s of allSongs) {
+            try {
+              const decodedSongUri = decodeURIComponent(s.uri || "");
+              if (folderPathPart && decodedSongUri.includes(folderPathPart)) {
+                songsToRemove.push(s.id);
+              }
+            } catch {}
+          }
+
+          for (const id of songsToRemove) {
+            try {
+              await db.deleteSong(id);
+            } catch {}
+          }
+
+          try {
+            const fetchSongs = useSongStore.getState().fetchSongs;
+            if (fetchSongs) await fetchSongs();
+          } catch {}
+
+          try {
+            await removeFolder(folder.id);
+          } catch {}
+
+          scannedThisSession.add(folder.uri);
+        } catch {
+          scannedThisSession.add(folder.uri);
+        }
+      }
+    }
+  } catch {}
 };

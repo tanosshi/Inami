@@ -99,12 +99,12 @@ export default function SettingsModal({
       borderColor: COLORS.outline,
     },
     confirmButton: {
-      backgroundColor: COLORS.primary,
+      backgroundColor: themeValues.COLORS.primary,
     },
     cancelButtonText: {
       fontFamily: "Inter_600SemiBold",
       ...TYPOGRAPHY.labelLarge,
-      color: COLORS.primary,
+      color: themeValues.COLORS.primary,
     },
     confirmButtonText: {
       fontFamily: "Inter_600SemiBold",

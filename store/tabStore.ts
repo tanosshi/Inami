@@ -13,6 +13,6 @@ export const useTabStore = create<TabStore>((set) => ({
 export const TAB_INDEXES = {
   home: 0,
   songs: 1,
-  playlists: 2,
-  discover: 3,
+  artists: 2,
+  playlists: 3,
 } as const;

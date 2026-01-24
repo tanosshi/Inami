@@ -24,6 +24,7 @@ import {
   ANIMATION as GrayAnimation,
   TAB_CONFIG as GrayTabConfig,
 } from "./themes/gray";
+import { pastelify } from "../utils/colorUtils";
 
 let COLORS: typeof BlackColors = BlackColors;
 let SPACING: typeof BlackSpacing = BlackSpacing;
@@ -43,6 +44,7 @@ export const applyTheme = (themeName: string) => {
       TYPOGRAPHY = LightTypography;
       ANIMATION = LightAnimation;
       TAB_CONFIG = LightTabConfig;
+      COLORS.primary = pastelify(COLORS.primary);
       currentThemeName = "Light";
       break;
     case "Gray":
@@ -52,6 +54,7 @@ export const applyTheme = (themeName: string) => {
       TYPOGRAPHY = GrayTypography;
       ANIMATION = GrayAnimation;
       TAB_CONFIG = GrayTabConfig;
+      COLORS.primary = pastelify(COLORS.primary);
       currentThemeName = "Gray";
       break;
     case "Dark":
@@ -72,7 +75,6 @@ export const getCurrentTheme = (): string => {
   return currentThemeName;
 };
 
-// theme provider will override this, but we need to pre-apply so errors don't happen before that
 applyTheme("Black");
 
 export { COLORS, SPACING, RADIUS, TYPOGRAPHY, ANIMATION, TAB_CONFIG };

@@ -1,8 +1,12 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
-import { useDynamicStyles } from "../../hooks/useDynamicStyles";
+import { useRouter } from "expo-router";
+import { usePlayerStore } from "../../../store/playerStore";
+import { COLORS, SPACING, TYPOGRAPHY } from "../../../constants/theme";
+import { useDynamicStyles } from "../../../hooks/useDynamicStyles";
+import { triggerHaptic } from "../../../utils/haptics";
+import { safeString } from "../../../utils/safeString";
 
 interface Song {
   id: string;
@@ -21,6 +25,8 @@ interface SongInfoProps {
 }
 
 export default function SongInfo({ song }: SongInfoProps) {
+  const router = useRouter();
+  const { hidePlayerOverlay } = usePlayerStore();
   const styles = useDynamicStyles(() => ({
     songInfo: {
       paddingHorizontal: SPACING.lg,
@@ -42,27 +48,28 @@ export default function SongInfo({ song }: SongInfoProps) {
     },
   }));
 
-  const safeString = (value: any): string => {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "string") return value;
-    if (typeof value === "number") return value.toString();
-    if (typeof value === "boolean") return value.toString();
-    try {
-      return String(value);
-    } catch {
-      return "";
-    }
-  };
-
   return (
     <View style={styles.songInfo}>
       <View style={styles.titleContainer}>
         <Text style={styles.songTitle} numberOfLines={1}>
           {safeString(song.title)}
         </Text>
-        <Text style={styles.songArtist} numberOfLines={1}>
-          {safeString(song.artist)}
-        </Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            triggerHaptic();
+            const artistName = safeString(song.artist);
+            if (!artistName) return;
+            hidePlayerOverlay();
+            setTimeout(() => {
+              router.push(`/artist/${encodeURIComponent(artistName)}`);
+            }, 260);
+          }}
+        >
+          <Text style={styles.songArtist} numberOfLines={1}>
+            {safeString(song.artist)}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -27,13 +27,15 @@ import { TRACKS_LAYOUT_CONFIG } from "../../constants/customizations/tracks_layo
 import { PLAYLISTS_LAYOUT_CONFIG } from "../../constants/customizations/playlists_layout";
 import { DISCOVER_LAYOUT_CONFIG } from "../../constants/customizations/discover_layout";
 import { FORYOU_LAYOUT_CONFIG } from "../../constants/customizations/foryou_layout";
+import { PLAYER_STYLE_CONFIG } from "../../constants/customizations/player_style";
 
 type CustomizationConfig =
   | typeof NAV_STYLE_CONFIG
   | typeof TRACKS_LAYOUT_CONFIG
   | typeof PLAYLISTS_LAYOUT_CONFIG
   | typeof DISCOVER_LAYOUT_CONFIG
-  | typeof FORYOU_LAYOUT_CONFIG;
+  | typeof FORYOU_LAYOUT_CONFIG
+  | typeof PLAYER_STYLE_CONFIG;
 
 const CONFIG_MAP: Record<
   string,
@@ -45,6 +47,7 @@ const CONFIG_MAP: Record<
     config: PLAYLISTS_LAYOUT_CONFIG,
     title: "Playlists Layout",
   },
+  player_style: { config: PLAYER_STYLE_CONFIG, title: "Player Style" },
   discover_layout: { config: DISCOVER_LAYOUT_CONFIG, title: "Discover Layout" },
   homescreen: { config: FORYOU_LAYOUT_CONFIG, title: "Home Screen" },
   fonts: { config: FORYOU_LAYOUT_CONFIG, title: "Fonts" },
@@ -182,7 +185,7 @@ export default function SettingsScreen() {
             <MaterialIcons
               name={emoji || "settings"}
               size={24}
-              color={COLORS.primary}
+              color={COLORS.onPrimary}
             />
           </View>
           <View style={styles.settingContent}>
@@ -197,10 +200,10 @@ export default function SettingsScreen() {
               onValueChange={(value) => handleToggleChange(codename, value)}
               trackColor={{
                 false: COLORS.surfaceVariant,
-                true: COLORS.primaryContainer,
+                true: themeValues.COLORS.primary,
               }}
               thumbColor={
-                settingsState[codename] ? COLORS.primary : COLORS.outline
+                settingsState[codename] ? COLORS.onPrimary : COLORS.outline
               }
               disabled={isLoading}
             />
@@ -230,7 +233,7 @@ export default function SettingsScreen() {
     smallnavbariconselected: {
       width: 40,
       height: 10,
-      backgroundColor: COLORS.primaryContainer,
+      backgroundColor: themeValues.COLORS.primary,
       borderRadius: RADIUS.full,
       marginHorizontal: SPACING.sm,
     },
@@ -249,7 +252,7 @@ export default function SettingsScreen() {
     smallbottomleftbutton: {
       width: 25,
       height: 25,
-      backgroundColor: COLORS.primaryContainer,
+      backgroundColor: themeValues.COLORS.primary,
       borderRadius: RADIUS.sm,
       position: "absolute",
       bottom: SPACING.xl - 2,
@@ -305,7 +308,7 @@ export default function SettingsScreen() {
     sectionTitle: {
       fontFamily: "Inter_500Medium",
       ...TYPOGRAPHY.titleSmall,
-      color: COLORS.primary,
+      color: COLORS.onSurface,
       marginBottom: SPACING.sm,
       marginTop: SPACING.md,
       paddingHorizontal: SPACING.md,
@@ -325,7 +328,7 @@ export default function SettingsScreen() {
       width: 40,
       height: 40,
       borderRadius: RADIUS.full,
-      backgroundColor: COLORS.primaryContainer,
+      backgroundColor: themeValues.COLORS.primary,
       justifyContent: "center" as ViewStyle["justifyContent"],
       alignItems: "center" as ViewStyle["alignItems"],
       marginRight: SPACING.md,

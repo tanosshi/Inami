@@ -11,8 +11,10 @@ interface Song {
   uri: string;
   artwork?: string;
   palette?: string[];
+  genres?: string[];
   is_liked: boolean;
   play_count: number;
+  created_at?: string;
 }
 
 interface Stats {

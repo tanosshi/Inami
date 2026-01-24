@@ -6,15 +6,49 @@ import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+
+  const timeOfDay =
+    hour < 5
+      ? "night"
+      : hour < 12
+      ? "morning"
+      : hour < 17
+      ? "afternoon"
+      : hour < 22
+      ? "evening"
+      : "night";
+
+  const timeGreetings = {
+    morning: ["Good morning", "Morning!"],
+    afternoon: ["Good afternoon", "Afternoon!"],
+    evening: ["Good evening", "Evening!"],
+    night: ["Good evening", "Night owl huh?"],
+  } as const;
+
+  const generalGreetings = [
+    "Missed you",
+    "Welcome back",
+    "Nice to see you",
+    "Hey there",
+    "helloo!!",
+    "Whats up",
+  ];
+
+  const useTimeGreeting = Math.random() < 0.4;
+  if (useTimeGreeting) {
+    const pool = timeGreetings[timeOfDay] ?? timeGreetings.morning;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  const general =
+    generalGreetings[Math.floor(Math.random() * generalGreetings.length)];
+
+  return general;
 };
 
 const SettingsButton = ({ onPress }: { onPress: () => void }) => {
   const themeValues = useThemeValues();
   const scale = useRef(new Animated.Value(1)).current;
-  const rotation = useRef(new Animated.Value(0)).current;
 
   const buttonStyles = useDynamicStyles(() => ({
     settingsButton: {
@@ -35,33 +69,13 @@ const SettingsButton = ({ onPress }: { onPress: () => void }) => {
   };
 
   const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(scale, {
-        toValue: 1,
-        damping: 12,
-        stiffness: 200,
-        useNativeDriver: true,
-      }),
-      Animated.sequence([
-        Animated.timing(rotation, {
-          toValue: 15,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(rotation, {
-          toValue: 0,
-          damping: 8,
-          stiffness: 150,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
+    Animated.spring(scale, {
+      toValue: 1,
+      damping: 12,
+      stiffness: 200,
+      useNativeDriver: true,
+    }).start();
   };
-
-  const rotateInterpolate = rotation.interpolate({
-    inputRange: [-360, 360],
-    outputRange: ["-360deg", "360deg"],
-  });
 
   return (
     <Pressable
@@ -72,7 +86,7 @@ const SettingsButton = ({ onPress }: { onPress: () => void }) => {
     >
       <Animated.View
         style={{
-          transform: [{ scale }, { rotate: rotateInterpolate }],
+          transform: [{ scale }],
         }}
       >
         <MaterialIcons

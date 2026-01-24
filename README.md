@@ -22,75 +22,54 @@ _The **one and only** proper music player, with all the features you need._
 - Locally track listening habits, only for you, fully private.
 - Automatically fetch album covers and lyrics if toggled.
 - All your data is yours, stored locally on your device or optionally synced.
-- Open source and always will be.
-- Plenty of pre-made themes.
-- All user ideas are valued to me.
+- Free and open source and always will be.
 
 ## How other players compare
 
 - Most players are built in Kotlin, while we run in Expo.js. Performance may vary.
 - Battery usage might be slightly higher than the average music player.
-- For low end devices the app may lag a bit during startup or caching for us.
+- Storage wise, we'll be around 3 times larger than the average music players as we'll try to keep you online, even if you're offline.
 
 ---
 
-## 📦 Features
-
-| Feature                          | Priority                       |
-| -------------------------------- | ------------------------------ |
-| Play MP3, FLAC, OGG and OPUS     | ✅ **Complete**                |
-| Playlist builder                 | 🟡 **Almost Complete, halted** |
-| Settings                         | 🟡 **Almost Complete**         |
-| Sync colors based on album cover | 🟡 **Almost Complete**         |
-| Music visualizer                 | 🔄 **Planned**                 |
-| Font changer                     | 🔄 **Planned**                 |
-| Wallpaper accent color           | 🔄 **Planned**                 |
-| Lyrics screen, Load lyrics       | 🔄 **Planned**                 |
-| Edit tag/ID3 in app              | 🔴 **Finish everything first** |
-| Proper Landscape UI              | 🔴 **Finish everything first** |
-| Animated icons in bottom nav bar | 🔴 **Last core priority**      |
-
-> All core/base features will be removed from the roadmap once most of them are complete, only special features will remain.
-
----
-
-## 🎯 (Future) Feature Roadmap
-
-> Future roadmap features will be made once the core features are complete.
+## 🎯 Feature Roadmap
 
 <div align="center">
 
-| Feature                                             | Importance                        |
-| --------------------------------------------------- | --------------------------------- |
-| Auto fetch metadata; (artist+) covers, lyrics etc.  | 🔴 **Important**                  |
-| Make every part easily customizable (theme.ts)      | 🔴 **Important**                  |
-| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  |
-| Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  |
-| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  |
-| Tag cloud feature                                   | 🔴 **Finish auto fetch first**    |
-| Custom logo and app name                            | 🟡 **High**                       |
-| Music recommendations, offline version after        | 🟡 **High**                       |
-| Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       |
-| Gapless playback                                    | 🟡 **High**                       |
-| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       |
-| Music energy score of the day                       | 🟡 **High**                       |
-| Volume normalizing                                  | 🟡 **High**                       |
-| Smart playlists                                     | 🟢 **Low**                        |
-| Integration with Last.fm                            | 🟢 **Low**                        |
-| View local most played artist/track                 | 🟢 **Low**                        |
-| Sync data, songs and playlists                      | 🟢 **Low**                        |
-| Automatic music recommender (Bored detector)        | 🟢 **Low**                        |
-| Automatic sleep timer                               | 🟢 **Low**                        |
-| Floating lyrics                                     | 🟢 **Low**                        |
-| Listening stats page (on Discover maybe?)           | 🟢 **Low**                        |
-| Copy music link; even when offline.                 | 🟢 **Low**                        |
-| Squiggly line in notification (if possible)         | 🟢 **Low**                        |
-| Show last.fm stats in For You                       | 🟢 **Low**                        |
-| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** |
-| Airbuds support (Extremely challenging)             | ⁉ **Scrap?**                      |
-| In-app equalizer                                    | ⁉ **Scrap?**                      |
-| Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      |
-| Skip Andr. audio processing, directly output to DAC | ⁉ **Scrap?**                      |
+| Feature                                             | Importance                        | Completion                 |
+| --------------------------------------------------- | --------------------------------- | -------------------------- |
+| Auto fetch metadata; artist, covers, lyrics etc.    | 🔴 **Important**                  | 🗯 **Improvement required** |
+| Make every part easily customizable (theme.ts)      | 🔴 **Important**                  | 🟡 **Ongoing**             |
+| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  | 🔄 **Planned**             |
+| Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  | 🔄 **Planned**             |
+| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  | 🔄 **Planned**             |
+| Tag cloud feature (In profile)                      | 🔴 **Important**                  | 🔄 **Planned**             |
+| Custom logo and app name                            | 🟡 **High**                       | 🔄 **Planned**             |
+| Music recommendations, offline version after        | 🟡 **High**                       | 🔄 **Planned**             |
+| Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       | 🔄 **Planned**             |
+| Gapless playback                                    | 🟡 **High**                       | 🔄 **Planned**             |
+| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       | 🔄 **Planned**             |
+| Music energy score of the day / Mainstream score    | 🟡 **High**                       | 🔄 **Planned**             |
+| Control music from PC                               | 🟡 **High**                       | 🔄 **Planned**             |
+| Artist fan image board                              | 🟡 **High**                       | 🔄 **Planned**             |
+| Automatic word for word lyrics (waveform predict)   | 🟡 **High**                       | 🔄 **Planned**             |
+| Volume normalizing                                  | 🟡 **High**                       | 🔄 **Planned**             |
+| Smart playlists                                     | 🟢 **Low**                        | 🔄 **Planned**             |
+| Integration with Last.fm                            | 🟢 **Low**                        | 🟡 **Ongoing**             |
+| View local most played artist/track                 | 🟢 **Low**                        | 🔄 **Planned**             |
+| Sync data, songs and playlists                      | 🟢 **Low**                        | 🔄 **Planned**             |
+| Automatic music recommender (Bored detector)        | 🟢 **Low**                        | 🔄 **Planned**             |
+| Automatic sleep timer                               | 🟢 **Low**                        | 🔄 **Planned**             |
+| Floating lyrics                                     | 🟢 **Low**                        | 🔄 **Planned**             |
+| Listening stats page                                | 🟢 **Low**                        | 🔄 **Planned**             |
+| Copy music link; even when offline.                 | 🟢 **Low**                        | 🔄 **Planned**             |
+| Squiggly line in notification (if possible)         | 🟢 **Low**                        | 🔄 **Planned**             |
+| Show last.fm stats in For You                       | 🟢 **Low**                        | 🔄 **Planned**             |
+| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | Deciding                   |
+| Airbuds™ (app) support (Challenging)                | ⁉ **Scrap?**                      | Deciding                   |
+| In-app equalizer                                    | ⁉ **Scrap?**                      | Deciding                   |
+| Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      | Deciding                   |
+| Directly output to DAC                              | ⁉ **Scrap?**                      | Deciding                   |
 
 #### '⁉' indicates that i'll think about it after core functions are done.
 
@@ -105,10 +84,10 @@ _The **one and only** proper music player, with all the features you need._
 | Feature               | Importance       |
 | --------------------- | ---------------- |
 | Regular dark mode     | 🔴 **Fix**       |
+| YouTube Music replica | 🔴 **Ongoing**   |
 | Playful pink          | 🔴 **Important** |
 | Spotify replica       | 🟡 **High**      |
 | Sharp dark mode       | 🟡 **High**      |
-| YouTube Music replica | 🟢 **Last**      |
 
 > These are presets, user's can make their own or customize existing ones.
 > Themes will include custom fonts, colors, icons and more.

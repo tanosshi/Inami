@@ -1,9 +1,11 @@
+// literally everything is gonna be changed here lmao
+
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  Animated,
   View,
   Text,
-  ScrollView,
   Dimensions,
   TouchableOpacity,
   Image,
@@ -15,6 +17,7 @@ import { triggerHaptic } from "../../utils/haptics";
 
 const { width } = Dimensions.get("window");
 const BIG_SQUARE_SIZE = (width - SPACING.md * 3) * 0.6;
+const TITLEBOX_HEIGHT = 210;
 
 // Demo for now but we'll use a similar format
 const somethingForYou = [
@@ -23,6 +26,7 @@ const somethingForYou = [
   { id: "3", title: "Song Title 3", artist: "Artist 3" },
   { id: "4", title: "Song Title 4", artist: "Artist 4" },
 ];
+
 // demos too, btw titles are gonna be genres not these things
 const featuredTiles = {
   scroll: {
@@ -47,8 +51,20 @@ const handleTilePress = (tileType: string) => {
   // todo
 };
 
-export default function discover() {
+export default function Discover() {
   const themeValues = useThemeValues();
+
+  const scrollY = React.useRef(new Animated.Value(0)).current;
+  const translateY = scrollY.interpolate({
+    inputRange: [0, TITLEBOX_HEIGHT],
+    outputRange: [0, -TITLEBOX_HEIGHT],
+    extrapolate: "clamp",
+  });
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, TITLEBOX_HEIGHT * 0.6, TITLEBOX_HEIGHT],
+    outputRange: [1, 0.65, 0],
+    extrapolate: "clamp",
+  });
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -60,8 +76,39 @@ export default function discover() {
       color: COLORS.onSurface,
       fontSize: 32,
       fontWeight: "bold" as const,
-      marginTop: SPACING.md,
       marginBottom: SPACING.lg,
+    },
+    titleBox: {
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: COLORS.primary,
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+      borderBottomLeftRadius: RADIUS.xxl + RADIUS.sm,
+      borderBottomRightRadius: RADIUS.xxl + RADIUS.sm,
+      paddingVertical: SPACING.xl,
+      paddingLeft: SPACING.md + 2,
+      paddingRight: SPACING.xl,
+      minHeight: TITLEBOX_HEIGHT,
+      justifyContent: "flex-end" as const,
+      alignItems: "flex-start" as const,
+      zIndex: 10,
+      elevation: 6,
+    },
+    titleText: {
+      color: COLORS.surface,
+      fontSize: 32,
+      fontWeight: "bold" as const,
+      textAlign: "left" as const,
+    },
+    descriptionText: {
+      color: COLORS.surface,
+      fontSize: 16,
+      textAlign: "left" as const,
+      marginTop: SPACING.sm,
+      opacity: 0.8,
     },
     featuredContainer: {
       flexDirection: "row" as const,
@@ -158,9 +205,17 @@ export default function discover() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <Text style={styles.header}>Discover</Text>
+      <Animated.View
+        style={[
+          styles.titleBox,
+          { transform: [{ translateY }], opacity: headerOpacity },
+        ]}
+      >
+        <Text style={styles.titleText}>Explore a new taste</Text>
+        <Text style={styles.descriptionText}>
+          Music specifically curated for you
+        </Text>
+
         <MaterialIcons
           name="more-vert"
           size={24}
@@ -171,7 +226,17 @@ export default function discover() {
             top: SPACING.md + 5,
           }}
         />
+      </Animated.View>
 
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: TITLEBOX_HEIGHT + SPACING.md }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+      >
         {/* Featured */}
         <View style={styles.featuredContainer}>
           {/* Big */}
@@ -274,7 +339,7 @@ export default function discover() {
             </View>
           </View>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

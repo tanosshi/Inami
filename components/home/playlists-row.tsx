@@ -1,12 +1,13 @@
 import React from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 interface PlaylistDemo {
   id: string;
-  artwork: string;
+  artwork?: string | null;
 }
 
 interface PlaylistsRowProps {
@@ -14,10 +15,15 @@ interface PlaylistsRowProps {
 }
 
 export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
+  const router = useRouter();
+
+  const handlePlaylistPress = (playlist: PlaylistDemo) => {
+    router.push(`/playlist/${playlist.id}`);
+  };
   const styles = useDynamicStyles(() => ({
     container: {
-      marginTop: 4,
-      marginBottom: 24,
+      marginTop: -SPACING.xl + 8,
+      marginBottom: 45,
     },
     sectionTitle: {
       fontFamily: "Inter_600SemiBold",
@@ -39,9 +45,8 @@ export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
     },
   }));
 
-  if (!playlists || playlists.length === 0) {
-    return null;
-  }
+  const playlistsWithArtwork = playlists.filter((p) => p.artwork);
+  if (!playlistsWithArtwork || playlistsWithArtwork.length === 0) return null;
 
   return (
     <View style={styles.container}>
@@ -51,14 +56,18 @@ export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {playlists.map((playlist) => (
-          <View key={playlist.id} style={styles.playlistItem}>
+        {playlistsWithArtwork.map((playlist) => (
+          <TouchableOpacity
+            key={playlist.id}
+            style={styles.playlistItem}
+            onPress={() => handlePlaylistPress(playlist)}
+          >
             <Image
-              source={{ uri: playlist.artwork }}
+              source={{ uri: playlist.artwork! }}
               style={styles.playlistImage}
               resizeMode="cover"
             />
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>

@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
-import DropdownMenu from "../DropdownMenu";
-import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../../constants/theme";
+import DropdownMenu from "../../DropdownMenu";
+import {
+  useDynamicStyles,
+  useThemeValues,
+} from "../../../hooks/useDynamicStyles";
 import {
   isSleepTimerActive,
   formatRemainingTime,
-} from "../../utils/sleepTimer";
-import SleepTimerModal from "./SleepTimerModal";
+} from "../../../utils/sleepTimer";
+import SleepTimerModal from "../SleepTimerModal";
 
 interface PlayerHeaderProps {
   onBackPressed: () => void;

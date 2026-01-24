@@ -198,6 +198,7 @@ export default function CustomizationScreen() {
       case "nav_style":
       case "tracks_layout":
       case "playlists_style":
+      case "player_style":
       case "discover_layout":
       case "homescreen":
       case "fonts":

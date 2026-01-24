@@ -25,7 +25,6 @@ import * as FileSystem from "expo-file-system/legacy";
 import SelectFolder from "../../components/settings/selectFolder";
 
 export default function SettingsScreen() {
-  const [cacheSize, setCacheSize] = React.useState<number | null>(null);
   const [folderModalVisible, setFolderModalVisible] = React.useState(false);
   const [folderCount, setFolderCount] = React.useState(0);
 
@@ -51,23 +50,6 @@ export default function SettingsScreen() {
     } catch {}
     return total;
   };
-
-  React.useEffect(() => {
-    const loadCacheSize = async () => {
-      try {
-        if (FileSystem.cacheDirectory) {
-          const size = await getDirectorySize(FileSystem.cacheDirectory);
-          setCacheSize(size);
-        } else {
-          setCacheSize(null);
-        }
-      } catch {
-        setCacheSize(null);
-      }
-    };
-    loadCacheSize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const loadFolderCount = React.useCallback(async () => {
     try {
@@ -126,7 +108,7 @@ export default function SettingsScreen() {
     sectionTitle: {
       fontFamily: "Inter_500Medium",
       ...TYPOGRAPHY.titleSmall,
-      color: COLORS.primary,
+      color: COLORS.onSurface,
       marginBottom: SPACING.sm,
       marginTop: SPACING.md,
       paddingHorizontal: SPACING.md,
@@ -147,7 +129,7 @@ export default function SettingsScreen() {
       width: 40,
       height: 40,
       borderRadius: RADIUS.full,
-      backgroundColor: COLORS.primaryContainer,
+      backgroundColor: themeValues.COLORS.primary,
       justifyContent: "center" as ViewStyle["justifyContent"],
       alignItems: "center" as ViewStyle["alignItems"],
       marginRight: SPACING.md,
@@ -237,6 +219,9 @@ export default function SettingsScreen() {
     switch (codename) {
       case "music_folders":
         setFolderModalVisible(true);
+        break;
+      case "load_data":
+        router.push("/settings/load-data");
         break;
       case "clear_songs_database":
         Alert.alert(
@@ -339,14 +324,7 @@ export default function SettingsScreen() {
       type === "menu" || type === "action" || codename === "version";
 
     let shownDescription = description;
-    if (codename === "clear_cache") {
-      if (cacheSize == null) {
-        shownDescription = "0 MB used";
-      } else {
-        const mb = cacheSize / (1024 * 1024);
-        shownDescription = `${mb.toFixed(1)} MB used`;
-      }
-    } else if (codename === "music_folders") {
+    if (codename === "music_folders") {
       shownDescription =
         folderCount > 0
           ? `${folderCount} folder${folderCount !== 1 ? "s" : ""} selected`
@@ -365,7 +343,7 @@ export default function SettingsScreen() {
             <MaterialIcons
               name={emoji}
               size={24}
-              color={themeValues.COLORS.primary}
+              color={COLORS.onPrimary}
             />
           </View>
           <View style={[styles.settingContent]}>

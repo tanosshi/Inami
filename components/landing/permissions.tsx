@@ -71,7 +71,7 @@ export default function LandingPage({ onSkip }: FirstProps) {
       left: 0,
       paddingLeft: SPACING.sm + 3,
       paddingTop: SPACING.xl,
-      position: "absolute",
+      position: "absolute" as const,
     },
     top: {
       marginTop: SPACING.sm,
@@ -129,6 +129,13 @@ export default function LandingPage({ onSkip }: FirstProps) {
       alignItems: "center" as const,
     },
     permsB: {
+      backgroundColor: COLORS.primaryContainer,
+      width: "100%" as const,
+      paddingHorizontal: SPACING.xl,
+      paddingVertical: SPACING.sm + SPACING.xs,
+      borderRadius: RADIUS.full,
+    },
+    permsBAllFiles: {
       backgroundColor: COLORS.primaryContainer,
       width: "100%" as const,
       paddingHorizontal: SPACING.xl,
@@ -196,61 +203,118 @@ export default function LandingPage({ onSkip }: FirstProps) {
 
   const handleRequestNotificationPermission = async () => {
     setIsRequestingNotification(true);
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        setNotificationGranted(true);
+        setIsRequestingNotification(false);
+      }
+    }, 3000);
     try {
       const granted = await requestNotificationPermissions();
-      setNotificationGranted(granted);
-      if (!granted) {
-        Alert.alert(
-          "Permission Denied",
-          "Notification permission was denied. You can enable it later in settings."
-        );
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        setNotificationGranted(granted);
+        if (!granted) {
+          Alert.alert(
+            "Permission Denied",
+            "Notification permission was denied. You can enable it later in settings."
+          );
+        }
       }
     } catch (error) {
       console.error("Error requesting notification permission:", error);
-      Alert.alert("Error", "Failed to request notification permission");
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        Alert.alert("Error", "Failed to request notification permission");
+      }
     } finally {
-      setIsRequestingNotification(false);
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        setIsRequestingNotification(false);
+      }
     }
   };
 
   const handleRequestStoragePermission = async () => {
     setIsRequestingStorage(true);
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        setStorageGranted(true);
+        setIsRequestingStorage(false);
+      }
+    }, 3000);
     try {
       const granted = await requestStoragePermissions();
-      setStorageGranted(granted);
-      if (!granted) {
-        Alert.alert(
-          "Permission Denied",
-          "Storage permission was denied. You can enable it later in settings."
-        );
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        setStorageGranted(granted);
+        if (!granted) {
+          Alert.alert(
+            "Permission Denied",
+            "Storage permission was denied. You can enable it later in settings."
+          );
+        }
       }
     } catch (error) {
       console.error("Error requesting storage permission:", error);
-      Alert.alert("Error", "Failed to request storage permission");
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        Alert.alert("Error", "Failed to request storage permission");
+      }
     } finally {
-      setIsRequestingStorage(false);
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        setIsRequestingStorage(false);
+      }
     }
   };
 
   const handleRequestAllFilesAccess = async () => {
     setIsRequestingAllFiles(true);
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        setAllFilesGranted(true);
+        setIsRequestingAllFiles(false);
+      }
+    }, 3000);
     try {
       await openAllFilesAccessSettings();
       setTimeout(async () => {
+        if (resolved) return;
         const hasAccess = await checkAllFilesAccess();
-        setAllFilesGranted(hasAccess);
-        setIsRequestingAllFiles(false);
-        if (!hasAccess) {
-          Alert.alert(
-            "Permission Required",
-            "Please enable 'All files access' for Inami to scan your music folders."
-          );
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timer);
+          setAllFilesGranted(hasAccess);
+          setIsRequestingAllFiles(false);
+          if (!hasAccess) {
+            Alert.alert(
+              "Permission Required",
+              "Please enable 'All files access' for Inami to scan your music folders."
+            );
+          }
         }
       }, 1000);
     } catch (error) {
       console.error("Error requesting all files access:", error);
-      setIsRequestingAllFiles(false);
-      Alert.alert("Error", "Failed to open settings");
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        setIsRequestingAllFiles(false);
+        Alert.alert("Error", "Failed to open settings");
+      }
     }
   };
 

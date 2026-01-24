@@ -19,7 +19,6 @@ import {
   requestDirectoryAccess,
   saveFolder,
   removeFolder,
-  toggleFolder,
   getSavedFolders,
   openAllFilesAccessSettings,
   checkAllFilesAccess,
@@ -44,7 +43,6 @@ export default function MusicFoldersPage({ onComplete }: MusicFoldersProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
   const [showComplete, setShowComplete] = useState(false);
-  const hasAutoAdvancedRef = useRef(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const completeFadeAnim = useRef(new Animated.Value(0)).current;
   const spinAnim = useRef(new Animated.Value(0)).current;
@@ -449,16 +447,6 @@ export default function MusicFoldersPage({ onComplete }: MusicFoldersProps) {
         },
       ]
     );
-  };
-
-  const handleToggleFolder = async (folder: MusicFolder) => {
-    try {
-      triggerHaptic();
-      await toggleFolder(folder.id, !folder.is_enabled);
-      await loadFolders();
-    } catch (error) {
-      console.error("Error toggling folder:", error);
-    }
   };
 
   const handleOpenSettings = async () => {

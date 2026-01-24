@@ -1,7 +1,18 @@
 // dont take this as actual code quality reference lol everything here will be scraped
-import React from "react";
+import React, { useEffect } from "react";
 
 import Home from "../components/Home";
+
+import {
+  getAllSongs,
+  getAllPlaylists,
+  getStats,
+  getThemeSettings,
+  getAllSettings,
+  getAllArtists,
+  getAllArtistComments,
+  getAllSongComments,
+} from "../utils/database";
 
 const DEMO_SONGS = [
   {
@@ -142,6 +153,60 @@ export default function DemoScreen() {
   const handlePlayLiked = () => {
     console.log("Demo: Playing liked songs");
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [
+          songs,
+          playlists,
+          stats,
+          theme,
+          settings,
+          artists,
+          comments,
+          scm,
+        ] = await Promise.all([
+          getAllSongs(),
+          getAllPlaylists(),
+          getStats(),
+          getThemeSettings(),
+          getAllSettings(),
+          getAllArtists(),
+          getAllArtistComments(),
+          getAllSongComments(),
+        ]);
+
+        function log() {
+          console.log(
+            "[Database] Settings:",
+            JSON.stringify(settings, null, 2)
+          );
+          console.log("[Database] Theme:", JSON.stringify(theme, null, 2));
+          console.log("[Database] Stats:", JSON.stringify(stats, null, 2));
+          console.log("[Database] Artists:", JSON.stringify(artists, null, 2));
+          console.log("[Database] Songs:", JSON.stringify(songs, null, 2));
+          console.log(
+            "[Database] Playlists:",
+            JSON.stringify(playlists, null, 2)
+          );
+          void comments;
+          void scm;
+          //console.log(
+          //  "[Database] Artist Comments:",
+          //  JSON.stringify(comments, null, 2)
+          //);
+          //console.log(
+          //  "[Database] Song Comments:",
+          //  JSON.stringify(scm, null, 2)
+          //);
+        }
+        log();
+      } catch (e) {
+        console.warn("[Database] Could not log database:", e);
+      }
+    })();
+  }, []);
 
   return (
     <Home

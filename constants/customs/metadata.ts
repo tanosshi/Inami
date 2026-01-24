@@ -4,26 +4,13 @@ export const METADATA_CONFIG = {
     settings: [
       {
         codename: "enable_metadata_fetch",
-        name: "Enable Auto fetching music metadata",
+        name: "Enable auto fetching music metadata",
         description:
           "Automatically fetch metadata for your imported music library",
         emoji: "magnifying-glass",
         type: "toggle",
         defaultValue: false,
         overrides: true,
-      },
-    ],
-  },
-  sources: {
-    title: "Sources",
-    settings: [
-      {
-        codename: "metadata_source_x",
-        name: "source name",
-        description: "i have sources ready ill put them here later",
-        emoji: "cloud",
-        type: "toggle",
-        defaultValue: true,
       },
     ],
   },

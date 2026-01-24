@@ -1,7 +1,9 @@
+import { Buffer } from "buffer";
 import { File, Paths, Directory } from "expo-file-system";
 import * as FileSystem from "expo-file-system/legacy";
 import { parseBuffer } from "music-metadata-browser";
 import ImageColors from "react-native-image-colors";
+import { safeString } from "./safeString";
 
 export interface AudioMetadata {
   title: string;
@@ -28,28 +30,64 @@ async function saveArtwork(
   mimeType: string,
   songName: string
 ): Promise<string> {
-  const artworkDir = new Directory(Paths.cache, "artwork");
+  const artworkDir = new Directory(Paths.document, "images/artwork");
 
-  if (!artworkDir.exists) artworkDir.create();
+  try {
+    if (!artworkDir.exists) {
+      try {
+        artworkDir.create();
+      } catch {}
+    }
+  } catch {}
 
   const safeName = songName.replace(/[^a-zA-Z0-9]/g, "_").substring(0, 50);
   const extension = getExtensionFromMimeType(mimeType);
-  const artworkFile = new File(artworkDir, `${safeName}${extension}`);
+  const filename = `${safeName}${extension}`;
+  const relativePath = `images/artwork/${filename}`;
 
-  artworkFile.write(data);
+  try {
+    const artworkFile = new File(artworkDir, filename);
+    artworkFile.write(data);
+    return relativePath;
+  } catch (error) {
+    console.warn(
+      "Failed to save artwork to document directory, retrying with legacy API:",
+      error
+    );
+    try {
+      const dir = (FileSystem as any).documentDirectory + "images/albumImages/";
+      await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
 
-  return artworkFile.uri;
+      const fallbackFilename = `${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 9)}${extension}`;
+      const fallbackRelativePath = `images/albumImages/${fallbackFilename}`;
+      const fileUri =
+        (FileSystem as any).documentDirectory + fallbackRelativePath;
+
+      const base64 = Buffer.from(data).toString("base64");
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: "base64",
+      } as any);
+
+      return fallbackRelativePath;
+    } catch (fallbackError) {
+      console.warn("Failed to save artwork:", fallbackError);
+      throw fallbackError;
+    }
+  }
 }
 
 const isSafUri = (uri: string): boolean => {
   return uri.startsWith("content://");
 };
 
-const MAX_FILE_SIZE_FOR_METADATA = 50 * 1024 * 1024;
+const MAX_FILE_SIZE_FOR_METADATA = 150 * 1024 * 1024;
+const COPY_TO_CACHE_THRESHOLD = 20 * 1024 * 1024;
 
 async function getFileSizeForSafUri(uri: string): Promise<number | null> {
   try {
-    const info = await FileSystem.getInfoAsync(uri, { size: true });
+    const info = await FileSystem.getInfoAsync(uri);
     if (info.exists && "size" in info) return info.size;
     return null;
   } catch {
@@ -60,6 +98,7 @@ async function getFileSizeForSafUri(uri: string): Promise<number | null> {
 async function readFileAsBuffer(uri: string): Promise<Uint8Array> {
   if (isSafUri(uri)) {
     const fileSize = await getFileSizeForSafUri(uri);
+
     if (fileSize && fileSize > MAX_FILE_SIZE_FOR_METADATA) {
       throw new Error(
         `File too large for metadata extraction: ${Math.round(
@@ -67,6 +106,32 @@ async function readFileAsBuffer(uri: string): Promise<Uint8Array> {
         )}MB`
       );
     }
+
+    if (fileSize && fileSize > COPY_TO_CACHE_THRESHOLD) {
+      try {
+        const filename = extractFilenameFromUri(uri).replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_"
+        );
+        const cachePath =
+          FileSystem.cacheDirectory + `${Date.now()}_${filename}`;
+
+        await FileSystem.StorageAccessFramework.copyAsync({
+          from: uri,
+          to: cachePath,
+        });
+
+        const cachedFile = new File(cachePath);
+        const arrayBuffer = await cachedFile.arrayBuffer();
+
+        try {
+          await FileSystem.deleteAsync(cachePath);
+        } catch {}
+
+        return new Uint8Array(arrayBuffer);
+      } catch {}
+    }
+
     const content = await FileSystem.StorageAccessFramework.readAsStringAsync(
       uri,
       { encoding: FileSystem.EncodingType.Base64 }
@@ -79,17 +144,47 @@ async function readFileAsBuffer(uri: string): Promise<Uint8Array> {
     return bytes;
   } else {
     const sourceFile = new File(uri);
-    const isInCache = uri.includes("/cache/") || uri.includes("/Cache/");
+    const cacheDir = FileSystem.cacheDirectory ?? "";
+    const isInCache =
+      (cacheDir !== "" && uri.startsWith(cacheDir)) ||
+      uri.includes("/cache/") ||
+      uri.includes("/Cache/");
     let fileToRead: File;
+    let createdTempCache = false;
+    let tempCachePath: string | undefined;
 
-    if (isInCache && sourceFile.exists) fileToRead = sourceFile;
-    else {
-      const cachedFile = new File(Paths.cache, sourceFile.name);
-      sourceFile.copy(cachedFile);
+    if (isInCache && sourceFile.exists) {
+      fileToRead = sourceFile;
+    } else {
+      const safeName =
+        sourceFile.name ||
+        extractFilenameFromUri(uri).replace(/[^a-zA-Z0-9._-]/g, "_");
+      tempCachePath = FileSystem.cacheDirectory + safeName;
+      const cachedFile = new File(tempCachePath);
+      try {
+        const maybePromise: any = sourceFile.copy(cachedFile);
+        if (maybePromise && typeof maybePromise.then === "function") {
+          await maybePromise;
+        }
+      } catch {}
       fileToRead = cachedFile;
+      createdTempCache = true;
     }
 
     const arrayBuffer = await fileToRead.arrayBuffer();
+
+    if (createdTempCache && tempCachePath) {
+      try {
+        await FileSystem.deleteAsync(tempCachePath);
+      } catch (delErr) {
+        console.warn(
+          "Failed to delete temporary cached file:",
+          tempCachePath,
+          delErr
+        );
+      }
+    }
+
     return new Uint8Array(arrayBuffer);
   }
 }
@@ -109,7 +204,10 @@ export const extractMetadata = async (
   try {
     const buffer = await readFileAsBuffer(uri);
     const mimeType = getMimeType(uri);
-    const metadata = await parseBuffer(buffer, mimeType);
+
+    const parseInput: any =
+      buffer instanceof Uint8Array ? Buffer.from(buffer) : buffer;
+    const metadata = await parseBuffer(parseInput, mimeType);
 
     const songName =
       safeString(metadata.common.title) ||
@@ -117,13 +215,18 @@ export const extractMetadata = async (
       extractFilenameFromUri(uri);
 
     let artworkUri: string | undefined;
+    let pictureData: Uint8Array | undefined;
+    let pictureFormat: string | undefined;
     if (metadata.common.picture?.[0]) {
       const picture = metadata.common.picture[0];
-      artworkUri = await saveArtwork(
-        new Uint8Array(picture.data),
-        picture.format,
+      pictureData = new Uint8Array(picture.data);
+      pictureFormat = picture.format;
+      const relativePath = await saveArtwork(
+        pictureData,
+        pictureFormat,
         songName
       );
+      artworkUri = FileSystem.documentDirectory + relativePath;
     }
 
     let palette: string[] = [];
@@ -150,6 +253,31 @@ export const extractMetadata = async (
         }
       } catch (e) {
         console.log("ImageColors error:", e);
+        if (pictureData && pictureFormat) {
+          try {
+            const base64 = Buffer.from(pictureData).toString("base64");
+            const dataUrl = `data:${pictureFormat};base64,${base64}`;
+            const colors = await ImageColors.getColors(dataUrl, {
+              fallback: "#000000",
+            });
+            console.log("Extracted colors from data URL:", colors);
+            colors.platform = "android";
+            if (colors.platform === "android") {
+              palette = [
+                colors.dominant,
+                colors.average,
+                colors.vibrant,
+                colors.darkVibrant,
+                colors.lightVibrant,
+                colors.darkMuted,
+                colors.lightMuted,
+              ].filter(Boolean);
+              console.log("Final palette array from data URL:", palette);
+            }
+          } catch (fallbackError) {
+            console.log("Fallback ImageColors error:", fallbackError);
+          }
+        }
       }
     }
 
@@ -166,8 +294,7 @@ export const extractMetadata = async (
     };
 
     return result;
-  } catch (err) {
-    console.warn("Failed to extract metadata", err);
+  } catch {
     return defaultMetadata;
   }
 };
@@ -211,15 +338,3 @@ function getMimeType(uri: string): string {
   };
   return mimeTypes[extension || ""] || "audio/mpeg";
 }
-
-const safeString = (value: any): string => {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return value.toString();
-  if (typeof value === "boolean") return value.toString();
-  try {
-    return String(value);
-  } catch {
-    return value.toString().replace(/[^a-zA-Z]/g, "");
-  }
-};

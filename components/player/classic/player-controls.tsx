@@ -6,9 +6,12 @@ import {
   FontAwesome5,
   Feather,
 } from "@expo/vector-icons";
-import { COLORS, SPACING, RADIUS } from "../../constants/theme";
-import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
-import { triggerHaptic } from "../../utils/haptics";
+import { COLORS, SPACING, RADIUS } from "../../../constants/theme";
+import {
+  useDynamicStyles,
+  useThemeValues,
+} from "../../../hooks/useDynamicStyles";
+import { triggerHaptic } from "../../../utils/haptics";
 
 interface PlayerControlsProps {
   isPlaying: boolean;

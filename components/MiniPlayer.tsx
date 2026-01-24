@@ -13,6 +13,8 @@ import { useRouter } from "expo-router";
 import { usePlayerStore } from "../store/playerStore";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
+import { useDynamicTheme } from "../contexts/DynamicThemeContext";
+import { safeString } from "../utils/safeString";
 import { getThemeSettings } from "../utils/database";
 import { triggerHaptic } from "../utils/haptics";
 
@@ -20,9 +22,10 @@ interface MiniPlayerProps {
   tabBarColor?: string;
 }
 
-export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
+function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
   const router = useRouter();
   const themeValues = useThemeValues();
+  const { dynamicColors } = useDynamicTheme();
   const [navToggle, setNavToggle] = useState<boolean>(true);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragAnim = useRef(new Animated.Value(0)).current;
@@ -54,18 +57,17 @@ export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
       bottom: 80,
       left: 0,
       right: 0,
-      backgroundColor: tabBarColor || COLORS.background,
+      backgroundColor: COLORS.background,
       borderTopLeftRadius: RADIUS.lg,
       borderTopRightRadius: RADIUS.lg,
       overflow: "hidden" as const,
     },
     progressBar: {
       height: 2,
-      backgroundColor: COLORS.surfaceVariant,
+      backgroundColor: dynamicColors.surface,
     },
     progressFill: {
-      height: "100%",
-      backgroundColor: COLORS.primary,
+      backgroundColor: dynamicColors.primary,
     },
     content: {
       flexDirection: "row" as const,
@@ -120,6 +122,8 @@ export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
       alignItems: "center" as const,
     },
   }));
+
+  const showPlayer = usePlayerStore((s) => s.showPlayer);
 
   const panResponder = React.useRef(
     PanResponder.create({
@@ -177,27 +181,22 @@ export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
     })
   ).current;
 
-  if (!currentSong) return null;
+  if (!currentSong || (!isPlaying && !showPlayer)) return null;
 
   const progress = duration > 0 ? (position / duration) * 100 : 0;
 
-  const safeString = (value: any): string => {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "string") return value;
-    if (typeof value === "number") return value.toString();
-    if (typeof value === "boolean") return value.toString();
-    try {
-      return String(value);
-    } catch {
-      return "";
-    }
+  const OpenPlayer = () => {
+    triggerHaptic();
+    showPlayerOverlay();
   };
 
   return (
     <View style={styles.container}>
       {/* Progress Bar */}
       <View style={styles.progressBar}>
-        <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        <View
+          style={[styles.progressFill, { width: `${progress}%`, height: 2 }]}
+        />
       </View>
 
       <Animated.View
@@ -207,54 +206,64 @@ export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
         ]}
         {...panResponder.panHandlers}
       >
-        <View style={styles.content}>
-          {/* Artwork */}
-          <View style={styles.artworkContainer}>
-            {currentSong.artwork ? (
-              <Image
-                source={{ uri: currentSong.artwork }}
-                style={styles.artwork}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={[styles.artwork, styles.artworkPlaceholder]}>
-                <MaterialIcons
-                  name="music-note"
-                  size={18}
-                  color={themeValues.COLORS.primary}
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={0.8}
+          onPress={OpenPlayer}
+        >
+          <View style={styles.content}>
+            {/* Artwork */}
+            <View style={styles.artworkContainer}>
+              {currentSong.artwork ? (
+                <Image
+                  source={{ uri: currentSong.artwork }}
+                  style={styles.artwork}
+                  contentFit="cover"
                 />
-              </View>
-            )}
-          </View>
+              ) : (
+                <View style={[styles.artwork, styles.artworkPlaceholder]}>
+                  <MaterialIcons
+                    name="music-note"
+                    size={18}
+                    color={themeValues.COLORS.primary}
+                  />
+                </View>
+              )}
+            </View>
 
-          {/* Song Info */}
-          <View style={styles.info}>
-            <Text style={styles.title} numberOfLines={1}>
-              {safeString(currentSong.title)}
-            </Text>
-            <Text style={styles.artist} numberOfLines={1}>
-              {safeString(currentSong.artist)}
-            </Text>
-          </View>
+            {/* Song Info */}
+            <View style={styles.info}>
+              <Text style={styles.title} numberOfLines={1}>
+                {safeString(currentSong.title)}
+              </Text>
+              <Text style={styles.artist} numberOfLines={1}>
+                {safeString(currentSong.artist)}
+              </Text>
+            </View>
 
-          {/* Controls */}
-          <View style={styles.controls}>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={() => {
-                triggerHaptic();
-                togglePlayPause();
-              }}
-            >
-              <MaterialIcons
-                name={isPlaying ? "pause" : "play-arrow"}
-                size={32}
-                color={themeValues.COLORS.onSurface}
-              />
-            </TouchableOpacity>
+            {/* Controls */}
+            <View style={styles.controls}>
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={() => {
+                  triggerHaptic();
+                  togglePlayPause();
+                }}
+              >
+                <MaterialIcons
+                  name={isPlaying ? "pause" : "play-arrow"}
+                  size={32}
+                  color={themeValues.COLORS.onSurface}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </Animated.View>
     </View>
   );
+}
+
+export default function MiniPlayer({ tabBarColor }: MiniPlayerProps) {
+  return <MiniPlayerContent tabBarColor={tabBarColor} />;
 }

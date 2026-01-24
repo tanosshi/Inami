@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
-import { COLORS } from "../../constants/theme";
-import { useDynamicStyles } from "../../hooks/useDynamicStyles";
+import { COLORS } from "../../../constants/theme";
+import { useDynamicStyles } from "../../../hooks/useDynamicStyles";
 
 export default function SwipeIndicator() {
   const styles = useDynamicStyles(() => ({

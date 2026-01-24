@@ -1,8 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useSongStore } from "../store/songStore";
+import { safeString } from "../utils/safeString";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 import { triggerHaptic } from "../utils/haptics";
@@ -34,6 +35,17 @@ export default function SongCard({
 }: SongCardProps) {
   const { toggleLike } = useSongStore();
   const themeValues = useThemeValues();
+  const heartOpacity = useRef(
+    new Animated.Value(song.is_liked ? 1 : 0)
+  ).current;
+
+  useEffect(() => {
+    Animated.timing(heartOpacity, {
+      toValue: song.is_liked ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [song.is_liked, heartOpacity]);
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -98,18 +110,6 @@ export default function SongCard({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const safeString = (value: any): string => {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "string") return value;
-    if (typeof value === "number") return value.toString();
-    if (typeof value === "boolean") return value.toString();
-    try {
-      return String(value);
-    } catch {
-      return "";
-    }
-  };
-
   const handleLike = async () => {
     await toggleLike(song.id);
   };
@@ -149,19 +149,17 @@ export default function SongCard({
           {safeString(song.title) || "Unknown Title"}
         </Text>
         <Text style={styles.subtitle} numberOfLines={1}>
-          {safeString(song.artist) || "Unknown Artist"}
+          {safeString(song.artist).split(",")[0] || "Unknown Artist"}
           {song.album && song.album !== "Unknown Album"
             ? ` • ${safeString(song.album)}`
             : ""}
         </Text>
       </View>
 
-      {/* Actions (todo fix duration display) */}
       <View style={styles.actions}>
         {song.duration > 0 && formatDuration(song.duration) !== "0:00" && (
           <Text style={styles.duration}>{formatDuration(song.duration)}</Text>
         )}
-        {/* probably plans to replace like with the 3 dots */}
         {showOptions && (
           <TouchableOpacity
             style={styles.likeButton}
@@ -170,15 +168,25 @@ export default function SongCard({
               handleLike();
             }}
           >
-            <MaterialIcons
-              name={song.is_liked ? "favorite" : "favorite-border"}
-              size={22}
-              color={
-                song.is_liked
-                  ? themeValues.COLORS.liked
-                  : themeValues.COLORS.onSurfaceVariant
-              }
-            />
+            <View style={{ position: "relative" }}>
+              <MaterialIcons
+                name="favorite-border"
+                size={22}
+                color={themeValues.COLORS.onSurfaceVariant}
+              />
+              <Animated.View
+                style={{
+                  position: "absolute",
+                  opacity: heartOpacity,
+                }}
+              >
+                <MaterialIcons
+                  name="favorite"
+                  size={22}
+                  color={themeValues.COLORS.liked}
+                />
+              </Animated.View>
+            </View>
           </TouchableOpacity>
         )}
       </View>

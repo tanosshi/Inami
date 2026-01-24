@@ -6,7 +6,11 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
-import { getThemeSettings, initDatabase } from "../utils/database";
+import {
+  getThemeSettings,
+  initDatabase,
+  mergeDuplicateArtists,
+} from "../utils/database";
 import { applyTheme, getCurrentTheme, COLORS } from "../constants/theme";
 
 interface ThemeContextType {
@@ -36,6 +40,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const loadTheme = useCallback(async () => {
     try {
       await initDatabase();
+
+      try {
+        await mergeDuplicateArtists();
+      } catch {
+        console.warn("Error merging duplicate artists:");
+      }
 
       const themeSettings = await getThemeSettings();
       const theme = themeSettings?.theme || "Black";

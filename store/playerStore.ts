@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
 import * as db from "../utils/database";
 import { getAudioPro } from "../utils/audioSetup";
+import { getSongById } from "../utils/database/songOperations";
 
 interface Song {
   id: string;
@@ -13,6 +15,7 @@ interface Song {
   artwork?: string;
   is_liked: boolean;
   play_count: number;
+  palette?: string[];
 }
 
 interface PlayerState {
@@ -61,8 +64,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
 
     try {
+      // Fetch complete song data including palette
+      const fullSongData = await getSongById(song.id);
+      const songWithPalette = fullSongData ? { ...song, ...fullSongData } : song;
+
       if (Platform.OS === "web") {
-        const audio = new window.Audio(song.uri);
+        const audio = new window.Audio(songWithPalette.uri);
 
         audio.addEventListener("timeupdate", () => {
           set({
@@ -81,41 +88,60 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
         await audio.play();
 
-        const index = queue.findIndex((s) => s.id === song.id);
+        const index = queue.findIndex((s) => s.id === songWithPalette.id);
 
         set({
           webAudio: audio,
-          currentSong: song,
+          currentSong: songWithPalette,
           currentIndex: index >= 0 ? index : 0,
           isPlaying: true,
         });
       } else {
         const AudioPro = getAudioPro();
         if (!AudioPro) return;
+        const getPlayableUri = async (uri: string) => {
+          try {
+            if (Platform.OS === "android" && uri.startsWith("content://")) {
+              const decoded = decodeURIComponent(uri);
+              const lastSlash = decoded.lastIndexOf("/");
+              const filename =
+                lastSlash !== -1
+                  ? decoded.substring(lastSlash + 1)
+                  : `audio_${Date.now()}`;
+
+              const dest = FileSystem.cacheDirectory + filename;
+              await FileSystem.copyAsync({ from: uri, to: dest });
+              return dest;
+            }
+          } catch {}
+
+          return uri;
+        };
+
+        const playableUri = await getPlayableUri(songWithPalette.uri);
 
         const track = {
-          id: song.id,
-          url: song.uri,
-          title: song.title,
-          artist: song.artist || "Unknown Artist",
-          album: song.album || "Unknown Album",
-          artwork: song.artwork || "",
+          id: songWithPalette.id,
+          url: playableUri,
+          title: songWithPalette.title,
+          artist: songWithPalette.artist || "Unknown Artist",
+          album: songWithPalette.album || "Unknown Album",
+          artwork: songWithPalette.artwork || "",
         };
 
         AudioPro.play(track);
-
-        const index = queue.findIndex((s) => s.id === song.id);
+        const index = queue.findIndex((s) => s.id === songWithPalette.id);
 
         set({
           webAudio: null,
-          currentSong: song,
+          currentSong: songWithPalette,
           currentIndex: index >= 0 ? index : 0,
           isPlaying: true,
         });
       }
 
       try {
-        await db.incrementPlayCount(song.id);
+        await db.incrementPlayCount(songWithPalette.id);
       } catch (error) {
         console.error("Failed to increment play count:", error);
       }

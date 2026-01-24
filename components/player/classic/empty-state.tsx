@@ -2,8 +2,11 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
-import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { COLORS, SPACING, TYPOGRAPHY } from "../../../constants/theme";
+import {
+  useDynamicStyles,
+  useThemeValues,
+} from "../../../hooks/useDynamicStyles";
 
 interface EmptyStateProps {
   onGoBack: () => void;

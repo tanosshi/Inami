@@ -237,14 +237,13 @@ export const scanDirectoryForAudio = async (
           try {
             const subFiles = await scanDirectoryForAudio(itemUri, recursive);
             audioFiles.push(...subFiles);
-          } catch {
-            //
-          }
+          } catch {}
         }
       } catch {}
     }
   } catch (error) {
-    console.error(error);
+    console.error("scanDirectoryForAudio ", directoryUri, error);
+    throw error;
   }
 
   return audioFiles;

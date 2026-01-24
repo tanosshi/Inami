@@ -8,6 +8,7 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -31,6 +32,7 @@ export default function PlaylistDetailScreen() {
     deletePlaylist,
     addSongToPlaylist,
     removeSongFromPlaylist,
+    updatePlaylist,
   } = usePlaylistStore();
   const { songs, fetchSongs } = useSongStore();
   const { playSong, setQueue, showPlayerOverlay } = usePlayerStore();
@@ -229,6 +231,22 @@ export default function PlaylistDetailScreen() {
       fontSize: 16,
       color: COLORS.onSurfaceVariant,
     },
+    playlistArtImage: {
+      width: "100%",
+      height: "100%",
+      borderRadius: RADIUS.lg,
+    },
+    editOverlay: {
+      position: "absolute",
+      bottom: 5,
+      right: 5,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      borderRadius: RADIUS.full,
+      width: 20,
+      height: 20,
+      justifyContent: "center",
+      alignItems: "center",
+    },
   }));
 
   const playlist = playlists.find((p) => p.id === id);
@@ -249,6 +267,34 @@ export default function PlaylistDetailScreen() {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Please allow access to your photo library to change the playlist cover."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]?.uri && playlist) {
+      try {
+        await updatePlaylist(playlist.id, { artwork: result.assets[0].uri });
+        await fetchPlaylists();
+      } catch (error) {
+        console.error("Failed to update playlist artwork:", error);
+        Alert.alert("Error", "Failed to update playlist cover.");
+      }
+    }
+  };
 
   const PlayAll = () => {
     if (playlistSongs.length > 0) {
@@ -337,7 +383,12 @@ export default function PlaylistDetailScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Playlist not found</Text>
-          <TouchableOpacity onPress={() => { triggerHaptic(); router.back(); }}>
+          <TouchableOpacity
+            onPress={() => {
+              triggerHaptic();
+              router.back();
+            }}
+          >
             <Text style={styles.linkText}>Go back</Text>
           </TouchableOpacity>
         </View>
@@ -350,7 +401,10 @@ export default function PlaylistDetailScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => { triggerHaptic(); router.back(); }}
+          onPress={() => {
+            triggerHaptic();
+            router.back();
+          }}
         >
           <MaterialIcons
             name="arrow-back"
@@ -359,7 +413,13 @@ export default function PlaylistDetailScreen() {
           />
         </TouchableOpacity>
         <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => { triggerHaptic(); DeletePlaylist(); }}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => {
+              triggerHaptic();
+              DeletePlaylist();
+            }}
+          >
             <MaterialIcons
               name="delete-outline"
               size={22}
@@ -370,13 +430,31 @@ export default function PlaylistDetailScreen() {
       </View>
 
       <View style={styles.playlistInfo}>
-        <View style={styles.playlistArt}>
-          <MaterialIcons
-            name="queue-music"
-            size={48}
-            color={themeValues.COLORS.primary}
-          />
-        </View>
+        <TouchableOpacity
+          style={styles.playlistArt}
+          onPress={() => {
+            triggerHaptic();
+            pickImage();
+          }}
+          activeOpacity={0.7}
+        >
+          {playlist.artwork ? (
+            <Image
+              source={{ uri: playlist.artwork }}
+              style={styles.playlistArtImage}
+              contentFit="cover"
+            />
+          ) : (
+            <MaterialIcons
+              name="queue-music"
+              size={48}
+              color={themeValues.COLORS.primary}
+            />
+          )}
+          <View style={styles.editOverlay}>
+            <MaterialIcons name="camera-alt" size={10} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
         <Text style={styles.playlistName}>{playlist.name}</Text>
         {playlist.description && (
           <Text style={styles.playlistDescription}>{playlist.description}</Text>
@@ -387,7 +465,13 @@ export default function PlaylistDetailScreen() {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.shuffleButton} onPress={() => { triggerHaptic(); ShufflePlay(); }}>
+        <TouchableOpacity
+          style={styles.shuffleButton}
+          onPress={() => {
+            triggerHaptic();
+            ShufflePlay();
+          }}
+        >
           <MaterialIcons
             name="shuffle"
             size={20}
@@ -395,7 +479,13 @@ export default function PlaylistDetailScreen() {
           />
           <Text style={styles.shuffleText}>Shuffle</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.playAllButton} onPress={() => { triggerHaptic(); PlayAll(); }}>
+        <TouchableOpacity
+          style={styles.playAllButton}
+          onPress={() => {
+            triggerHaptic();
+            PlayAll();
+          }}
+        >
           <MaterialIcons
             name="play-arrow"
             size={22}
@@ -405,7 +495,10 @@ export default function PlaylistDetailScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => { triggerHaptic(); setShowAddSongsModal(true); }}
+          onPress={() => {
+            triggerHaptic();
+            setShowAddSongsModal(true);
+          }}
         >
           <MaterialIcons
             name="add"
@@ -421,7 +514,10 @@ export default function PlaylistDetailScreen() {
         renderItem={({ item }) => (
           <SongCard
             song={item}
-            onPress={() => { triggerHaptic(); PlaySong(item); }}
+            onPress={() => {
+              triggerHaptic();
+              PlaySong(item);
+            }}
             onLongPress={() => RemoveSong(item.id)}
           />
         )}
@@ -448,7 +544,10 @@ export default function PlaylistDetailScreen() {
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => { triggerHaptic(); setShowAddSongsModal(false); }}
+          onPress={() => {
+            triggerHaptic();
+            setShowAddSongsModal(false);
+          }}
         >
           <TouchableOpacity
             activeOpacity={1}
@@ -457,7 +556,12 @@ export default function PlaylistDetailScreen() {
           >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Songs</Text>
-              <TouchableOpacity onPress={() => { triggerHaptic(); setShowAddSongsModal(false); }}>
+              <TouchableOpacity
+                onPress={() => {
+                  triggerHaptic();
+                  setShowAddSongsModal(false);
+                }}
+              >
                 <MaterialIcons
                   name="close"
                   size={24}
@@ -481,7 +585,10 @@ export default function PlaylistDetailScreen() {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.addSongItem}
-                  onPress={() => { triggerHaptic(); AddSong(item.id); }}
+                  onPress={() => {
+                    triggerHaptic();
+                    AddSong(item.id);
+                  }}
                 >
                   <View style={styles.addSongInfo}>
                     <View

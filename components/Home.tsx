@@ -11,10 +11,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { COLORS, SPACING } from "../constants/theme";
 import { useDynamicStyles } from "../hooks/useDynamicStyles";
+
+// YouTube Music -type components
 import Header from "./home/header";
 import QuickStats from "./home/quick-stats";
 import PlaylistsRow from "./home/playlists-row";
-import TopArtists from "./home/top-artists";
+import SpeedDial from "./home/speed-dial";
 import MostPlayed from "./home/most-played";
 import RecentlyAdded from "./home/recently-added";
 import EmptyState from "./home/empty-state";
@@ -50,7 +52,7 @@ interface Artist {
 
 interface PlaylistDemo {
   id: string;
-  artwork: string;
+  artwork?: string | null;
 }
 
 interface HomeProps {
@@ -98,7 +100,14 @@ export default function Home({
       padding: SPACING.md,
       paddingBottom: 140,
     },
+    quickStatsWrapper: {
+      marginLeft: -SPACING.md,
+      marginRight: -SPACING.md,
+      marginBottom: SPACING.lg,
+    },
   }));
+
+  const showRecommended = React.useMemo(() => Math.random() < 0.5, []);
 
   if (loading && songs.length === 0) {
     return (
@@ -133,19 +142,24 @@ export default function Home({
         <Header onSettingsPress={() => router.push("/settings")} />
 
         {/* Quick Stats */}
-        {/* @ts-ignore */}
-        <QuickStats stats={stats} />
+        <View style={styles.quickStatsWrapper}>
+          {/* @ts-ignore */}
+          <QuickStats stats={stats} />
+        </View>
 
         {/* Playlists Row */}
         <PlaylistsRow playlists={playlists} />
 
-        {/* Top Artists Grid */}
-        <TopArtists topArtists={topArtists} />
+        {/* Speed Dial Grid */}
+        <SpeedDial songs={songs} onPlaySong={onPlaySong} />
 
         {/* Either: Show recommended Songs for the current time (Most played during time period) OR show Most Played */}
-        {/* Most Played */}
-        <RecommendedPeriod stats={stats} onPlaySong={onPlaySong} />
-        <MostPlayed stats={stats} onPlaySong={onPlaySong} />
+        {/* Randomly choose one for now */}
+        {showRecommended ? (
+          <RecommendedPeriod stats={stats} onPlaySong={onPlaySong} />
+        ) : (
+          <MostPlayed stats={stats} onPlaySong={onPlaySong} />
+        )}
 
         {/* Recently Added */}
         <RecentlyAdded songs={songs} onPlaySong={onPlaySong} />

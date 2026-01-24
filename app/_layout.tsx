@@ -8,7 +8,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NotificationProvider } from "../components/NotificationProvider";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
-import PlayerOverlay from "../components/Player";
+import { DynamicThemeProvider } from "../contexts/DynamicThemeContext";
+import PlayerOverlay from "../components/player/Player";
 
 import {
   useFonts,
@@ -24,13 +25,11 @@ import { COLORS } from "../constants/theme";
 import { useSongStore } from "../store/songStore";
 import { usePlaylistStore } from "../store/playlistStore";
 
-import {
-  getAllSongs,
-  getAllPlaylists,
-  getStats,
-  getThemeSettings,
-  getAllSettings,
-} from "../utils/database";
+import { cleanupOrphanedFiles } from "../utils/imageValidation";
+import { startPeriodicCleanup } from "../utils/periodicCleanup";
+
+import { getAllSongs, getAllArtists, getSetting } from "../utils/database";
+import { scanEnabledFoldersOnStartup } from "../utils/mediaScanner";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -72,27 +71,77 @@ function RootLayoutContent() {
         SplashScreen.hideAsync();
       }
 
-      // Log the entire database to the console (debug prupose only)
       try {
-        const [songs, playlists, stats, theme, settings] = await Promise.all([
+        const [songs, artists] = await Promise.all([
           getAllSongs(),
-          getAllPlaylists(),
-          getStats(),
-          getThemeSettings(),
-          getAllSettings(),
+          getAllArtists(),
         ]);
 
-        /* console.log("[Database] Settings:", JSON.stringify(settings, null, 2));
-        console.log("[Database] Theme:", JSON.stringify(theme, null, 2));
-        console.log("[Database] Stats:", JSON.stringify(stats, null, 2));
-        console.log("[Database] Songs:", JSON.stringify(songs, null, 2));
-        console.log(
-          "[Database] Playlists:",
-          JSON.stringify(playlists, null, 2)
-        );*/
+        // Backfill, needs to be fixed later
+        try {
+          const enabled = await getSetting("enable_metadata_fetch");
+          if (!enabled) {
+            console.log(
+              "[Database] Skipping metadata backfill because enable_metadata_fetch is not true"
+            );
+          } else {
+            const { fetchAndStoreArtistMetadata } = await import(
+              "../utils/artistMetadata"
+            );
+            const { fetchAndStoreSongMetadata } = await import(
+              "../utils/songMetadata"
+            );
+
+            if (artists && artists.length > 0) {
+              for (const a of artists) {
+                try {
+                  const name = (a as any)?.name;
+                  const genres = (a as any)?.genres;
+                  const lastRelease = (a as any)?.last_release_date;
+                  const image =
+                    (a as any)?.image_url || (a as any)?.fallback_url;
+                  if (!name) continue;
+
+                  if (!genres || !lastRelease || !image) {
+                    await fetchAndStoreArtistMetadata(name);
+
+                    const sampleSong = (songs || []).find(
+                      (s: any) =>
+                        s &&
+                        s.artist &&
+                        String(s.artist).toLowerCase().trim() ===
+                          String(name).toLowerCase().trim()
+                    );
+                    if (sampleSong) {
+                      await fetchAndStoreSongMetadata(
+                        sampleSong.title || sampleSong.name || "",
+                        name
+                      );
+                    }
+                  }
+                } catch (err) {
+                  console.warn(
+                    `[Database] Backfill failed for artist ${
+                      (a as any)?.name
+                    }:`,
+                    err
+                  );
+                }
+              }
+            }
+          }
+        } catch {}
       } catch (e) {
         console.warn("[Database] Could not log database:", e);
       }
+
+      try {
+        scanEnabledFoldersOnStartup().catch((e) =>
+          console.warn("Startup folder scan error:", e)
+        );
+        await cleanupOrphanedFiles();
+        startPeriodicCleanup();
+      } catch {}
     };
 
     initApp();
@@ -145,7 +194,9 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutContent />
+      <DynamicThemeProvider>
+        <RootLayoutContent />
+      </DynamicThemeProvider>
     </ThemeProvider>
   );
 }

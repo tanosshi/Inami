@@ -19,7 +19,7 @@ import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 
 import { CreatePlaylistModal } from "../playlists/modals";
 
-export default function playlists() {
+export default function Playlists() {
   const router = useRouter();
   const themeValues = useThemeValues();
   const { playlists, fetchPlaylists, createPlaylist } = usePlaylistStore();
@@ -62,7 +62,7 @@ export default function playlists() {
       width: 48,
       height: 48,
       borderRadius: RADIUS.lg,
-      backgroundColor: COLORS.primary,
+      backgroundColor: themeValues.COLORS.primary,
       justifyContent: "center" as const,
       alignItems: "center" as const,
     },
@@ -95,7 +95,9 @@ export default function playlists() {
   }));
 
   useEffect(() => {
-    fetchPlaylists();
+    if (playlists.length === 0) {
+      fetchPlaylists();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

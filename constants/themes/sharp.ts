@@ -111,7 +111,7 @@ export const ANIMATION = {
 export const TAB_CONFIG = {
   forYou: {
     name: "For You",
-    icon: "face" as const,
+    icon: "home" as const,
   },
   songs: {
     name: "Tracks",
@@ -124,5 +124,9 @@ export const TAB_CONFIG = {
   discover: {
     name: "Discover",
     icon: "auto-awesome" as const,
+  },
+  artists: {
+    name: "Artists",
+    icon: "person" as const,
   },
 };
