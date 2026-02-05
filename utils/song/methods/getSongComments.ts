@@ -32,6 +32,10 @@ function extract(html: string) {
       .replace(/\s+/g, " ")
       .trim();
 
+    // date
+    const dateMatch = block.match(/<time[^>]+datetime="([^"]+)"/);
+    const date = dateMatch?.[1] ?? "";
+
     if (!text || !user || user.length < 4) return;
     const result: Record<string, string> = {
       user: user,
@@ -44,6 +48,7 @@ function extract(html: string) {
         .replace("\\", "")
         .replaceAll("\\'", "'"),
       profile: icon,
+      date: date,
     };
     Object.keys(result).forEach((k) => {
       if ((result as any)[k] === undefined) delete (result as any)[k];

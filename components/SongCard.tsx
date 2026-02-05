@@ -1,10 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { View, Text, TouchableOpacity, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useSongStore } from "../store/songStore";
 import { safeString } from "../utils/safeString";
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
+import {
+  COLORS,
+  SPACING,
+  RADIUS,
+  TYPOGRAPHY,
+  getFontFamily,
+} from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 import { triggerHaptic } from "../utils/haptics";
 
@@ -27,12 +33,15 @@ interface SongCardProps {
   showOptions?: boolean;
 }
 
-export default function SongCard({
-  song,
-  onPress,
-  onLongPress,
-  showOptions,
-}: SongCardProps) {
+const formatDuration = (ms: number) => {
+  if (!ms) return "";
+  const seconds = Math.floor(ms / 1000);
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
+
+function SongCard({ song, onPress, onLongPress, showOptions }: SongCardProps) {
   const { toggleLike } = useSongStore();
   const themeValues = useThemeValues();
   const heartOpacity = useRef(
@@ -73,12 +82,12 @@ export default function SongCard({
       marginRight: SPACING.sm,
     },
     title: {
-      fontFamily: "Inter_500Medium",
+      fontFamily: getFontFamily("500"),
       ...TYPOGRAPHY.bodyLarge,
       color: COLORS.onSurface,
     },
     subtitle: {
-      fontFamily: "Inter_400Regular",
+      fontFamily: getFontFamily("400"),
       ...TYPOGRAPHY.bodyMedium,
       color: COLORS.onSurfaceVariant,
       marginTop: 2,
@@ -90,7 +99,7 @@ export default function SongCard({
     },
     duration: {
       display: "none" as const,
-      fontFamily: "Inter_400Regular",
+      fontFamily: getFontFamily("400"),
       ...TYPOGRAPHY.labelMedium,
       color: COLORS.onSurfaceVariant,
     },
@@ -102,26 +111,25 @@ export default function SongCard({
     },
   }));
 
-  const formatDuration = (ms: number) => {
-    if (!ms) return "";
-    const seconds = Math.floor(ms / 1000);
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     await toggleLike(song.id);
-  };
+  }, [song.id, toggleLike]);
+
+  const handlePress = useCallback(() => {
+    onPress();
+    triggerHaptic();
+  }, [onPress]);
+
+  const handleLongPress = useCallback(() => {
+    triggerHaptic();
+    if (onLongPress) onLongPress();
+  }, [onLongPress]);
 
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => {
-        onPress();
-        triggerHaptic();
-      }}
-      onLongPress={onLongPress}
+      onPress={handlePress}
+      onLongPress={handleLongPress}
       activeOpacity={0.7}
     >
       {/* Artwork */}
@@ -131,6 +139,8 @@ export default function SongCard({
             source={{ uri: song.artwork }}
             style={styles.artwork}
             contentFit="cover"
+            recyclingKey={song.id}
+            cachePolicy="memory-disk"
           />
         ) : (
           <View style={[styles.artwork, styles.artworkPlaceholder]}>
@@ -193,3 +203,16 @@ export default function SongCard({
     </TouchableOpacity>
   );
 }
+
+export default React.memo(SongCard, (prev, next) => {
+  return (
+    prev.song.id === next.song.id &&
+    prev.song.title === next.song.title &&
+    prev.song.artist === next.song.artist &&
+    prev.song.artwork === next.song.artwork &&
+    prev.song.is_liked === next.song.is_liked &&
+    prev.onPress === next.onPress &&
+    prev.onLongPress === next.onLongPress &&
+    prev.showOptions === next.showOptions
+  );
+});

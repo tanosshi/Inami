@@ -4,14 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 // @ts-ignore
 import { useRouter } from "expo-router";
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY , applyTheme } from "../constants/theme";
 import {
   CUSTOMIZATION_CONFIG,
   CATEGORY_ICON_MAP,
 } from "../constants/customization";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 import { triggerHaptic } from "../utils/haptics";
-import { applyTheme } from "../constants/theme";
+
 import SettingsModal from "./settings/modal-[id]";
 import { saveThemeSettings, saveSettingsBatch } from "../utils/database";
 
@@ -31,9 +31,9 @@ export default function CustomizationScreen() {
       backgroundColor: COLORS.background,
     },
     header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      justifyContent: "space-between" as const,
       paddingHorizontal: SPACING.sm,
       paddingVertical: SPACING.sm,
     },
@@ -41,8 +41,8 @@ export default function CustomizationScreen() {
       width: 48,
       height: 48,
       borderRadius: RADIUS.full,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     title: {
       fontFamily: "Inter_600SemiBold",
@@ -65,7 +65,7 @@ export default function CustomizationScreen() {
     },
     categoryHorizontalContent: {
       paddingHorizontal: SPACING.md,
-      alignItems: "center",
+      alignItems: "center" as const,
     },
     categoryChip: {
       paddingHorizontal: SPACING.md + 2,
@@ -75,8 +75,8 @@ export default function CustomizationScreen() {
       marginRight: SPACING.sm,
       borderWidth: 1,
       borderColor: "transparent",
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
     },
     categoryChipSelected: {
       backgroundColor: COLORS.primaryContainer,
@@ -97,8 +97,8 @@ export default function CustomizationScreen() {
       marginTop: 0,
     },
     categoryHeader: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       marginBottom: SPACING.md,
       paddingHorizontal: SPACING.md,
     },
@@ -119,11 +119,11 @@ export default function CustomizationScreen() {
     card: {
       backgroundColor: COLORS.surfaceContainerHigh,
       borderRadius: RADIUS.xl,
-      overflow: "hidden",
+      overflow: "hidden" as const,
     },
     settingItem: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       padding: SPACING.md,
       minHeight: 72,
     },
@@ -132,8 +132,8 @@ export default function CustomizationScreen() {
       height: 40,
       borderRadius: RADIUS.full,
       backgroundColor: COLORS.primaryContainer,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
       marginRight: SPACING.md,
     },
     settingContent: {
@@ -156,7 +156,7 @@ export default function CustomizationScreen() {
       marginLeft: 72,
     },
     footer: {
-      alignItems: "center",
+      alignItems: "center" as const,
       paddingVertical: SPACING.xl,
       marginTop: SPACING.lg,
     },
@@ -215,20 +215,16 @@ export default function CustomizationScreen() {
         codename === "gray_theme")
     ) {
       let themeName = "";
-      let themeDisplayName = "";
 
       switch (codename) {
         case "amoled_theme":
           themeName = "Black";
-          themeDisplayName = "AMOLED Theme";
           break;
         case "white_mode":
           themeName = "Light";
-          themeDisplayName = "White Mode";
           break;
         case "gray_theme":
           themeName = "Gray";
-          themeDisplayName = "Dark Theme";
           break;
       }
 
@@ -263,8 +259,8 @@ export default function CustomizationScreen() {
       const configs = [CUSTOMIZATION_CONFIG];
       const findToggles = (
         obj: any
-      ): Array<{ codename: string; defaultValue: boolean }> => {
-        const results: Array<{ codename: string; defaultValue: boolean }> = [];
+      ): { codename: string; defaultValue: boolean }[] => {
+        const results: { codename: string; defaultValue: boolean }[] = [];
 
         if (Array.isArray(obj)) {
           for (const item of obj) {
@@ -421,7 +417,7 @@ export default function CustomizationScreen() {
             }}
           >
             <MaterialIcons
-              name={CATEGORY_ICON_MAP[sectionKey] || "category"}
+              name={CATEGORY_ICON_MAP[sectionKey] || "category" as any}
               size={16}
               color={
                 selectedCategory === sectionKey

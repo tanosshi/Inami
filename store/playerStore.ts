@@ -16,6 +16,7 @@ interface Song {
   is_liked: boolean;
   play_count: number;
   palette?: string[];
+  lyrics?: string;
 }
 
 interface PlayerState {
@@ -29,6 +30,9 @@ interface PlayerState {
   repeat: "off" | "all" | "one";
   webAudio: HTMLAudioElement | null;
   showPlayer: boolean;
+  hidingAnimated: boolean;
+  showComments: boolean;
+  hidingCommentsAnimated: boolean;
   playSong: (song: Song) => Promise<void>;
   setQueue: (songs: Song[]) => void;
   togglePlayPause: () => Promise<void>;
@@ -41,6 +45,11 @@ interface PlayerState {
   stopPlayback: () => Promise<void>;
   showPlayerOverlay: () => void;
   hidePlayerOverlay: () => void;
+  hidePlayerAnimated: () => void;
+  resetHidingAnimated: () => void;
+  setShowComments: (show: boolean) => void;
+  hideCommentsAnimated: () => void;
+  resetHidingCommentsAnimated: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -54,6 +63,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   repeat: "off",
   webAudio: null,
   showPlayer: false,
+  hidingAnimated: false,
+  showComments: false,
+  hidingCommentsAnimated: false,
 
   playSong: async (song: Song) => {
     const { webAudio: existingWebAudio, queue } = get();
@@ -66,12 +78,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     try {
       // Fetch complete song data including palette
       const fullSongData = await getSongById(song.id);
-      const songWithPalette = fullSongData ? { ...song, ...fullSongData } : song;
+      const songWithPalette = fullSongData
+        ? { ...song, ...fullSongData }
+        : song;
 
       if (Platform.OS === "web") {
         const audio = new window.Audio(songWithPalette.uri);
+        const PROGRESS_THROTTLE_MS = 200;
+        let lastProgressUpdate = 0;
 
         audio.addEventListener("timeupdate", () => {
+          const now = Date.now();
+          if (now - lastProgressUpdate < PROGRESS_THROTTLE_MS) return;
+          lastProgressUpdate = now;
           set({
             position: audio.currentTime * 1000,
             duration: (audio.duration || 0) * 1000,
@@ -142,6 +161,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
       try {
         await db.incrementPlayCount(songWithPalette.id);
+
+        await db.addListeningHistoryEntry({
+          artist: songWithPalette.artist || "Unknown Artist",
+          track: songWithPalette.title,
+          album: songWithPalette.album || "Unknown Album",
+          timestamp: Math.floor(Date.now() / 1000),
+          mbid: (songWithPalette as any).mbid,
+          album_mbid: (songWithPalette as any).album_mbid,
+          source: "local",
+        });
       } catch (error) {
         console.error("Failed to increment play count:", error);
       }
@@ -282,5 +311,25 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   hidePlayerOverlay: () => {
     set({ showPlayer: false });
+  },
+
+  hidePlayerAnimated: () => {
+    set({ hidingAnimated: true });
+  },
+
+  resetHidingAnimated: () => {
+    set({ hidingAnimated: false });
+  },
+
+  setShowComments: (show: boolean) => {
+    set({ showComments: show });
+  },
+
+  hideCommentsAnimated: () => {
+    set({ hidingCommentsAnimated: true });
+  },
+
+  resetHidingCommentsAnimated: () => {
+    set({ hidingCommentsAnimated: false });
   },
 }));

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
 import { usePlaylistStore } from "../../store/playlistStore";
+import { useHomeSessionStore } from "../../store/homeStore";
 import HomeComponent from "../Home";
 
 export default function HomeTab() {
@@ -16,6 +17,7 @@ export default function HomeTab() {
   } = useSongStore();
   const { playSong, setQueue, showPlayerOverlay } = usePlayerStore();
   const { playlists, fetchPlaylists } = usePlaylistStore();
+  const resetHomeSession = useHomeSessionStore((state) => state.resetSession);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function HomeTab() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    resetHomeSession();
     await Promise.all([
       fetchSongs(),
       fetchLikedSongs(),

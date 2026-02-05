@@ -33,11 +33,7 @@ export async function validateImageExists(imageUri: string): Promise<boolean> {
   try {
     const info = await FileSystem.getInfoAsync(imageUri);
     return info.exists;
-  } catch (error) {
-    console.warn(
-      `[ImageValidation] Failed to check image existence: ${imageUri}`,
-      error
-    );
+  } catch {
     return false;
   }
 }
@@ -47,12 +43,14 @@ export async function validateAudioExists(audioUri: string): Promise<boolean> {
 
   try {
     const info = await FileSystem.getInfoAsync(audioUri);
-    return info.exists;
-  } catch (error) {
-    console.warn(
-      `[AudioValidation] Failed to check audio file existence: ${audioUri}`,
-      error
-    );
+
+    if (!info.exists) return false;
+
+    if ("size" in info && (info.size === 0 || info.size === undefined))
+      return false;
+
+    return true;
+  } catch {
     return false;
   }
 }
@@ -124,8 +122,13 @@ export async function validateAndRefetchArtistImage(
   }
 }
 
+let isCleanupRunning = false;
 export async function cleanupOrphanedFiles(): Promise<void> {
+  if (isCleanupRunning) return;
+
   try {
+    isCleanupRunning = true;
+    console.log("[CleanupOrphanedFiles] Cleaning");
     const db = await getDatabaseSafe();
 
     const songsWithArtwork: SongRecord[] = await db.getAllAsync(
@@ -154,21 +157,37 @@ export async function cleanupOrphanedFiles(): Promise<void> {
       "SELECT id, uri FROM songs WHERE uri IS NOT NULL"
     );
     let audioCleaned = 0;
+    let skippedCount = 0;
+    let checkedCount = 0;
+
+    console.log(
+      `[CleanupOrphanedFiles] Checking ${songsWithAudio.length} songs`
+    );
 
     for (const song of songsWithAudio) {
-      if (
-        song.uri &&
-        !song.uri.startsWith("http") &&
-        !song.uri.startsWith("content://")
-      ) {
+      if (song.uri && song.uri.startsWith("http")) {
+        skippedCount++;
+        continue;
+      }
+
+      if (song.uri) {
+        checkedCount++;
         const exists = await validateAudioExists(song.uri);
+
         if (!exists) {
+          console.log(
+            `[CleanupOrphanedFiles] Song file missing: ${song.id} - ${song.uri}`
+          );
+
           await db.runAsync("DELETE FROM songs WHERE id = ?", [song.id]);
           await db.runAsync("DELETE FROM playlist_songs WHERE song_id = ?", [
             song.id,
           ]);
+
           audioCleaned++;
-          console.log(`[AudioValidation] Removed orphaned song: ${song.id}`);
+          console.log(
+            `[CleanupOrphanedFiles] Removed orphaned song from database: ${song.id}`
+          );
         }
       }
     }
@@ -176,6 +195,7 @@ export async function cleanupOrphanedFiles(): Promise<void> {
     const artists: ArtistRecord[] = await db.getAllAsync(
       "SELECT name, image_url FROM artists WHERE image_url IS NOT NULL"
     );
+    let artistImagesCleaned = 0;
 
     for (const artist of artists) {
       if (
@@ -191,11 +211,18 @@ export async function cleanupOrphanedFiles(): Promise<void> {
             "UPDATE artists SET image_url = fallback_url WHERE name = ? COLLATE NOCASE",
             [artist.name]
           );
+          artistImagesCleaned++;
         }
       }
     }
+
+    console.log(
+      `[CleanupOrphanedFiles] Cleanup complete: ${imagesCleaned} song images cleared, ${audioCleaned} songs removed (checked ${checkedCount}, skipped ${skippedCount}), ${artistImagesCleaned} artist images reset`
+    );
   } catch (error) {
-    console.error("[ImageValidation] Cleanup failed:", error);
+    console.error("[CleanupOrphanedFiles] Cleanup failed:", error);
+  } finally {
+    isCleanupRunning = false;
   }
 }
 

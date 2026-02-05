@@ -151,3 +151,55 @@ export const pastelify = (hex: string): string => {
 
   return result;
 };
+
+/**
+ * Determines if a color is suitable for background (colorful, not too white or black)
+ * @param color - Hex color string (with or without #)
+ * @returns True if saturation > 0.3 and lightness between 0.2 and 0.8
+ */
+export const isSuitable = (color: string): boolean => {
+  const hex = color.replace("#", "");
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  const max = Math.max(r, g, b) / 255;
+  const min = Math.min(r, g, b) / 255;
+  const l = (max + min) / 2;
+  const s = max === min ? 0 : (max - min) / (1 - Math.abs(2 * l - 1));
+  return s > 0.3 && l > 0.2 && l < 0.8;
+};
+
+/**
+ * Brightens a hex color by multiplying RGB values by a percentage
+ * @param hex - Hex color string (with or without # and optional alpha)
+ * @param percent - Percentage to brighten (e.g., 2 for 2% brighter)
+ * @returns Brightened hex color with alpha preserved
+ */
+export const brightenColor = (hex: string, percent: number): string => {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.min(255, Math.floor((num >> 16) * (1 + percent / 100)));
+  const g = Math.min(
+    255,
+    Math.floor(((num >> 8) & 0x00ff) * (1 + percent / 100))
+  );
+  const b = Math.min(255, Math.floor((num & 0x0000ff) * (1 + percent / 100)));
+  const alpha = hex.length === 9 ? hex.slice(-2) : "ff";
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}${alpha}`;
+};
+
+/**
+ * Picks a suitable background color from a palette and brightens it
+ * @param palette - Array of hex color strings
+ * @returns Brightened suitable color or default color
+ */
+export const pickBackgroundColor = (palette?: string[]): string => {
+  const defaultColor = "#d478ffff";
+
+  if (!palette || palette.length === 0) return brightenColor(defaultColor, 2);
+
+  const suitable = palette.filter(isSuitable);
+  if (suitable.length > 0) {
+    return brightenColor(suitable[0], 2);
+  }
+  return brightenColor(defaultColor, 2);
+};

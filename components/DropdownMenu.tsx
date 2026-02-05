@@ -37,12 +37,12 @@ export default function DropdownMenu({
 
   const styles = useDynamicStyles(() => ({
     container: {
-      position: "relative",
+      position: "relative" as const,
       zIndex: 1000,
     },
     trigger: {},
     backdrop: {
-      position: "absolute",
+      position: "absolute" as const,
       top: -1000,
       left: -1000,
       right: -1000,
@@ -69,8 +69,8 @@ export default function DropdownMenu({
       paddingVertical: SPACING.xs,
     },
     menuItem: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.sm,
       minHeight: 44,
@@ -178,7 +178,7 @@ export default function DropdownMenu({
                 >
                   {item.icon && (
                     <MaterialIcons
-                      name={item.icon}
+                      name={item.icon as any}
                       size={20}
                       color={themeValues.COLORS.onSurface}
                       style={styles.menuIcon}

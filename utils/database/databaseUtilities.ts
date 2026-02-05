@@ -1,7 +1,16 @@
-import * as SQLite from "expo-sqlite";
+import { Platform } from "react-native";
 import { getDatabaseSafe } from "./databaseCore";
 
+let SQLite: any = null;
+
 export const clearDatabase = async () => {
+  if (Platform.OS === "web") return;
+
+  if (!SQLite) {
+    const sqlite = await import("expo-sqlite");
+    SQLite = sqlite;
+  }
+
   const database = await SQLite.openDatabaseAsync("Inami.db");
   await database.execAsync("DROP TABLE IF EXISTS songs");
   await database.execAsync("DROP TABLE IF EXISTS playlists");
@@ -9,6 +18,13 @@ export const clearDatabase = async () => {
 };
 
 export const clearSongsDatabase = async () => {
+  if (Platform.OS === "web") return;
+
+  if (!SQLite) {
+    const sqlite = await import("expo-sqlite");
+    SQLite = sqlite;
+  }
+
   const database = await SQLite.openDatabaseAsync("Inami.db");
   await database.execAsync("DELETE FROM songs");
   await database.execAsync("DELETE FROM playlist_songs");

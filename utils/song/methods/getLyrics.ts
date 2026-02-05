@@ -1,6 +1,3 @@
-// netease caution: random chinese symbols, lyrics start with random introduction
-// lrclib caution: random \n sometimes,
-
 import userAgents from "../../userAgents";
 
 function getRandomUserAgent() {

@@ -6,6 +6,8 @@ export {
   db,
   saveProfile,
   getProfileItem,
+  setLandingFinished,
+  getLandingFinished,
 } from "./databaseCore";
 
 // Song Operations
@@ -18,6 +20,7 @@ export {
   deleteSong,
   toggleLikeSong,
   incrementPlayCount,
+  getTopGenres,
 } from "./songOperations";
 
 // Playlist Operations
@@ -52,6 +55,18 @@ export {
   deleteSongComments,
   type SongComment,
 } from "./songCommentOperations";
+
+// Listening History Operations
+export {
+  addListeningHistoryEntry,
+  addListeningHistoryBatch,
+  getListeningHistory,
+  getListeningHistoryByArtist,
+  getListeningHistoryByTrack,
+  getListeningHistoryCount,
+  clearListeningHistory,
+  type ListeningHistoryEntry,
+} from "./listeningHistoryOperations";
 
 // Database Utilities
 export {

@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { COLORS, SPACING } from "../constants/theme";
 import { useDynamicStyles } from "../hooks/useDynamicStyles";
+import { useHomeSessionStore } from "../store/homeStore";
 
 // YouTube Music -type components
 import Header from "./home/header";
@@ -83,6 +84,12 @@ export default function Home({
   playlists = [],
 }: HomeProps) {
   const router = useRouter();
+  const showRecommendedFromStore = useHomeSessionStore(
+    (state) => state.showRecommended
+  );
+  const setShowRecommended = useHomeSessionStore(
+    (state) => state.setShowRecommended
+  );
   const styles = useDynamicStyles(() => ({
     container: {
       flex: 1,
@@ -107,7 +114,15 @@ export default function Home({
     },
   }));
 
-  const showRecommended = React.useMemo(() => Math.random() < 0.5, []);
+  const showRecommendedFallback = React.useMemo(() => Math.random() < 0.5, []);
+
+  React.useEffect(() => {
+    if (showRecommendedFromStore === null) {
+      setShowRecommended(showRecommendedFallback);
+    }
+  }, [setShowRecommended, showRecommendedFallback, showRecommendedFromStore]);
+
+  const showRecommended = showRecommendedFromStore ?? showRecommendedFallback;
 
   if (loading && songs.length === 0) {
     return (
@@ -139,7 +154,9 @@ export default function Home({
         {!isDemo && Platform.OS === "web" && <WebBanner />}
 
         {/* Header */}
-        <Header onSettingsPress={() => router.push("/settings")} />
+        <Header
+          onSettingsPress={() => router.push("/settings-overlay" as never)}
+        />
 
         {/* Quick Stats */}
         <View style={styles.quickStatsWrapper}>

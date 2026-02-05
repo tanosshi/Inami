@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, Text } from "react-native";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import SongCard from "../SongCard";
@@ -43,6 +43,13 @@ export default function MostPlayed({ stats, onPlaySong }: MostPlayedProps) {
     },
   }));
 
+  const handlePlaySong = useCallback(
+    (song: Song) => {
+      onPlaySong(song);
+    },
+    [onPlaySong]
+  );
+
   if (!stats?.most_played_song || stats.most_played_song.play_count === 0)
     return null;
 
@@ -51,15 +58,15 @@ export default function MostPlayed({ stats, onPlaySong }: MostPlayedProps) {
       <Text style={styles.sectionTitle}>Most played</Text>
       <SongCard
         song={stats.most_played_song}
-        onPress={() => onPlaySong(stats.most_played_song!)}
+        onPress={() => handlePlaySong(stats.most_played_song!)}
       />
       <SongCard
         song={stats.most_played_song}
-        onPress={() => onPlaySong(stats.most_played_song!)}
+        onPress={() => handlePlaySong(stats.most_played_song!)}
       />
       <SongCard
         song={stats.most_played_song}
-        onPress={() => onPlaySong(stats.most_played_song!)}
+        onPress={() => handlePlaySong(stats.most_played_song!)}
       />
     </View>
   );

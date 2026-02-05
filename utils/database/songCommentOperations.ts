@@ -13,7 +13,12 @@ export interface SongComment {
 export const storeSongComments = async (
   songId: string,
   artistName: string,
-  comments: Array<{ user: string; text: string; profile?: string }>
+  comments: Array<{
+    user: string;
+    text: string;
+    profile?: string;
+    date?: string;
+  }>
 ): Promise<void> => {
   const database = getDatabase();
 
@@ -30,8 +35,15 @@ export const storeSongComments = async (
       continue;
 
     await database.runAsync(
-      `INSERT INTO song_comments (song_id, artist_name, user, text, profile) VALUES (?, ?, ?, ?, ?)`,
-      [songId, artistName, comment.user, comment.text, comment.profile || null]
+      `INSERT INTO song_comments (song_id, artist_name, user, text, profile, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        songId,
+        artistName,
+        comment.user,
+        comment.text,
+        comment.profile || null,
+        comment.date || null,
+      ]
     );
   }
 
@@ -40,11 +52,14 @@ export const storeSongComments = async (
   );
 };
 
-export const getSongComments = async (songId: string): Promise<SongComment[]> => {
+export const getSongComments = async (
+  songId: string,
+  artistName: string
+): Promise<SongComment[]> => {
   const database = getDatabase();
-  const comments = await database.getAllAsync<SongComment>(
-    "SELECT * FROM song_comments WHERE song_id = ? ORDER BY created_at DESC",
-    [songId]
+  const comments = await database.getAllAsync(
+    "SELECT * FROM song_comments WHERE song_id = ? AND artist_name = ? ORDER BY created_at DESC",
+    [songId, artistName]
   );
 
   return comments;
@@ -52,7 +67,7 @@ export const getSongComments = async (songId: string): Promise<SongComment[]> =>
 
 export const getAllSongComments = async (): Promise<SongComment[]> => {
   const database = getDatabase();
-  const comments = await database.getAllAsync<SongComment>(
+  const comments = await database.getAllAsync(
     "SELECT * FROM song_comments ORDER BY song_id, created_at DESC"
   );
 

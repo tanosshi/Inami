@@ -3,10 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Animated,
   Alert,
-  StyleSheet,
-  Easing,
   Platform,
   PermissionsAndroid,
 } from "react-native";
@@ -46,7 +43,6 @@ type FirstProps = {
 
 export default function LandingPage({ onSkip }: FirstProps) {
   const themeValues = useThemeValues();
-  const fadeAnim = useRef(new Animated.Value(1)).current;
   const [notificationGranted, setNotificationGranted] = useState(false);
   const [storageGranted, setStorageGranted] = useState(false);
   const [allFilesGranted, setAllFilesGranted] = useState(false);

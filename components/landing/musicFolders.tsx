@@ -23,7 +23,11 @@ import {
   openAllFilesAccessSettings,
   checkAllFilesAccess,
 } from "../../utils/folderManager";
-import { MusicFolder } from "../../utils/database";
+import {
+  MusicFolder,
+  getAllArtists,
+  setLandingFinished,
+} from "../../utils/database";
 import { triggerHaptic } from "../../utils/haptics";
 import { refreshLibrary } from "../../utils/mediaScanner";
 import { useRouter } from "expo-router";
@@ -484,6 +488,23 @@ export default function MusicFoldersPage({ onComplete }: MusicFoldersProps) {
         setScanProgress({ current, total });
       });
 
+      // Check for Unknown Artist
+      const artists = await getAllArtists();
+      console.log("Artists found:", artists.length);
+      const hasUnknown = artists.some((a) => {
+        const name = (a as any).name;
+        console.log("Artist:", name);
+        return name === "Unknown Artist" || name === "<Unknown>";
+      });
+
+      if (hasUnknown) {
+        console.log("Unknown artist found, redirecting...");
+        setIsScanning(false);
+        setScanProgress({ current: 0, total: 0 });
+        router.replace("/hold-on");
+        return;
+      }
+
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 500,
@@ -521,7 +542,13 @@ export default function MusicFoldersPage({ onComplete }: MusicFoldersProps) {
 
   const handleRestart = async () => {
     triggerHaptic();
-    router.replace("/");
+    try {
+      await setLandingFinished(true);
+      console.log("Landing finished, navigating to /(tabs)");
+    } catch (error) {
+      console.error("Error setting landing_finished:", error);
+    }
+    router.replace("/(tabs)" as any);
   };
 
   return (
@@ -590,12 +617,32 @@ export default function MusicFoldersPage({ onComplete }: MusicFoldersProps) {
               </Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.restartButton}
-            onPress={handleRestart}
-          >
-            <Text style={styles.restartButtonText}>Thank you!</Text>
-          </TouchableOpacity>
+          <View style={{ width: "100%" as const }}>
+            <TouchableOpacity
+              style={[
+                styles.restartButton,
+                {
+                  marginBottom: SPACING.md,
+                  backgroundColor: "transparent",
+                  borderWidth: 1,
+                  borderColor: COLORS.outline,
+                },
+              ]}
+              onPress={() => router.push("/hold-on")}
+            >
+              <Text
+                style={[styles.restartButtonText, { color: COLORS.primary }]}
+              >
+                Download Metadata
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.restartButton}
+              onPress={handleRestart}
+            >
+              <Text style={styles.restartButtonText}>Thank you!</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       ) : (
         <Animated.View style={[styles.bottomSection, { opacity: fadeAnim }]}>

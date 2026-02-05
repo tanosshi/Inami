@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { usePlayerStore } from "../../../store/playerStore";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../../constants/theme";

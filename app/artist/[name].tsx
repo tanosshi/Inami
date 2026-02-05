@@ -2,7 +2,6 @@ import React, {
   useEffect,
   useState,
   useMemo,
-  useRef,
   useCallback,
 } from "react";
 import {
@@ -11,24 +10,29 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
-  Animated,
+  Dimensions,
+  BackHandler,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
-import { Dimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImageColors from "react-native-image-colors";
 import { useSongStore } from "../../store/songStore";
 import { usePlayerStore } from "../../store/playerStore";
-import { COLORS, SPACING, RADIUS } from "../../constants/theme";
-import SongCard from "../../components/SongCard";
-import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import {
+  COLORS,
+  SPACING,
+  RADIUS,
+  getFontFamily,
+} from "../../constants/theme";
 import { triggerHaptic } from "../../utils/haptics";
 import { getAllArtists } from "../../utils/database";
 import { CommentsSection } from "./comments";
 import { isTooWhiteish } from "../../utils/colorUtils";
+import SongOptionsModal from "../../components/SongOptionsModal";
+import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 export default function ArtistDetailScreen() {
   const router = useRouter();
@@ -37,6 +41,9 @@ export default function ArtistDetailScreen() {
   const { playSong, setQueue, showPlayerOverlay } = usePlayerStore();
   const [loading, setLoading] = useState(true);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSong, setSelectedSong] = useState<any>(null);
 
   const imageHeight = screenHeight * 0.5;
   const imageWidth = screenWidth;
@@ -62,6 +69,7 @@ export default function ArtistDetailScreen() {
         alignItems: "center" as const,
       },
       linkText: {
+        fontFamily: getFontFamily("400"),
         fontSize: 16,
         color: COLORS.primary,
         marginTop: SPACING.md,
@@ -116,20 +124,22 @@ export default function ArtistDetailScreen() {
         paddingBottom: SPACING.md,
       },
       curatorText: {
+        fontFamily: getFontFamily("400"),
         fontSize: 14,
-        color: COLORS.onTertiaryContainer,
+        color: "#fbd7fc",
         opacity: 0.8,
         marginBottom: 1,
       },
       artistNameLarge: {
+        fontFamily: getFontFamily("700"),
         fontSize: artistNameFontSize,
-        fontWeight: "bold" as const,
-        color: COLORS.onTertiaryContainer,
+        color: "#fbd7fc",
         marginBottom: 4,
       },
       subtitleText: {
+        fontFamily: getFontFamily("400"),
         fontSize: 13,
-        color: COLORS.onTertiaryContainer,
+        color: "#fbd7fc",
         opacity: 0.7,
       },
       contentContainer: {
@@ -164,8 +174,8 @@ export default function ArtistDetailScreen() {
         paddingBottom: SPACING.md,
       },
       sectionTitle: {
+        fontFamily: getFontFamily("600"),
         fontSize: 18,
-        fontWeight: "600" as const,
         color: COLORS.onTertiaryContainer,
       },
       songListContainer: {
@@ -191,12 +201,13 @@ export default function ArtistDetailScreen() {
         flex: 1,
       },
       songTitle: {
+        fontFamily: getFontFamily("500"),
         fontSize: 15,
-        fontWeight: "500" as const,
         color: COLORS.onTertiaryContainer,
         marginBottom: 4,
       },
       songArtist: {
+        fontFamily: getFontFamily("400"),
         fontSize: 13,
         color: "#AAAAAA",
       },
@@ -212,12 +223,13 @@ export default function ArtistDetailScreen() {
         paddingVertical: SPACING.xxl,
       },
       emptyTitle: {
+        fontFamily: getFontFamily("600"),
         fontSize: 18,
-        fontWeight: "600" as const,
         color: COLORS.onTertiaryContainer,
         marginTop: SPACING.sm,
       },
       emptyText: {
+        fontFamily: getFontFamily("400"),
         fontSize: 14,
         color: "#AAAAAA",
         marginTop: SPACING.xs,
@@ -351,6 +363,20 @@ export default function ArtistDetailScreen() {
     loadData();
   }, [name, loadData]);
 
+  useEffect(() => {
+    const backAction = () => {
+      router.back();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [router]);
+
   const PlayAll = () => {
     if (artistSongs.length > 0) {
       setQueue(artistSongs);
@@ -363,6 +389,11 @@ export default function ArtistDetailScreen() {
     setQueue(artistSongs);
     playSong(song);
     showPlayerOverlay();
+  };
+
+  const handleSongOptions = (song: any) => {
+    setSelectedSong(song);
+    setModalVisible(true);
   };
 
   if (loading) {
@@ -586,7 +617,13 @@ export default function ArtistDetailScreen() {
                         {song.artist}
                       </Text>
                     </View>
-                    <TouchableOpacity style={styles.moreButton}>
+                    <TouchableOpacity
+                      style={styles.moreButton}
+                      onPress={() => {
+                        triggerHaptic();
+                        handleSongOptions(song);
+                      }}
+                    >
                       <MaterialIcons
                         name="more-vert"
                         size={20}
@@ -610,6 +647,14 @@ export default function ArtistDetailScreen() {
           <CommentsSection artistName={artistName} />
         </View>
       </ScrollView>
+
+      {selectedSong && (
+        <SongOptionsModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          song={selectedSong}
+        />
+      )}
     </View>
   );
 }

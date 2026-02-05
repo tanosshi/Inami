@@ -4,6 +4,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { parseBuffer } from "music-metadata-browser";
 import ImageColors from "react-native-image-colors";
 import { safeString } from "./safeString";
+import { readLocalLrcContent } from "./localLrcSync";
 
 export interface AudioMetadata {
   title: string;
@@ -12,6 +13,7 @@ export interface AudioMetadata {
   duration: number;
   artwork?: string;
   palette?: string[];
+  lyrics?: string;
 }
 
 function getExtensionFromMimeType(mimeType: string): string {
@@ -281,6 +283,14 @@ export const extractMetadata = async (
       }
     }
 
+    let lyricsContent: string | undefined;
+    try {
+      const lrcContent = await readLocalLrcContent(uri);
+      if (lrcContent) lyricsContent = lrcContent;
+    } catch (lrcError) {
+      console.log("[Metadata Extractor] No local LRC file found:", lrcError);
+    }
+
     const result = {
       title:
         safeString(metadata.common.title) ||
@@ -291,6 +301,7 @@ export const extractMetadata = async (
       duration: metadata.format.duration || 0,
       artwork: artworkUri,
       palette,
+      lyrics: lyricsContent,
     };
 
     return result;

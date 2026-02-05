@@ -3,3 +3,4 @@
 */
 
 export const lastfmAPIKey = "<INSERT_LAST_FM_API_KEY>";
+export const backupLastfmAPIKey = "";

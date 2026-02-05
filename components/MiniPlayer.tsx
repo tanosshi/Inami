@@ -28,8 +28,10 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
   const { dynamicColors } = useDynamicTheme();
   const [navToggle, setNavToggle] = useState<boolean>(true);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [lastSong, setLastSong] = useState<any>(null);
   const dragAnim = useRef(new Animated.Value(0)).current;
   const hapticInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {
     currentSong,
     isPlaying,
@@ -50,6 +52,30 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
     };
     fetchSettings();
   }, []);
+
+  useEffect(() => {
+    if (currentSong) {
+      setLastSong(currentSong);
+    }
+
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+
+    if (!isPlaying && (currentSong || lastSong)) {
+      hideTimer.current = setTimeout(() => {
+        setLastSong(null);
+      }, 240000);
+    }
+
+    return () => {
+      if (hideTimer.current) {
+        clearTimeout(hideTimer.current);
+        hideTimer.current = null;
+      }
+    };
+  }, [isPlaying, currentSong, lastSong]);
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -181,8 +207,11 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
     })
   ).current;
 
-  if (!currentSong || (!isPlaying && !showPlayer)) return null;
+  if (!currentSong && !lastSong && !showPlayer) return null;
 
+  const displaySong = currentSong || lastSong;
+
+  if (!displaySong) return null;
   const progress = duration > 0 ? (position / duration) * 100 : 0;
 
   const OpenPlayer = () => {
@@ -214,9 +243,9 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
           <View style={styles.content}>
             {/* Artwork */}
             <View style={styles.artworkContainer}>
-              {currentSong.artwork ? (
+              {displaySong.artwork ? (
                 <Image
-                  source={{ uri: currentSong.artwork }}
+                  source={{ uri: displaySong.artwork }}
                   style={styles.artwork}
                   contentFit="cover"
                 />
@@ -234,10 +263,10 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
             {/* Song Info */}
             <View style={styles.info}>
               <Text style={styles.title} numberOfLines={1}>
-                {safeString(currentSong.title)}
+                {safeString(displaySong.title)}
               </Text>
               <Text style={styles.artist} numberOfLines={1}>
-                {safeString(currentSong.artist)}
+                {safeString(displaySong.artist)}
               </Text>
             </View>
 

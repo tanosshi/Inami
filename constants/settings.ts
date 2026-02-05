@@ -81,8 +81,8 @@ export const SETTINGS_CONFIG = {
     settings: [
       {
         codename: "show_lyrics",
-        name: "Show lyrics",
-        description: "Display lyrics on player",
+        name: "Load lyrics",
+        description: "Display lyrics on the player",
         emoji: "lyrics",
         type: "toggle",
         defaultValue: true,

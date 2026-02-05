@@ -16,11 +16,11 @@ interface ArtistRecord {
 
 export const getAllArtists = async (): Promise<ArtistRecord[]> => {
   const database = getDatabase();
-  const artists = await database.getAllAsync<ArtistRecord>(
+  const artists = await database.getAllAsync(
     "SELECT * FROM artists ORDER BY name COLLATE NOCASE ASC"
   );
 
-  return artists.map((artist) => ({
+  return artists.map((artist: ArtistRecord) => ({
     ...artist,
     image_url:
       artist.image_url &&
@@ -52,13 +52,13 @@ export const getArtist = async (
   let result: ArtistRecord | null = null;
 
   if (by === "mbid") {
-    result = await database.getFirstAsync<ArtistRecord>(
+    result = await database.getFirstAsync(
       "SELECT * FROM artists WHERE mbid = ? LIMIT 1",
       [identifier]
     );
     console.log("[Database] getArtist by MBID result:", result);
   } else if (by === "name") {
-    result = await database.getFirstAsync<ArtistRecord>(
+    result = await database.getFirstAsync(
       "SELECT * FROM artists WHERE name = ? COLLATE NOCASE LIMIT 1",
       [identifier]
     );
@@ -66,7 +66,7 @@ export const getArtist = async (
   } else {
     // Try MBID first, then name
     console.log("[Database] getArtist trying MBID first");
-    const byMbid = await database.getFirstAsync<ArtistRecord>(
+    const byMbid = await database.getFirstAsync(
       "SELECT * FROM artists WHERE mbid = ? LIMIT 1",
       [identifier]
     );
@@ -75,7 +75,7 @@ export const getArtist = async (
       result = byMbid;
     } else {
       console.log("[Database] getArtist trying name");
-      const byName = await database.getFirstAsync<ArtistRecord>(
+      const byName = await database.getFirstAsync(
         "SELECT * FROM artists WHERE name = ? COLLATE NOCASE LIMIT 1",
         [identifier]
       );
@@ -111,7 +111,7 @@ export const upsertArtist = async (
   const database = getDatabase();
 
   // Check if artist exists by name (case insensitive)
-  const existingArtist = await database.getFirstAsync<ArtistRecord>(
+  const existingArtist = await database.getFirstAsync(
     "SELECT * FROM artists WHERE name = ? COLLATE NOCASE LIMIT 1",
     [artistData.name]
   );

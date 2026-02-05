@@ -33,7 +33,7 @@ export const CUSTOMIZATION_CONFIG = {
       },
       {
         codename: "white_mode",
-        name: "White Mode",
+        name: "Light Mode",
         description: "A light theme for better visibility in sunlight",
         emoji: "brush",
         type: "action",

@@ -21,91 +21,68 @@ async function fetchAndStoreArtistMetadata(artistName: string) {
   }
 
   const name = artistName.split(/[&,]/)[0].trim();
-
-  fetchAndStoreComments(name);
-
   const db = await getDatabaseSafe();
-  const existingArtist = await db.getFirstAsync<{ listeners: number | null }>(
-    "SELECT listeners FROM artists WHERE name = ? COLLATE NOCASE LIMIT 1",
+
+  const existingArtist = (await db.getFirstAsync(
+    "SELECT listeners, image_url, mbid, wikidata_id FROM artists WHERE name = ? COLLATE NOCASE LIMIT 1",
     [name]
-  );
-  let listeners: number | null = null;
+  )) as
+    | {
+        listeners: number | null;
+        image_url: string | null;
+        mbid: string | null;
+        wikidata_id: string | null;
+      }
+    | undefined;
+
+  // Skip if we already have complete data for this artist
   if (
-    !existingArtist ||
-    existingArtist.listeners === null ||
-    existingArtist.listeners === 0 ||
-    existingArtist.listeners < 5
+    existingArtist?.image_url &&
+    existingArtist?.listeners &&
+    existingArtist?.listeners > 5
   ) {
-    listeners = await getListeners(name);
-  } else {
-    listeners = existingArtist.listeners;
+    console.log(`[ArtistMeta] Skipping ${name} - already has complete data`);
+    return;
   }
 
-  const linkifiedName = artistName
-    .normalize("NFKD")
-    .replace(/[&,]/g, "")
-    .replace(/[^\p{L}\p{N}\s-]/gu, "")
-    .trim()
-    .replace(/\s+/g, "")
-    .toLowerCase();
+  // Start background/parallel tasks
+  const backgroundTasks: Promise<any>[] = [];
 
-  const bandcampResult = await getImageFromBandcamp(
-    "https://" +
-      linkifiedName.replaceAll("-", "").replaceAll(" ", "") +
-      ".bandcamp.com",
-    name,
-    "zero",
-    "zero"
-  );
-  if (bandcampResult.imageUrl && !bandcampResult.error) {
-    await storeArtistInDB(
-      name,
-      bandcampResult.mbid || null,
-      bandcampResult.wikidataId || null,
-      bandcampResult.imageUrl,
-      listeners
+  // Non-blocking comments fetch
+  if (!existingArtist?.image_url) {
+    backgroundTasks.push(fetchAndStoreComments(name).catch(() => null));
+  }
+
+  // Discovery Variables
+  let listeners = existingArtist?.listeners || null;
+  let finalMbid = existingArtist?.mbid || null;
+  let finalWikidataId = existingArtist?.wikidata_id || null;
+  let imageUrl = existingArtist?.image_url || null;
+
+  // 1) Reliable Discovery Phase (Parallel)
+  const discoveryTasks: Promise<any>[] = [];
+
+  // Listeners task
+  if (!listeners || listeners < 5) {
+    discoveryTasks.push(
+      getListeners(name)
+        .then((l) => (listeners = l))
+        .catch(() => null)
     );
-    return bandcampResult;
   }
 
-  const secondTrybandcampResult = await getImageFromBandcamp(
-    "https://" +
-      linkifiedName.replaceAll("-", "").replaceAll(" ", "").replace("i", "") +
-      ".bandcamp.com",
-    name,
-    "zero",
-    "zero"
+  // Relations and Knowledge Base task
+  let mbRelations: any = null;
+  discoveryTasks.push(
+    getMusicBrainzRelations(name)
+      .then((r) => (mbRelations = r))
+      .catch(() => null)
   );
-  if (secondTrybandcampResult.imageUrl && !secondTrybandcampResult.error) {
-    await storeArtistInDB(
-      name,
-      secondTrybandcampResult.mbid || null,
-      secondTrybandcampResult.wikidataId || null,
-      secondTrybandcampResult.imageUrl,
-      listeners
-    );
-    return secondTrybandcampResult;
-  }
 
-  const tumblrResult = await getImageFromTumblr(
-    linkifiedName + ".tumblr.com",
-    name,
-    "zero",
-    "zero"
-  );
-  if (tumblrResult.imageUrl && !tumblrResult.error) {
-    await storeArtistInDB(
-      name,
-      tumblrResult.mbid || null,
-      tumblrResult.wikidataId || null,
-      tumblrResult.imageUrl,
-      listeners
-    );
-    return tumblrResult;
-  }
-
-  try {
-    const response = await fetch(
+  // Wikidata search task
+  let wikiQIDSearch: string | null = null;
+  discoveryTasks.push(
+    fetch(
       `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
         name
       )}&language=en&format=json&origin=*`,
@@ -114,176 +91,122 @@ async function fetchAndStoreArtistMetadata(artistName: string) {
           "User-Agent": "Inami/1.0 (https://github.com/tanosshi/inami)",
         },
       }
+    )
+      .then((r) => r.json())
+      .then((data) => (wikiQIDSearch = data.search?.[0]?.id))
+      .catch(() => null)
+  );
+
+  await Promise.allSettled(discoveryTasks);
+
+  finalMbid = mbRelations?.mbid || finalMbid;
+  finalWikidataId = mbRelations?.wikidataId || wikiQIDSearch || finalWikidataId;
+
+  // 2) Image Extraction Phase
+  const imageTasks = [];
+
+  // If we have wikidataId, prioritize it
+  if (finalWikidataId) {
+    const qid = finalWikidataId;
+    imageTasks.push(
+      getImageFromWikidata(name, finalMbid || qid, qid).then((res) =>
+        res?.imageUrl ? res : null
+      )
     );
-
-    const contentType = response.headers.get("content-type");
-
-    if (!response.ok || !contentType?.includes("application/json")) {
-      const errorText = await response.text();
-      console.error(
-        `Network error or non-JSON response for ${name}:`,
-        errorText
-      );
-      return;
-    }
-
-    const data = await response.json();
-    const WikiQID = data.search?.[0]?.id;
-
-    console.log(`QID for ${name}: ` + WikiQID);
-    if (!WikiQID) return;
-    const imageResult = await getImageFromWikidata(name, WikiQID, WikiQID);
-    if (imageResult?.imageUrl) {
-      await storeArtistInDB(
-        name,
-        imageResult.mbid || null,
-        imageResult.wikidataId || null,
-        imageResult.imageUrl,
-        listeners
-      );
-    }
-    return imageResult;
-  } catch {
-    //  console.error("Fetch error:", e);
   }
 
-  // Last resort: MBID lookup (Dangerously unreliable)
-  try {
-    // MBID + relations (consolidated)
-    const { mbid, wikidataId, tumblrUrl, bandcampUrl } =
-      await getMusicBrainzRelations(name);
-    if (!mbid) {
-      throw new Error(`No MBID found for artist: ${name}`);
-    }
+  // Prepare fallback URLs
+  const linkifiedName = artistName
+    .normalize("NFKD")
+    .replace(/[&,]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .trim()
+    .replace(/\s+/g, "")
+    .toLowerCase();
 
-    // Wikidata image
-    if (wikidataId) {
-      try {
-        const imageResult = await getImageFromWikidata(name, mbid, wikidataId);
-        let localUri: string | null = null;
-        try {
-          localUri = await downloadImage(imageResult.imageUrl);
-        } catch (err) {
-          console.warn(
-            `[ArtistMeta] Failed to download wikimedia image for ${name}:`,
-            err
-          );
-        }
-        await upsertArtist({
-          name,
-          mbid,
-          wikidata_id: wikidataId,
-          image_url: localUri || imageResult.imageUrl,
-          fallback_url: imageResult.imageUrl,
-          listeners,
-        });
-        console.log(`[ArtistMeta] Artist metadata stored in DB for ${name}`);
-        return {
-          mbid,
-          wikidataId,
-          imageUrl: localUri || imageResult.imageUrl,
-          name,
-        };
-      } catch (wikidataErr) {
-        console.error(
-          `[ArtistMeta] Wikidata image fetch failed, trying Tumblr fallback...`,
-          wikidataErr
-        );
-        // Bandcamp first
-        if (bandcampUrl) {
-          const bandcampResult = await getImageFromBandcamp(
-            bandcampUrl,
-            name,
-            mbid,
-            wikidataId
-          );
-          if (bandcampResult.imageUrl) {
-            await storeArtistInDB(
-              name,
-              mbid || null,
-              wikidataId || null,
-              bandcampResult.imageUrl,
-              listeners
-            );
-            return bandcampResult;
-          }
-        }
-        // Then Tumblr
-        if (tumblrUrl) {
-          const tumblrRes = await getImageFromTumblr(
-            tumblrUrl,
-            name,
-            mbid,
-            wikidataId
-          );
-          if (tumblrRes.imageUrl) {
-            await storeArtistInDB(
-              name,
-              mbid || null,
-              wikidataId || null,
-              tumblrRes.imageUrl,
-              listeners
-            );
-          }
-          return tumblrRes;
-        }
-        throw wikidataErr;
-      }
-    } else if (bandcampUrl) {
-      // Bandcamp first
-      const bandcampResult = await getImageFromBandcamp(
-        bandcampUrl,
+  const bcUrls = [
+    mbRelations?.bandcampUrl,
+    `https://${linkifiedName.replace(/[- ]/g, "")}.bandcamp.com`,
+    `https://${linkifiedName.replace(/[- i]/g, "")}.bandcamp.com`,
+  ].filter(Boolean);
+
+  const tmblrUrls = [
+    mbRelations?.tumblrUrl,
+    `${linkifiedName.replace(/[- ]/g, "")}.tumblr.com`,
+  ].filter(Boolean);
+
+  // Add Bandcamp tasks
+  bcUrls.forEach((url) => {
+    imageTasks.push(
+      getImageFromBandcamp(
+        url,
         name,
-        mbid,
-        wikidataId
-      );
-      if (bandcampResult.imageUrl) {
-        await storeArtistInDB(
-          name,
-          mbid || null,
-          wikidataId || null,
-          bandcampResult.imageUrl,
-          listeners
-        );
-        return bandcampResult;
-      }
-      // Then Tumblr
-      if (tumblrUrl) {
-        const tumblrRes = await getImageFromTumblr(
-          tumblrUrl,
-          name,
-          mbid,
-          wikidataId
-        );
-        if (tumblrRes.imageUrl) {
-          await storeArtistInDB(
-            name,
-            mbid || null,
-            wikidataId || null,
-            tumblrRes.imageUrl,
-            listeners
-          );
-        }
-        return tumblrRes;
-      }
-      throw new Error(
-        `No Wikidata, Tumblr, or Bandcamp relation found for artist: ${name}`
-      );
-    } else if (tumblrUrl) {
-      // Only Tumblr left
-      return await getImageFromTumblr(tumblrUrl, name, mbid, wikidataId);
-    } else {
-      throw new Error(
-        `No Wikidata, Tumblr, or Bandcamp relation found for artist: ${name}`
-      );
-    }
-  } catch (err) {
-    console.error(
-      `[ArtistMeta] Error fetching artist metadata for ${name}:`,
-      err
+        finalMbid || "zero",
+        finalWikidataId || "zero"
+      ).then((res) => (res?.imageUrl ? res : null))
     );
-    return { error: String(err), name };
+  });
+
+  // Add Tumblr tasks
+  tmblrUrls.forEach((url) => {
+    imageTasks.push(
+      getImageFromTumblr(
+        url,
+        name,
+        finalMbid || "zero",
+        finalWikidataId || "zero"
+      ).then((res) => (res?.imageUrl ? res : null))
+    );
+  });
+
+  const imageResults = await Promise.allSettled(imageTasks);
+  const successfulResult = imageResults
+    .filter(
+      (r): r is PromiseFulfilledResult<any> =>
+        r.status === "fulfilled" && !!r.value
+    )
+    .map((r) => r.value)
+    .sort((a, b) => {
+      // Prioritize Wikidata (usually highest quality)
+      if (a.wikidataId && !b.wikidataId) return -1;
+      if (!a.wikidataId && b.wikidataId) return 1;
+      return 0;
+    })[0];
+
+  if (successfulResult) {
+    imageUrl = successfulResult.imageUrl;
+    finalMbid = successfulResult.mbid || finalMbid;
+    finalWikidataId = successfulResult.wikidataId || finalWikidataId;
+
+    // Try to download image locally if it's from Wikidata/external
+    try {
+      if (
+        imageUrl &&
+        (imageUrl.includes("wikimedia") || imageUrl.includes("wikidata"))
+      ) {
+        const localUri = await downloadImage(imageUrl).catch(() => null);
+        if (localUri) imageUrl = localUri;
+      }
+    } catch {}
+
+    await storeArtistInDB(
+      name,
+      finalMbid || null,
+      finalWikidataId || null,
+      imageUrl,
+      listeners
+    );
+
+    return successfulResult;
   }
+
+  // Final attempt if nothing found yet but we have MB relations?
+  // (Removed redundant nested try-catch blocks and consolidated into previous logic)
+
+  // Wait for background tasks before finishing
+  await Promise.allSettled(backgroundTasks);
+
+  return { mbid: finalMbid, wikidataId: finalWikidataId, imageUrl, name };
 }
 
 const fetchAndStoreComments = async (artistName: string) => {
@@ -292,15 +215,22 @@ const fetchAndStoreComments = async (artistName: string) => {
     const comments = await getComments(artistName);
 
     if (comments && comments.length > 0) {
-      const validComments = comments.filter(
-        (
-          comment
-        ): comment is { userName: string; text: string; profile?: string } =>
-          comment !== undefined &&
-          comment !== null &&
-          typeof comment.userName === "string" &&
-          typeof comment.text === "string"
-      );
+      const validComments = comments
+        .filter(
+          (
+            comment
+          ): comment is {
+            userName: string;
+            text: string;
+            profile?: string;
+            date?: string;
+          } =>
+            comment !== undefined &&
+            comment !== null &&
+            typeof comment.userName === "string" &&
+            typeof comment.text === "string"
+        )
+        .slice(0, 50);
 
       if (validComments.length > 0) {
         await storeArtistComments(artistName, validComments);
@@ -323,8 +253,12 @@ const fetchAndStoreComments = async (artistName: string) => {
 
 async function fetchAndStoreArtistMetadataBatch(
   artistNames: string[],
-  batchSize = 2
+  batchSize = 1
 ) {
+  console.log(
+    `[ArtistMeta] Processing ${artistNames.length} artists in batches of ${batchSize}`
+  );
+
   for (let i = 0; i < artistNames.length; i += batchSize) {
     const batch = artistNames.slice(i, i + batchSize);
     await Promise.allSettled(
@@ -339,7 +273,14 @@ async function fetchAndStoreArtistMetadataBatch(
         }
       })
     );
+
+    // Add delay between batches to prevent memory buildup
+    if (i + batchSize < artistNames.length) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
   }
+
+  console.log(`[ArtistMeta] Completed batch processing`);
 }
 
 export { fetchAndStoreArtistMetadata, fetchAndStoreArtistMetadataBatch };

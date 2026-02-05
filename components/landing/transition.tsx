@@ -4,6 +4,7 @@ import { COLORS } from "../../constants/theme";
 import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 import FirstLandingPage from "./permissions";
 import SecondLandingPage from "./pickFeatures";
+import SetupFmPage from "./setupFm";
 import ThirdLandingPage from "./nowForYou";
 import FourthLandingPage from "./musicFolders";
 
@@ -17,15 +18,16 @@ const getPageFromHash = (hash: string): number | null => {
   const hashMap: { [key: string]: number } = {
     permissions: 0,
     pickfeatures: 1,
-    nowforyou: 2,
-    musicfolders: 3,
+    setupfm: 2,
+    nowforyou: 3,
+    musicfolders: 4,
   };
   const hashName = hash.replace("#", "").toLowerCase().trim();
   const page = hashMap[hashName];
   return page ?? null;
 };
 
-const TOTAL_PAGES = 4;
+const TOTAL_PAGES = 5;
 
 export default function LandingTransition(props: TransitionProps) {
   const { onTransitionComplete, initialPage = 0 } = props;
@@ -55,9 +57,7 @@ export default function LandingTransition(props: TransitionProps) {
   }));
 
   useEffect(() => {
-    if (!isAnimating) {
-      slidePosition.setValue(currentPage * -screenWidth);
-    }
+    if (!isAnimating) slidePosition.setValue(currentPage * -screenWidth);
   }, [screenWidth, currentPage, isAnimating, slidePosition]);
 
   useEffect(() => {
@@ -65,9 +65,8 @@ export default function LandingTransition(props: TransitionProps) {
       const handleHashChange = () => {
         const hash = window.location.hash;
         const newPage = getPageFromHash(hash);
-        if (newPage !== null && newPage !== currentPage && !isAnimating) {
+        if (newPage !== null && newPage !== currentPage && !isAnimating)
           animateToPage(newPage);
-        }
       };
 
       window.addEventListener("hashchange", handleHashChange);
@@ -93,23 +92,24 @@ export default function LandingTransition(props: TransitionProps) {
         if (finished) {
           setCurrentPage(targetPage);
           setIsAnimating(false);
-          if (targetPage === TOTAL_PAGES - 1) {
-            onTransitionComplete?.();
-          }
+          if (targetPage === TOTAL_PAGES - 1) onTransitionComplete?.();
         }
       });
     },
     [currentPage, isAnimating, screenWidth, slidePosition, onTransitionComplete]
   );
 
-  const goToNext = useCallback(() => {
-    const nextPage = currentPage + 1;
-    if (nextPage < TOTAL_PAGES) {
-      animateToPage(nextPage);
-    } else {
-      onTransitionComplete?.();
-    }
-  }, [currentPage, animateToPage, onTransitionComplete]);
+  const goToNext = useCallback(
+    (data?: { enable_fm?: boolean }) => {
+      let nextPage = currentPage + 1;
+
+      if (currentPage === 1 && !data?.enable_fm) nextPage = 3;
+
+      if (nextPage < TOTAL_PAGES) animateToPage(nextPage);
+      else onTransitionComplete?.();
+    },
+    [currentPage, animateToPage, onTransitionComplete]
+  );
 
   const renderPages = () => {
     return (
@@ -117,6 +117,7 @@ export default function LandingTransition(props: TransitionProps) {
         style={[
           styles.slideContainer,
           {
+            width: screenWidth * TOTAL_PAGES,
             transform: [{ translateX: slidePosition }],
           },
         ]}
@@ -126,6 +127,9 @@ export default function LandingTransition(props: TransitionProps) {
         </View>
         <View style={styles.pageWrapper}>
           <SecondLandingPage onSkip={goToNext} />
+        </View>
+        <View style={styles.pageWrapper}>
+          <SetupFmPage onNext={goToNext} />
         </View>
         <View style={styles.pageWrapper}>
           <ThirdLandingPage onLikeThis={goToNext} />

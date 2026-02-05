@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { getArtist, getAllArtists } from "../../utils/database";
+import { getAllArtists } from "../../utils/database";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { triggerHaptic } from "../../utils/haptics";

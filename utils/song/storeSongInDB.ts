@@ -16,7 +16,6 @@ async function storeSongInDB(
   trackBigInfo?: string | null,
   listeners?: number | null
 ) {
-  console.log(`storeSongInDB: ${songTitle} - ${artistName}`);
   try {
     const db = await getDatabaseSafe();
 
@@ -116,9 +115,6 @@ async function storeSongInDB(
           await db.runAsync(
             `UPDATE songs SET ${updates.join(", ")} WHERE id = ?`,
             params
-          );
-          console.log(
-            `Updated song ${existingSong.id} with album/artwork by id`
           );
         }
       }

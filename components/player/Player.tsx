@@ -1,16 +1,16 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
   useWindowDimensions,
   Animated,
   PanResponder,
-  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { usePlayerStore } from "../../store/playerStore";
 import { COLORS, SPACING } from "../../constants/theme";
 import { useDynamicStyles } from "../../hooks/useDynamicStyles";
+import { pickBackgroundColor } from "../../utils/colorUtils";
 
 import SwipeIndicator from "./classic/swipe-indicator";
 import PlayerHeader from "./classic/player-header";
@@ -19,15 +19,64 @@ import SongInfo from "./classic/song-info";
 import ProgressBar from "./classic/progress-bar";
 import PlayerControls from "./classic/player-controls";
 import BottomActions from "./classic/bottom-actions";
-import EmptyState from "./classic/empty-state";
 
 import MaterialIcons from "@expo/vector-icons/build/MaterialIcons";
+
+import Top from "./lyrical/top";
+import Lyrics from "./lyrical/lyrics";
+import ProgressBarNew from "./lyrical/progress-bar";
+import Controls from "./lyrical/controls";
+import Comments from "./lyrical/comments";
+
+interface ProgressWrapperProps {
+  children: React.ReactElement<any>;
+}
+
+const ProgressWrapper = React.memo<ProgressWrapperProps>(({ children }) => {
+  const position = usePlayerStore((state) => state.position);
+  const duration = usePlayerStore((state) => state.duration);
+  const seekTo = usePlayerStore((state) => state.seekTo);
+
+  return React.cloneElement(children, {
+    position,
+    duration,
+    onSeek: seekTo,
+  });
+});
+
+ProgressWrapper.displayName = "ProgressWrapper";
 
 function PlayerContent() {
   const { width, height } = useWindowDimensions();
   const artworkSize = Math.min(width - 80, 320);
 
   const translateY = useRef(new Animated.Value(height)).current;
+
+  const commentsTranslateY = useRef(new Animated.Value(height)).current;
+
+  const [isHiding, setIsHiding] = useState(false);
+
+  const {
+    currentSong,
+    isPlaying,
+    shuffle,
+    repeat,
+    togglePlayPause,
+    playNext,
+    playPrevious,
+    toggleShuffle,
+    toggleRepeat,
+    showPlayer,
+    hidePlayerOverlay,
+    hidingAnimated,
+    resetHidingAnimated,
+    showComments,
+    setShowComments,
+    hidingCommentsAnimated,
+    resetHidingCommentsAnimated,
+  } = usePlayerStore();
+
+  const backgroundColor = pickBackgroundColor(currentSong?.palette);
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -84,10 +133,12 @@ function PlayerContent() {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponder: () => {
+        return false;
+      },
       onMoveShouldSetPanResponder: (_, gestureState) => {
         return (
-          gestureState.dy > 10 &&
+          Math.abs(gestureState.dy) > 10 &&
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
         );
       },
@@ -97,20 +148,102 @@ function PlayerContent() {
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
           translateY.setValue(gestureState.dy);
+        } else if (gestureState.dy < 0) {
+          commentsTranslateY.setValue(height + gestureState.dy);
         }
       },
       onPanResponderRelease: (_, gestureState) => {
         translateY.flattenOffset();
 
-        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          hidePlayer();
+        if (showComments) {
+          if (gestureState.dy > 100 || gestureState.vy > 0.5) {
+            setShowComments(false);
+            Animated.parallel([
+              Animated.spring(commentsTranslateY, {
+                toValue: height,
+                damping: 28,
+                stiffness: 220,
+                mass: 0.9,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          } else {
+            Animated.parallel([
+              Animated.spring(translateY, {
+                toValue: 0,
+                damping: 28,
+                stiffness: 220,
+                mass: 0.9,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          }
+        } else {
+          if (gestureState.dy > 100 || gestureState.vy > 0.5) {
+            hidePlayer();
+          } else if (gestureState.dy < -50 || gestureState.vy < -0.3) {
+            setShowComments(true);
+            Animated.parallel([
+              Animated.spring(commentsTranslateY, {
+                toValue: 0,
+                damping: 28,
+                stiffness: 220,
+                mass: 0.9,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          } else {
+            Animated.parallel([
+              Animated.spring(translateY, {
+                toValue: 0,
+                damping: 28,
+                stiffness: 220,
+                mass: 0.9,
+                useNativeDriver: true,
+              }),
+              Animated.spring(commentsTranslateY, {
+                toValue: height,
+                damping: 28,
+                stiffness: 220,
+                mass: 0.9,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          }
+        }
+      },
+    })
+  ).current;
+
+  const commentsPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
+      onPanResponderGrant: () => {
+        translateY.extractOffset();
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          commentsTranslateY.setValue(height + gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        translateY.flattenOffset();
+
+        if (gestureState.dy > 50 || gestureState.vy > 0.3) {
+          setShowComments(false);
+          Animated.timing(commentsTranslateY, {
+            toValue: height,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
         } else {
           Animated.parallel([
-            Animated.spring(translateY, {
+            Animated.spring(commentsTranslateY, {
               toValue: 0,
-              damping: 28,
-              stiffness: 220,
-              mass: 0.9,
+              damping: 40,
+              stiffness: 100,
+              mass: 1,
               useNativeDriver: true,
             }),
           ]).start();
@@ -119,24 +252,8 @@ function PlayerContent() {
     })
   ).current;
 
-  const {
-    currentSong,
-    isPlaying,
-    position,
-    duration,
-    shuffle,
-    repeat,
-    togglePlayPause,
-    seekTo,
-    playNext,
-    playPrevious,
-    toggleShuffle,
-    toggleRepeat,
-    showPlayer,
-    hidePlayerOverlay,
-  } = usePlayerStore();
-
   const hidePlayer = () => {
+    setIsHiding(true);
     Animated.parallel([
       Animated.timing(translateY, {
         toValue: height,
@@ -144,33 +261,73 @@ function PlayerContent() {
         useNativeDriver: true,
       }),
     ]).start(() => {
+      setIsHiding(false);
       hidePlayerOverlay();
     });
   };
 
   React.useEffect(() => {
-    if (showPlayer && currentSong) {
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          damping: 28,
-          stiffness: 220,
-          mass: 0.9,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: height,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [showPlayer, currentSong]);
+    if (!showPlayer || !currentSong) return;
+    const anim = Animated.parallel([
+      Animated.spring(translateY, {
+        toValue: 0,
+        damping: 28,
+        stiffness: 220,
+        mass: 0.9,
+        useNativeDriver: true,
+      }),
+    ]);
+    anim.start();
+    return () => anim.stop();
+  }, [showPlayer, currentSong, translateY]);
 
-  if (!showPlayer || !currentSong) {
+  React.useEffect(() => {
+    if (!hidingAnimated) return;
+    setIsHiding(true);
+    const anim = Animated.timing(translateY, {
+      toValue: height,
+      duration: 250,
+      useNativeDriver: true,
+    });
+    anim.start(({ finished }) => {
+      if (finished) {
+        setIsHiding(false);
+        hidePlayerOverlay();
+        resetHidingAnimated();
+      }
+    });
+    return () => anim.stop();
+  }, [
+    hidingAnimated,
+    height,
+    translateY,
+    hidePlayerOverlay,
+    resetHidingAnimated,
+  ]);
+
+  React.useEffect(() => {
+    if (!hidingCommentsAnimated) return;
+    const anim = Animated.timing(commentsTranslateY, {
+      toValue: height,
+      duration: 250,
+      useNativeDriver: true,
+    });
+    anim.start(({ finished }) => {
+      if (finished) {
+        setShowComments(false);
+        resetHidingCommentsAnimated();
+      }
+    });
+    return () => anim.stop();
+  }, [
+    hidingCommentsAnimated,
+    height,
+    commentsTranslateY,
+    setShowComments,
+    resetHidingCommentsAnimated,
+  ]);
+
+  if ((!showPlayer && !isHiding) || !currentSong) {
     return null;
   }
 
@@ -186,8 +343,9 @@ function PlayerContent() {
               transform: [{ translateY }],
             },
           ]}
-          {...panResponder.panHandlers}
+          {...(showComments ? {} : panResponder.panHandlers)}
         >
+          {/* Classic Player Style */}
           <SafeAreaView style={styles.safeArea}>
             <Animated.ScrollView
               contentContainerStyle={styles.scrollContent}
@@ -203,11 +361,9 @@ function PlayerContent() {
 
               <BottomActions song={currentSong} />
 
-              <ProgressBar
-                position={position}
-                duration={duration}
-                onSeek={seekTo}
-              />
+              <ProgressWrapper>
+                <ProgressBar position={0} duration={0} onSeek={() => {}} />
+              </ProgressWrapper>
 
               <PlayerControls
                 isPlaying={isPlaying}
@@ -281,124 +437,105 @@ function PlayerContent() {
         </Animated.View>
       ) : (
         <Animated.View
-          style={[styles.container, {}]}
-          {...panResponder.panHandlers}
+          style={[
+            styles.container,
+            { backgroundColor: "#000", transform: [{ translateY }] },
+          ]}
+          {...(showComments ? {} : panResponder.panHandlers)}
         >
+          {/* Lyrical Player Style */}
           <SafeAreaView style={styles.safeArea}>
-            <View
-              style={[styles.scrollContent, { height, overflow: "hidden" }]}
-            >
-              <View style={styles.ctopInfoWrap}>
-                <View style={styles.topRow}>
-                  <View style={styles.albumCover}>
-                    <Artwork
-                      song={currentSong}
-                      artworkSize={Math.min(artworkSize * 0.27, 120)}
+            <View style={{ flex: 1, flexDirection: "column" }}>
+              <Top currentSong={currentSong} />
+
+              <View
+                style={{
+                  flex: 1,
+                  marginTop: 7,
+                  borderTopLeftRadius: 44,
+                  borderTopRightRadius: 44,
+                  overflow: "hidden",
+                  backgroundColor: backgroundColor,
+                  flexDirection: "column",
+                }}
+              >
+                <Lyrics backgroundColor={backgroundColor} />
+
+                <View
+                  style={{
+                    paddingHorizontal: 24,
+                    paddingBottom: 30,
+                    paddingTop: 24,
+                    marginTop: "auto",
+                    marginBottom: 20,
+                  }}
+                >
+                  <ProgressWrapper>
+                    <ProgressBarNew
+                      position={0}
+                      duration={0}
+                      onSeek={() => {}}
                     />
-                  </View>
+                  </ProgressWrapper>
 
-                  <View style={{ marginLeft: -SPACING.md, flexShrink: 1 }}>
-                    <Text style={styles.songTitle}>
-                      {currentSong?.title || "Unknown"}
-                    </Text>
-                    <Text style={styles.songArtist}>
-                      {currentSong?.artist || ""}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.roundedPanel}>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      top: -60,
-                      marginTop: 20,
-                      padding: SPACING.lg,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 50,
-                        fontWeight: "900",
-                        color: COLORS.surface,
-                        textAlign: "left",
-                        width: "90%",
-                        includeFontPadding: false,
-                      }}
-                      adjustsFontSizeToFit
-                    >
-                      Lyrical text text demo lyrics
-                    </Text>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: -260,
-                      paddingTop: SPACING.xxl,
-                      padding: SPACING.lg,
-                    }}
-                  >
-                    <ProgressBar
-                      position={position}
-                      duration={duration}
-                      onSeek={seekTo}
-                    />
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginTop: SPACING.md,
-                      }}
-                    >
-                      <TouchableOpacity
-                        onPress={playPrevious}
-                        style={{ padding: SPACING.sm }}
-                      >
-                        <MaterialIcons
-                          name="skip-previous"
-                          size={36}
-                          color={COLORS.onSurface}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={togglePlayPause}
-                        style={{
-                          width: 72,
-                          height: 72,
-                          borderRadius: 36,
-                          backgroundColor: COLORS.primary,
-                          justifyContent: "center",
-                          alignItems: "center",
-                          marginHorizontal: SPACING.md,
-                        }}
-                      >
-                        <MaterialIcons
-                          name={isPlaying ? "pause" : "play-arrow"}
-                          size={36}
-                          color={COLORS.onSurface}
-                        />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={playNext}
-                        style={{ padding: SPACING.sm }}
-                      >
-                        <MaterialIcons
-                          name="skip-next"
-                          size={36}
-                          color={COLORS.onSurface}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                  <Controls
+                    isPlaying={isPlaying}
+                    togglePlayPause={togglePlayPause}
+                    playPrevious={playPrevious}
+                    playNext={playNext}
+                  />
                 </View>
               </View>
             </View>
+
+            <Animated.View
+              style={{
+                position: "absolute",
+                top: 141,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: COLORS.background,
+                borderTopLeftRadius: 44,
+                borderTopRightRadius: 44,
+                overflow: "hidden",
+                transform: [{ translateY: commentsTranslateY }],
+              }}
+              {...(showComments ? commentsPanResponder.panHandlers : {})}
+            >
+              <Comments
+                songId={currentSong?.id}
+                artistName={currentSong?.artist}
+                onClose={() => {
+                  Animated.timing(commentsTranslateY, {
+                    toValue: height,
+                    duration: 300,
+                    useNativeDriver: true,
+                  }).start(() => setShowComments(false));
+                }}
+              />
+
+              <View
+                style={{
+                  paddingHorizontal: 24,
+                  paddingBottom: 30,
+                  paddingTop: 24,
+                  marginTop: "auto",
+                  marginBottom: 20,
+                }}
+              >
+                <ProgressWrapper>
+                  <ProgressBarNew position={0} duration={0} onSeek={() => {}} />
+                </ProgressWrapper>
+
+                <Controls
+                  isPlaying={isPlaying}
+                  togglePlayPause={togglePlayPause}
+                  playPrevious={playPrevious}
+                  playNext={playNext}
+                />
+              </View>
+            </Animated.View>
           </SafeAreaView>
         </Animated.View>
       )}

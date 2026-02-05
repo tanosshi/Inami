@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
@@ -29,7 +29,7 @@ export default function SettingsModal({
     overlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
-      justifyContent: "flex-end",
+      justifyContent: "flex-end" as const,
     },
     modal: {
       backgroundColor: COLORS.surface,
@@ -37,7 +37,7 @@ export default function SettingsModal({
       borderTopRightRadius: RADIUS.xxl,
       padding: SPACING.lg,
       paddingTop: SPACING.md,
-      width: "100%",
+      width: "100%" as const,
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -52,13 +52,13 @@ export default function SettingsModal({
       height: 4,
       backgroundColor: COLORS.onSurfaceVariant,
       borderRadius: 2,
-      alignSelf: "center",
+      alignSelf: "center" as const,
       marginBottom: SPACING.md,
       opacity: 0.4,
     },
     header: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
       marginBottom: SPACING.md,
       marginTop: SPACING.xs,
     },
@@ -79,15 +79,15 @@ export default function SettingsModal({
       lineHeight: 20,
     },
     buttons: {
-      flexDirection: "row",
+      flexDirection: "row" as const,
       gap: SPACING.md,
       marginBottom: SPACING.sm,
     },
     button: {
       flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
       paddingVertical: SPACING.md,
       paddingHorizontal: SPACING.lg,
       borderRadius: RADIUS.full,

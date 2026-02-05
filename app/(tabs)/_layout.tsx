@@ -13,14 +13,14 @@ import {
   Platform,
   TouchableOpacity,
   Modal,
+  Image,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import MiniPlayer from "../../components/MiniPlayer";
-import { usePlayerStore } from "../../store/playerStore";
 import { useTabStore } from "../../store/tabStore";
 import { COLORS, RADIUS, TAB_CONFIG } from "../../constants/theme";
 import { useThemeValues } from "../../hooks/useDynamicStyles";
-import { getThemeSettings } from "../../utils/database";
+import { getThemeSettings, getProfileItem } from "../../utils/database";
 import SwipeableTabs, {
   SwipeableTabsRef,
 } from "../../components/SwipeableTabs";
@@ -41,6 +41,7 @@ const AnimatedTabIcon = React.memo(
     isNextTab,
     isPrevTab,
     themeValues,
+    imageUri,
   }: {
     name: keyof typeof MaterialIcons.glyphMap;
     color: string;
@@ -50,6 +51,7 @@ const AnimatedTabIcon = React.memo(
     isNextTab: boolean;
     isPrevTab: boolean;
     themeValues: any;
+    imageUri?: string | null;
   }) => {
     const scale = useRef(new Animated.Value(focused ? 1 : 0.85)).current;
     const opacity = useRef(new Animated.Value(focused ? 1 : 0.7)).current;
@@ -153,7 +155,19 @@ const AnimatedTabIcon = React.memo(
             opacity,
           }}
         >
-          <MaterialIcons name={name} size={24} color={color} />
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              style={{
+                width: 28,
+                height: 28,
+                marginRight: 12,
+                borderRadius: 12,
+              }}
+            />
+          ) : (
+            <MaterialIcons name={name} size={24} color={color} />
+          )}
         </Animated.View>
       </View>
     );
@@ -175,6 +189,7 @@ const TabBarItem = React.memo(
     isNextTab,
     isPrevTab,
     themeValues,
+    imageUri,
   }: {
     name: string;
     title: string;
@@ -187,6 +202,7 @@ const TabBarItem = React.memo(
     isNextTab: boolean;
     isPrevTab: boolean;
     themeValues: any;
+    imageUri?: string | null;
   }) => {
     return (
       <TouchableOpacity
@@ -203,6 +219,7 @@ const TabBarItem = React.memo(
           isNextTab={isNextTab}
           isPrevTab={isPrevTab}
           themeValues={themeValues}
+          imageUri={imageUri}
         />
         {showLabel && focused && (
           <Text style={[tabBarStyles.tabLabel, { color: COLORS.onPrimary }]}>
@@ -234,9 +251,6 @@ const tabBarStyles = StyleSheet.create({
 
 export default function TabLayout() {
   const themeValues = useThemeValues();
-  const currentSong = usePlayerStore((state) => state.currentSong);
-  const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const showPlayer = usePlayerStore((s) => s.showPlayer);
   const swipeableRef = useRef<SwipeableTabsRef>(null);
   const storeTabIndex = useTabStore((state) => state.currentTabIndex);
   const setStoreTabIndex = useTabStore((state) => state.setTabIndex);
@@ -248,6 +262,7 @@ export default function TabLayout() {
   const [showUserModal, setShowUserModal] = useState<boolean>(false);
   const [showDiscoverOverlay, setShowDiscoverOverlay] =
     useState<boolean>(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   const userPrevFocused = useRef(false);
 
@@ -287,6 +302,16 @@ export default function TabLayout() {
     };
     if (Platform.OS !== "web") {
       fetchSettings();
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const profile = await getProfileItem();
+      setProfilePicture(profile?.profile_picture || null);
+    };
+    if (Platform.OS !== "web") {
+      fetchProfile();
     }
   }, []);
 
@@ -370,9 +395,7 @@ export default function TabLayout() {
         </SwipeableTabs>
       </View>
 
-      {currentSong && (isPlaying || showPlayer) && (
-        <MiniPlayer tabBarColor={dynamicStyles.tabBar.backgroundColor} />
-      )}
+      <MiniPlayer tabBarColor={dynamicStyles.tabBar.backgroundColor} />
 
       <View style={dynamicStyles.tabBar}>
         {tabConfigs.map((tab, index) => (
@@ -405,6 +428,7 @@ export default function TabLayout() {
           isNextTab={false}
           isPrevTab={false}
           themeValues={themeValues}
+          imageUri={profilePicture}
         />
       </View>
 

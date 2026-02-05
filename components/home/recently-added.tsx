@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, Text } from "react-native";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import SongCard from "../SongCard";
@@ -37,13 +37,24 @@ export default function RecentlyAdded({
     },
   }));
 
+  const handlePlaySong = useCallback(
+    (song: Song) => {
+      onPlaySong(song);
+    },
+    [onPlaySong]
+  );
+
   if (songs.length === 0) return null;
 
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Recently added</Text>
       {songs.slice(0, 5).map((song) => (
-        <SongCard key={song.id} song={song} onPress={() => onPlaySong(song)} />
+        <SongCard
+          key={song.id}
+          song={song}
+          onPress={() => handlePlaySong(song)}
+        />
       ))}
     </View>
   );

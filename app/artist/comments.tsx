@@ -13,6 +13,7 @@ interface CommentItem {
   author: string;
   comment: string;
   profile?: string;
+  date?: string;
 }
 
 interface CommentCardProps {
@@ -50,7 +51,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment }) => {
       fontWeight: "600" as const,
       color: COLORS.onSurface,
     },
-    siteIndicator: {
+    datePosted: {
       fontSize: 8,
       color: COLORS.onSurfaceVariant,
       opacity: 0.7,
@@ -67,6 +68,16 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment }) => {
 
   const getAvatarLetter = (author: string) => {
     return author.charAt(0).toUpperCase();
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch {
+      return "";
+    }
   };
 
   return (
@@ -98,8 +109,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment }) => {
         </View>
         <View style={styles.authorContainer}>
           <Text style={styles.authorText}>{comment.author}</Text>
-          <Text style={styles.siteIndicator}>PLACEHOLDER_X</Text>
-          {/* either show site or scrobbles from artist from commenter */}
+          <Text style={styles.datePosted}>{formatDate(comment.date)}</Text>
         </View>
       </View>
       <Text style={styles.commentText}>{comment.comment}</Text>
@@ -155,6 +165,7 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
     author: c.userName,
     comment: c.text,
     profile: c.profile,
+    date: c.created_at,
   }));
 
   return (

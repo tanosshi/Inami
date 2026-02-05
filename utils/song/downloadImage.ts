@@ -7,7 +7,6 @@ function getRandomUserAgent() {
 const userAgent = getRandomUserAgent();
 
 async function downloadImage(url: string): Promise<string> {
-  console.log(`downloadImage: ${url}`);
   if (!url) throw new Error("No URL provided");
 
   const res = await fetch(url, { headers: { "User-Agent": userAgent } });

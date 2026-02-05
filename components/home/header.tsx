@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback, useState, useEffect } from "react";
 import { View, Text, Pressable, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { initDatabase, getProfileItem } from "../../utils/database";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -46,7 +47,7 @@ const getGreeting = () => {
   return general;
 };
 
-const SettingsButton = ({ onPress }: { onPress: () => void }) => {
+const SettingsButton = React.memo(({ onPress }: { onPress: () => void }) => {
   const themeValues = useThemeValues();
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -97,13 +98,27 @@ const SettingsButton = ({ onPress }: { onPress: () => void }) => {
       </Animated.View>
     </Pressable>
   );
-};
+});
+
+SettingsButton.displayName = "SettingsButton";
 
 interface HeaderProps {
   onSettingsPress: () => void;
 }
 
 export default function Header({ onSettingsPress }: HeaderProps) {
+  const [greeting] = useState(() => getGreeting());
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      await initDatabase();
+      const profileData = await getProfileItem();
+      setUsername(profileData?.username || null);
+    };
+    fetchProfile();
+  }, []);
+
   const styles = useDynamicStyles(() => ({
     header: {
       flexDirection: "row" as const,
@@ -124,13 +139,17 @@ export default function Header({ onSettingsPress }: HeaderProps) {
     },
   }));
 
+  const handleSettingsPress = useCallback(() => {
+    onSettingsPress();
+  }, [onSettingsPress]);
+
   return (
     <View style={styles.header}>
       <View>
-        <Text style={styles.greeting}>{getGreeting()}</Text>
-        <Text style={styles.title}>Inami</Text>
+        <Text style={styles.greeting}>{greeting}</Text>
+        <Text style={styles.title}>{username || "Inami"}</Text>
       </View>
-      <SettingsButton onPress={onSettingsPress} />
+      <SettingsButton onPress={handleSettingsPress} />
     </View>
   );
 }

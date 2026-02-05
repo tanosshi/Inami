@@ -14,6 +14,8 @@ if (Platform.OS !== "web") {
 }
 
 let isSetup = false;
+const PROGRESS_THROTTLE_MS = 500;
+let lastProgressUpdate = 0;
 
 export interface AudioProTrack {
   id: string;
@@ -72,7 +74,10 @@ export function setupAudio() {
           }
           break;
 
-        case AudioProEventType?.PROGRESS:
+        case AudioProEventType?.PROGRESS: {
+          const now = Date.now();
+          if (now - lastProgressUpdate < PROGRESS_THROTTLE_MS) break;
+          lastProgressUpdate = now;
           const position = event.payload?.position || 0;
           const duration = event.payload?.duration || 0;
           require("../store/playerStore").usePlayerStore.setState({
@@ -80,6 +85,7 @@ export function setupAudio() {
             duration,
           });
           break;
+        }
 
         case AudioProEventType?.PLAYBACK_ERROR:
           console.error("playback error:", event.payload?.error);

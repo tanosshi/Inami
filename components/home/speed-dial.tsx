@@ -3,11 +3,11 @@ import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import { getAllSongs } from "../../utils/database";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { triggerHaptic } from "../../utils/haptics";
+import { useHomeSessionStore } from "../../store/homeStore";
 
 const { width } = Dimensions.get("window");
 const TILE_SIZE = (width - SPACING.md * 4) / 3;
@@ -31,8 +31,15 @@ interface SpeedDialProps {
 
 export default function SpeedDial({ songs, onPlaySong }: SpeedDialProps) {
   const themeValues = useThemeValues();
-  const router = useRouter();
-  const [randomSongs, setRandomSongs] = React.useState<Song[]>([]);
+  const cachedSpeedDialSongs = useHomeSessionStore(
+    (state) => state.speedDialSongs
+  );
+  const setCachedSpeedDialSongs = useHomeSessionStore(
+    (state) => state.setSpeedDialSongs
+  );
+  const [randomSongs, setRandomSongs] = React.useState<Song[]>(
+    (cachedSpeedDialSongs as Song[]) || []
+  );
 
   const getRandomSongsWithPreference = (songList: Song[]): Song[] => {
     if (!songList || songList.length === 0) return [];
@@ -62,25 +69,31 @@ export default function SpeedDial({ songs, onPlaySong }: SpeedDialProps) {
 
   React.useEffect(() => {
     const loadRandomSongs = async () => {
+      if (cachedSpeedDialSongs && cachedSpeedDialSongs.length > 0) {
+        return;
+      }
       try {
         const allSongs = await getAllSongs();
         if (allSongs && allSongs.length > 0) {
           const selectedSongs = getRandomSongsWithPreference(allSongs);
           setRandomSongs(selectedSongs);
+          setCachedSpeedDialSongs(selectedSongs);
         } else if (songs && songs.length > 0) {
           const selectedSongs = getRandomSongsWithPreference(songs);
           setRandomSongs(selectedSongs);
+          setCachedSpeedDialSongs(selectedSongs);
         }
       } catch {
         if (songs && songs.length > 0) {
           const selectedSongs = getRandomSongsWithPreference(songs);
           setRandomSongs(selectedSongs);
+          setCachedSpeedDialSongs(selectedSongs);
         }
       }
     };
 
     loadRandomSongs();
-  }, [songs]);
+  }, [cachedSpeedDialSongs, setCachedSpeedDialSongs, songs]);
 
   const styles = useDynamicStyles(() => ({
     section: {

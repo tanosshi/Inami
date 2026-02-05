@@ -17,11 +17,6 @@ async function getBandCampAlbumCover(artist: string, album: string) {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    console.log({
-      url: res.url,
-      status: res.status,
-      redirected: res.redirected,
-    });
     if (text.includes("bio-pic placeholder")) return null;
     const match = text.match(/<meta property="og:image" content="([^"]+)"/);
     if (match && match[1]) return match[1];

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, Text } from "react-native";
 import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import SongCard from "../SongCard";
@@ -46,6 +46,13 @@ export default function RecommendedPeriod({
     },
   }));
 
+  const handlePlaySong = useCallback(
+    (song: Song) => {
+      onPlaySong(song);
+    },
+    [onPlaySong]
+  );
+
   if (!stats?.most_played_song || stats.most_played_song.play_count === 0)
     return null;
   // edit when the logic is there
@@ -54,15 +61,15 @@ export default function RecommendedPeriod({
       <Text style={styles.sectionTitle}>Recommended Right Now</Text>
       <SongCard
         song={stats.most_played_song}
-        onPress={() => onPlaySong(stats.most_played_song!)}
+        onPress={() => handlePlaySong(stats.most_played_song!)}
       />
       <SongCard
         song={stats.most_played_song}
-        onPress={() => onPlaySong(stats.most_played_song!)}
+        onPress={() => handlePlaySong(stats.most_played_song!)}
       />
       <SongCard
         song={stats.most_played_song}
-        onPress={() => onPlaySong(stats.most_played_song!)}
+        onPress={() => handlePlaySong(stats.most_played_song!)}
       />
     </View>
   );

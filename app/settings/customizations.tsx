@@ -10,13 +10,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
-import { SETTINGS_CONFIG } from "../../constants/settings";
+import {
+  COLORS,
+  SPACING,
+  RADIUS,
+  TYPOGRAPHY,
+  applyFont,
+  getCurrentFont,
+  getFontFamily,
+} from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
+import { useTheme } from "../../contexts/ThemeContext";
 import { triggerHaptic } from "@/utils/haptics";
 import {
   getAllSettings,
   saveSetting,
+  saveTextSetting,
   getThemeSettings,
   saveThemeSetting,
 } from "../../utils/database";
@@ -28,6 +37,7 @@ import { PLAYLISTS_LAYOUT_CONFIG } from "../../constants/customizations/playlist
 import { DISCOVER_LAYOUT_CONFIG } from "../../constants/customizations/discover_layout";
 import { FORYOU_LAYOUT_CONFIG } from "../../constants/customizations/foryou_layout";
 import { PLAYER_STYLE_CONFIG } from "../../constants/customizations/player_style";
+import { FONTS_CONFIG } from "../../constants/customizations/fonts";
 
 type CustomizationConfig =
   | typeof NAV_STYLE_CONFIG
@@ -35,7 +45,8 @@ type CustomizationConfig =
   | typeof PLAYLISTS_LAYOUT_CONFIG
   | typeof DISCOVER_LAYOUT_CONFIG
   | typeof FORYOU_LAYOUT_CONFIG
-  | typeof PLAYER_STYLE_CONFIG;
+  | typeof PLAYER_STYLE_CONFIG
+  | typeof FONTS_CONFIG;
 
 const CONFIG_MAP: Record<
   string,
@@ -50,12 +61,13 @@ const CONFIG_MAP: Record<
   player_style: { config: PLAYER_STYLE_CONFIG, title: "Player Style" },
   discover_layout: { config: DISCOVER_LAYOUT_CONFIG, title: "Discover Layout" },
   homescreen: { config: FORYOU_LAYOUT_CONFIG, title: "Home Screen" },
-  fonts: { config: FORYOU_LAYOUT_CONFIG, title: "Fonts" },
+  fonts: { config: FONTS_CONFIG, title: "Fonts" },
 };
 
 export default function SettingsScreen() {
   const router = useRouter();
   const themeValues = useThemeValues();
+  const { refreshTheme } = useTheme();
   const { type } = useLocalSearchParams<{ type?: string }>();
 
   const selectedConfig =
@@ -74,6 +86,7 @@ export default function SettingsScreen() {
     navToggle: true,
     showNavTextToggle: true,
   });
+  const [selectedFont, setSelectedFont] = React.useState(getCurrentFont());
 
   React.useEffect(() => {
     const loadSettings = async () => {
@@ -131,6 +144,17 @@ export default function SettingsScreen() {
   const handleSettingPress = (codename: string, type: string) => {
     triggerHaptic();
     console.log(`Setting pressed: ${codename} (type: ${type})`);
+
+    if (selectedConfig.title === "Fonts") {
+      applyFont(codename as any);
+      setSelectedFont(codename as any);
+      saveTextSetting("current_font_family", codename)
+        .catch(console.warn)
+        .then(() => {
+          refreshTheme();
+        });
+      return;
+    }
   };
 
   const handleToggleChange = async (codename: string, value: boolean) => {
@@ -166,10 +190,14 @@ export default function SettingsScreen() {
     index: number,
     isLast: boolean
   ) => {
-    const { codename, name, description, emoji, type, customEmoji } = setting;
+    const { codename, name, description, emoji, type } = setting;
 
     const isToggle = type === "toggle";
-    const hasRightArrow = type === "menu" || type === "action";
+    const hasRightArrow =
+      (type === "menu" || type === "action") &&
+      selectedConfig.title !== "Fonts";
+    const isSelected =
+      selectedConfig.title === "Fonts" && codename === selectedFont;
 
     const isClickable = type === "menu" || type === "action";
 
@@ -208,6 +236,13 @@ export default function SettingsScreen() {
               disabled={isLoading}
             />
           )}
+          {isSelected && (
+            <MaterialIcons
+              name="check"
+              size={24}
+              color={themeValues.COLORS.primary}
+            />
+          )}
           {hasRightArrow && (
             <MaterialIcons
               name="chevron-right"
@@ -238,15 +273,15 @@ export default function SettingsScreen() {
       marginHorizontal: SPACING.sm,
     },
     smallnavbar: {
-      width: "100%",
+      width: "100%" as any,
       height: 20,
       backgroundColor: COLORS.surface,
       borderBottomLeftRadius: RADIUS.xl,
       borderBottomRightRadius: RADIUS.xl,
-      flexDirection: "row",
-      position: "absolute",
-      justifyContent: "center",
-      alignItems: "center",
+      flexDirection: "row" as "row",
+      position: "absolute" as "absolute",
+      justifyContent: "center" as "center",
+      alignItems: "center" as "center",
       bottom: 0,
     },
     smallbottomleftbutton: {
@@ -280,7 +315,7 @@ export default function SettingsScreen() {
       alignItems: "center" as ViewStyle["alignItems"],
     },
     title: {
-      fontFamily: "Inter_600SemiBold",
+      fontFamily: getFontFamily("600"),
       ...TYPOGRAPHY.titleLarge,
       color: COLORS.onSurface,
     },
@@ -295,18 +330,18 @@ export default function SettingsScreen() {
       paddingBottom: 40,
     },
     iconBox: {
-      width: "100%" as const,
+      width: "100%" as any,
       height: 120,
       backgroundColor: COLORS.surfaceContainer,
       borderRadius: RADIUS.xl,
       marginVertical: SPACING.xl,
       opacity: 0.55,
-      justifyContent: "center" as const,
-      alignItems: "center" as const,
-      alignSelf: "center" as const,
+      justifyContent: "center" as any,
+      alignItems: "center" as any,
+      alignSelf: "center" as any,
     },
     sectionTitle: {
-      fontFamily: "Inter_500Medium",
+      fontFamily: getFontFamily("500"),
       ...TYPOGRAPHY.titleSmall,
       color: COLORS.onSurface,
       marginBottom: SPACING.sm,
@@ -337,12 +372,12 @@ export default function SettingsScreen() {
       flex: 1,
     },
     settingLabel: {
-      fontFamily: "Inter_500Medium",
+      fontFamily: getFontFamily("500"),
       ...TYPOGRAPHY.bodyLarge,
       color: COLORS.onSurface,
     },
     settingDescription: {
-      fontFamily: "Inter_400Regular",
+      fontFamily: getFontFamily("400"),
       ...TYPOGRAPHY.bodyMedium,
       color: COLORS.onSurfaceVariant,
       marginTop: 2,
@@ -358,12 +393,12 @@ export default function SettingsScreen() {
       marginTop: SPACING.lg,
     },
     footerText: {
-      fontFamily: "Inter_600SemiBold",
+      fontFamily: getFontFamily("600"),
       ...TYPOGRAPHY.titleMedium,
       color: COLORS.onSurfaceVariant,
     },
     footerSubtext: {
-      fontFamily: "Inter_400Regular",
+      fontFamily: getFontFamily("400"),
       ...TYPOGRAPHY.bodySmall,
       color: COLORS.outline,
       marginTop: SPACING.xs,
@@ -376,7 +411,13 @@ export default function SettingsScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push("/")}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+              return;
+            }
+            router.push("/");
+          }}
         >
           <MaterialIcons
             name="arrow-back"
@@ -422,7 +463,36 @@ export default function SettingsScreen() {
             </View>
           </View>
         )}
-        {/* RENDER ONE BY ONE */}
+        {selectedConfig.title === "Fonts" && (
+          <View
+            style={[
+              styles.iconBox,
+              { height: "auto", padding: 20, alignItems: "flex-start" },
+            ]}
+          >
+            <Text
+              style={{
+                fontFamily: getFontFamily("700"),
+                fontSize: 24,
+                color: COLORS.onSurface,
+                marginBottom: 8,
+              }}
+            >
+              The quick brown fox
+            </Text>
+            <Text
+              style={{
+                fontFamily: getFontFamily("400"),
+                fontSize: 16,
+                color: COLORS.onSurfaceVariant,
+              }}
+            >
+              Jumped over the lazy dog.{"\n"}
+              1234567890
+            </Text>
+          </View>
+        )}
+        {/* RENDER ONE BY ONE */},
         {Object.entries(selectedConfig.config).map(
           ([sectionKey, section]: [string, any]) => {
             const settingsArray = Array.isArray(section.settings)
@@ -445,8 +515,6 @@ export default function SettingsScreen() {
             );
           }
         )}
-
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Inami</Text>
           <Text style={styles.footerSubtext}>made by tanos</Text>

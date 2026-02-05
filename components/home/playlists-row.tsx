@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
+import { COLORS, SPACING, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 
 interface PlaylistDemo {
@@ -17,9 +17,12 @@ interface PlaylistsRowProps {
 export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
   const router = useRouter();
 
-  const handlePlaylistPress = (playlist: PlaylistDemo) => {
-    router.push(`/playlist/${playlist.id}`);
-  };
+  const handlePlaylistPress = useCallback(
+    (playlist: PlaylistDemo) => {
+      router.push(`/playlist/${playlist.id}`);
+    },
+    [router]
+  );
   const styles = useDynamicStyles(() => ({
     container: {
       marginTop: -SPACING.xl + 8,
@@ -65,7 +68,7 @@ export default function PlaylistsRow({ playlists }: PlaylistsRowProps) {
             <Image
               source={{ uri: playlist.artwork! }}
               style={styles.playlistImage}
-              resizeMode="cover"
+              contentFit="cover"
             />
           </TouchableOpacity>
         ))}

@@ -13,7 +13,12 @@ export interface ArtistComment {
 
 export const storeArtistComments = async (
   artistName: string,
-  comments: { userName: string; text: string; profile?: string }[]
+  comments: {
+    userName: string;
+    text: string;
+    profile?: string;
+    date?: string;
+  }[]
 ): Promise<void> => {
   const database = getDatabase();
 
@@ -40,8 +45,14 @@ export const storeArtistComments = async (
     }
 
     await database.runAsync(
-      `INSERT INTO artist_comments (artist_name, userName, text, profile) VALUES (?, ?, ?, ?)`,
-      [artistName, comment.userName, comment.text, profilePath]
+      `INSERT INTO artist_comments (artist_name, userName, text, profile, created_at) VALUES (?, ?, ?, ?, ?)`,
+      [
+        artistName,
+        comment.userName,
+        comment.text,
+        profilePath,
+        comment.date || null,
+      ]
     );
   }
 
@@ -54,12 +65,12 @@ export const getArtistComments = async (
   artistName: string
 ): Promise<ArtistComment[]> => {
   const database = getDatabase();
-  const comments = await database.getAllAsync<ArtistComment>(
+  const comments = await database.getAllAsync(
     "SELECT * FROM artist_comments WHERE artist_name = ? ORDER BY created_at DESC",
     [artistName]
   );
 
-  return comments.map((comment) => ({
+  return comments.map((comment: ArtistComment) => ({
     ...comment,
     profile:
       comment.profile &&
@@ -72,11 +83,11 @@ export const getArtistComments = async (
 
 export const getAllArtistComments = async (): Promise<ArtistComment[]> => {
   const database = getDatabase();
-  const comments = await database.getAllAsync<ArtistComment>(
+  const comments = await database.getAllAsync(
     "SELECT * FROM artist_comments ORDER BY artist_name, created_at DESC"
   );
 
-  return comments.map((comment) => ({
+  return comments.map((comment: ArtistComment) => ({
     ...comment,
     profile:
       comment.profile &&

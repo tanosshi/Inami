@@ -22,8 +22,8 @@ export default function EmptyState({ onGoBack }: EmptyStateProps) {
     },
     emptyContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     emptyText: {
       fontFamily: "Inter_500Medium",

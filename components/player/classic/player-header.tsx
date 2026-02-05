@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../../constants/theme";
@@ -7,11 +7,8 @@ import {
   useDynamicStyles,
   useThemeValues,
 } from "../../../hooks/useDynamicStyles";
-import {
-  isSleepTimerActive,
-  formatRemainingTime,
-} from "../../../utils/sleepTimer";
 import SleepTimerModal from "../SleepTimerModal";
+import { usePlayerMenu } from "../../../hooks/usePlayerMenu";
 
 interface PlayerHeaderProps {
   onBackPressed: () => void;
@@ -19,7 +16,7 @@ interface PlayerHeaderProps {
 
 export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
   const themeValues = useThemeValues();
-  const [sleepTimerModalVisible, sleeptimerVisible] = useState(false);
+  const { sleepTimerModalVisible, setSleepTimerModalVisible, menuItems } = usePlayerMenu();
 
   const styles = useDynamicStyles(() => ({
     header: {
@@ -54,53 +51,6 @@ export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
     },
   }));
 
-  const menuItems = [
-    {
-      id: "delete-file",
-      title: "Delete",
-      icon: "delete",
-      onPress: () => {},
-    },
-    {
-      id: "add-to-playlist",
-      title: "Add to Playlist",
-      icon: "playlist-add",
-      onPress: () => {},
-    },
-    {
-      id: "share",
-      title: "Share",
-      icon: "share",
-      onPress: () => {},
-    },
-    {
-      id: "download",
-      title: "Download",
-      icon: "download",
-      onPress: () => {},
-    },
-    {
-      id: "Album",
-      title: "Album",
-      icon: "favorite",
-      onPress: () => {},
-    },
-    {
-      id: "song-info",
-      title: "Track details",
-      icon: "info",
-      onPress: () => {},
-    },
-    {
-      id: "sleep-timer",
-      title: isSleepTimerActive()
-        ? `Sleep Timer (${formatRemainingTime()})`
-        : "Sleep Timer",
-      icon: "timer",
-      onPress: () => sleeptimerVisible(true),
-    },
-  ];
-
   return (
     <>
       <View style={styles.header}>
@@ -130,7 +80,7 @@ export default function PlayerHeader({ onBackPressed }: PlayerHeaderProps) {
       </View>
       <SleepTimerModal
         visible={sleepTimerModalVisible}
-        onClose={() => sleeptimerVisible(false)}
+        onClose={() => setSleepTimerModalVisible(false)}
       />
     </>
   );

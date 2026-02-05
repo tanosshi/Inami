@@ -30,11 +30,7 @@ export function startSleepTimer(minutes: number, onEnd?: () => void): void {
     sleepTimerId = null;
     sleepEndTime = null;
     onTimerEndCallback = null;
-
-    console.log("Sleep timer: Playback stopped");
   }, durationMs);
-
-  console.log(`Sleep timer: Set for ${minutes} minutes`);
 }
 
 export function cancelSleepTimer(): void {
@@ -43,7 +39,6 @@ export function cancelSleepTimer(): void {
     sleepTimerId = null;
     sleepEndTime = null;
     onTimerEndCallback = null;
-    console.log("Sleep timer: Cancelled");
   }
 }
 

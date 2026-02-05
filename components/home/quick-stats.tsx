@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Shadow } from "react-native-shadow-2";
+import { useRouter } from "expo-router";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { useTabStore, TAB_INDEXES } from "../../store/tabStore";
+import { triggerHaptic } from "../../utils/haptics";
 
 interface Stats {
   total_songs: number;
@@ -23,6 +25,7 @@ interface QuickStatsProps {
 export default function QuickStats({ stats }: QuickStatsProps) {
   const setTabIndex = useTabStore((state) => state.setTabIndex);
   const themeValues = useThemeValues();
+  const router = useRouter();
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -102,7 +105,10 @@ export default function QuickStats({ stats }: QuickStatsProps) {
         <View style={styles.statsRow}>
           <TouchableOpacity
             style={[styles.statChip]}
-            onPress={() => Alert.alert("wait", "wait")}
+            onPress={() => {
+              router.push("/history-overlay");
+              triggerHaptic();
+            }}
           >
             <MaterialIcons
               name="history"
@@ -142,7 +148,10 @@ export default function QuickStats({ stats }: QuickStatsProps) {
 
           <TouchableOpacity
             style={[styles.statChip]}
-            onPress={() => Alert.alert("wait", "wait")}
+            onPress={() => {
+              router.push("/most-played-overlay");
+              triggerHaptic();
+            }}
           >
             <MaterialIcons
               name="repeat"

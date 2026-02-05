@@ -1,5 +1,6 @@
 // dont take this as actual code quality reference lol everything here will be scraped
 import React, { useEffect } from "react";
+import * as FileSystem from "expo-file-system/legacy";
 
 import Home from "../components/Home";
 
@@ -127,6 +128,15 @@ const DEMO_PLAYLISTS = [
   },
 ];
 
+const formatSize = (size: number | undefined) => {
+  if (size === undefined) return "unknown";
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  if (size < 1024 * 1024 * 1024)
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+};
+
 const DEMO_TOP_ARTISTS = [
   {
     name: "demo name1",
@@ -190,18 +200,92 @@ export default function DemoScreen() {
             "[Database] Playlists:",
             JSON.stringify(playlists, null, 2)
           );
-          void comments;
-          void scm;
-          //console.log(
-          //  "[Database] Artist Comments:",
-          //  JSON.stringify(comments, null, 2)
-          //);
-          //console.log(
-          //  "[Database] Song Comments:",
-          //  JSON.stringify(scm, null, 2)
-          //);
+          console.log(
+            "[Database] Artist Comments:",
+            JSON.stringify(comments, null, 2)
+          );
+          console.log(
+            "[Database] Song Comments:",
+            JSON.stringify(scm, null, 2)
+          );
         }
         log();
+        async function logstorage() {
+          const documentDir = (FileSystem as any).documentDirectory;
+          try {
+            const fileNames = await FileSystem.readDirectoryAsync(documentDir);
+            const fileInfosRaw = await Promise.all(
+              fileNames.map(async (fileName) => {
+                const filePath = documentDir + fileName;
+                try {
+                  const info = await FileSystem.getInfoAsync(filePath);
+                  return {
+                    name: fileName,
+                    rawSize: (info as any).size ?? 0,
+                    isDirectory: info.isDirectory,
+                  };
+                } catch {
+                  return { name: fileName, rawSize: 0, isDirectory: false };
+                }
+              })
+            );
+            const fileInfos = fileInfosRaw.map((f) => ({
+              name: f.name,
+              size: formatSize(f.rawSize),
+              isDirectory: f.isDirectory,
+            }));
+            const totalSize = fileInfosRaw.reduce(
+              (sum, f) => sum + f.rawSize,
+              0
+            );
+            console.log("[FileSystem] Files in document directory:", fileInfos);
+            console.log("[FileSystem] Total size:", formatSize(totalSize));
+
+            for (const item of fileInfosRaw) {
+              if (item.isDirectory) {
+                try {
+                  const subFiles = await FileSystem.readDirectoryAsync(
+                    documentDir + item.name
+                  );
+                  const subInfos = await Promise.all(
+                    subFiles.slice(0, 1000).map(async (subName) => {
+                      const subPath = documentDir + item.name + "/" + subName;
+                      try {
+                        const subInfo = await FileSystem.getInfoAsync(subPath);
+                        return {
+                          name: subName,
+                          size: formatSize((subInfo as any).size),
+                          isDirectory: subInfo.isDirectory,
+                        };
+                      } catch {
+                        return {
+                          name: subName,
+                          size: "unknown",
+                          isDirectory: false,
+                        };
+                      }
+                    })
+                  );
+                  console.log(
+                    `[FileSystem] Contents of ${item.name}:`,
+                    subInfos
+                  );
+                } catch (subError) {
+                  console.warn(
+                    `[FileSystem] Could not read ${item.name}:`,
+                    subError
+                  );
+                }
+              }
+            }
+          } catch (fsError) {
+            console.warn(
+              "[FileSystem] Could not read document directory:",
+              fsError
+            );
+          }
+        }
+        await logstorage();
       } catch (e) {
         console.warn("[Database] Could not log database:", e);
       }

@@ -42,10 +42,7 @@ async function getImageFromWikidata(
       source: "wikimedia",
       error: null,
     };
-  } catch (err) {
-    console.error(`[ArtistMeta] Error fetching Wikidata image:`, err);
-    throw err;
-  }
+  } catch {}
 }
 
 export { getImageFromWikidata };

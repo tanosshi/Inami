@@ -17,6 +17,7 @@ import {
   SPACING,
   TAB_CONFIG,
   TYPOGRAPHY,
+  getFontFamily,
 } from "../../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../../hooks/useDynamicStyles";
 import { useRouter } from "expo-router";
@@ -58,7 +59,7 @@ export default function ArtistsTab() {
       alignItems: "center" as const,
     },
     title: {
-      fontFamily: "Inter_600SemiBold",
+      fontFamily: getFontFamily("600"),
       ...TYPOGRAPHY.headlineLarge,
       fontWeight: "100" as const,
       color: COLORS.onSurface,
@@ -82,12 +83,12 @@ export default function ArtistsTab() {
     },
     searchInput: {
       flex: 1,
-      fontFamily: "Inter_400Regular",
+      fontFamily: getFontFamily("400"),
       ...TYPOGRAPHY.bodyLarge,
       color: COLORS.onSurface,
     },
     artistCount: {
-      fontFamily: "Inter_500Medium",
+      fontFamily: getFontFamily("500"),
       ...TYPOGRAPHY.labelLarge,
       color: COLORS.onSurfaceVariant,
       paddingHorizontal: SPACING.md,
@@ -103,13 +104,13 @@ export default function ArtistsTab() {
       paddingVertical: 80,
     },
     emptyTitle: {
-      fontFamily: "Inter_600SemiBold",
+      fontFamily: getFontFamily("600"),
       ...TYPOGRAPHY.titleLarge,
       color: COLORS.onSurface,
       marginTop: SPACING.md,
     },
     emptyText: {
-      fontFamily: "Inter_400Regular",
+      fontFamily: getFontFamily("400"),
       ...TYPOGRAPHY.bodyMedium,
       color: COLORS.onSurfaceVariant,
       marginTop: SPACING.sm,
@@ -138,11 +139,12 @@ export default function ArtistsTab() {
       gap: SPACING.md,
     },
     artistName: {
+      fontFamily: getFontFamily("600"),
       fontSize: 18,
-      fontWeight: "600" as const,
       color: COLORS.onSurface,
     },
     artistSongCount: {
+      fontFamily: getFontFamily("400"),
       fontSize: 14,
       color: COLORS.onSurfaceVariant,
       marginLeft: 8,

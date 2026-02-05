@@ -24,7 +24,7 @@ import { SEARCH_CONFIG } from "../../constants/customs/search";
 import { SYNC_CONFIG } from "../../constants/customs/sync";
 
 type FirstProps = {
-  onSkip?: () => void;
+  onSkip?: (data?: { enable_fm?: boolean }) => void;
 };
 
 type Feature = {
@@ -283,8 +283,8 @@ export default function LandingPage({ onSkip }: FirstProps) {
 
     const findToggles = (
       obj: any
-    ): Array<{ codename: string; defaultValue: boolean }> => {
-      const results: Array<{ codename: string; defaultValue: boolean }> = [];
+    ): { codename: string; defaultValue: boolean }[] => {
+      const results: { codename: string; defaultValue: boolean }[] = [];
 
       if (Array.isArray(obj)) {
         for (const item of obj) {
@@ -331,7 +331,7 @@ export default function LandingPage({ onSkip }: FirstProps) {
     await findTogglesWithDefaults();
     setIsFinishing(false);
     if (onSkip) {
-      onSkip();
+      onSkip({ enable_fm: featureStates["enable_fm"] });
     }
   };
 

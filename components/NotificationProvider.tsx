@@ -12,9 +12,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   useEffect(() => {
     const initAudio = async () => {
       try {
-        if (Platform.OS !== "web") {
-          await setupAudio();
-        }
+        if (Platform.OS !== "web") await setupAudio();
       } catch (error) {
         console.error("Failed to initialize audio:", error);
       }

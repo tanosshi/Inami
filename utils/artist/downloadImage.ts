@@ -7,8 +7,28 @@ function getRandomUserAgent() {
 }
 const userAgent = getRandomUserAgent();
 
+function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = 7000
+): Promise<Response> {
+  return Promise.race([
+    fetch(url, options),
+    new Promise<Response>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Image download timeout after ${timeoutMs}ms`)),
+        timeoutMs
+      )
+    ),
+  ]);
+}
+
 async function downloadImage(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { "User-Agent": userAgent } });
+  const res = await fetchWithTimeout(
+    url,
+    { headers: { "User-Agent": userAgent } },
+    7000
+  );
   if (!res.ok) {
     throw new Error(`Image download failed with status ${res.status}`);
   }

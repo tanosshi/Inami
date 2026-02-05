@@ -58,8 +58,8 @@ function SettingsScreen({
     },
     header: {
       flexDirection: "row" as const,
-      alignItems: "center",
-      justifyContent: "space-between",
+      alignItems: "center" as const,
+      justifyContent: "space-between" as const,
       paddingHorizontal: SPACING.sm,
       paddingVertical: SPACING.sm,
     },
@@ -67,8 +67,8 @@ function SettingsScreen({
       width: 48,
       height: 48,
       borderRadius: RADIUS.full,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     title: {
       fontFamily: "Inter_600SemiBold",
@@ -100,7 +100,7 @@ function SettingsScreen({
     },
     settingItem: {
       flexDirection: "row" as const,
-      alignItems: "center",
+      alignItems: "center" as const,
       padding: SPACING.md,
       minHeight: 72,
     },
@@ -109,8 +109,8 @@ function SettingsScreen({
       height: 40,
       borderRadius: RADIUS.full,
       backgroundColor: themeValues.COLORS.primary,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
       marginRight: SPACING.md,
     },
     settingContent: {
@@ -133,7 +133,7 @@ function SettingsScreen({
       marginLeft: 72,
     },
     footer: {
-      alignItems: "center",
+      alignItems: "center" as const,
       paddingVertical: SPACING.xl,
       marginTop: SPACING.lg,
     },
@@ -151,14 +151,14 @@ function SettingsScreen({
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0,0,0,0.5)",
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
     },
     modalContent: {
       backgroundColor: COLORS.surface,
       borderRadius: RADIUS.lg,
       padding: SPACING.lg,
-      width: "80%",
+      width: "80%" as const,
       maxWidth: 300,
     },
     modalDescription: {
@@ -181,7 +181,7 @@ function SettingsScreen({
       backgroundColor: themeValues.COLORS.primary,
       padding: SPACING.sm + 3,
       borderRadius: RADIUS.full,
-      alignItems: "center",
+      alignItems: "center" as const,
     },
     enterButtonText: {
       color: COLORS.onPrimary,

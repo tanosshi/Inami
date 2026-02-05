@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  Animated,
+  PanResponder,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
@@ -36,6 +38,8 @@ export default function SleepTimerModal({
   const [customHours, setCustomHours] = useState("");
   const [customMinutes, setCustomMinutes] = useState("");
 
+  const translateY = useRef(new Animated.Value(600)).current;
+
   useEffect(() => {
     if (visible) {
       setTimerActive(isSleepTimerActive());
@@ -43,6 +47,12 @@ export default function SleepTimerModal({
       setShowCustomInput(false);
       setCustomHours("");
       setCustomMinutes("");
+      Animated.spring(translateY, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
     }
   }, [visible]);
 
@@ -59,6 +69,42 @@ export default function SleepTimerModal({
 
     return () => clearInterval(interval);
   }, [visible, timerActive]);
+
+  const closeModal = (callback?: () => void) => {
+    Animated.timing(translateY, {
+        toValue: 600,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        onClose();
+        if (callback) callback();
+      });
+  }
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const newY = Math.max(0, gestureState.dy);
+        translateY.setValue(newY);
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dy > 100) {
+          closeModal();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            friction: 8,
+            tension: 40,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const formatTime = (ms: number): string => {
     if (ms <= 0) return "0:00";
@@ -79,7 +125,7 @@ export default function SleepTimerModal({
     startSleepTimer(minutes);
     setTimerActive(true);
     setRemainingTime(minutes * 60 * 1000);
-    onClose();
+    closeModal();
   };
 
   const handleCancelTimer = () => {
@@ -98,7 +144,7 @@ export default function SleepTimerModal({
       setTimerActive(true);
       setRemainingTime(totalMinutes * 60 * 1000);
       setShowCustomInput(false);
-      onClose();
+      closeModal();
     }
   };
 
@@ -106,9 +152,6 @@ export default function SleepTimerModal({
     overlay: {
       flex: 1,
       justifyContent: "flex-end" as const,
-    },
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
     modalContainer: {
@@ -116,6 +159,7 @@ export default function SleepTimerModal({
       borderTopLeftRadius: RADIUS.xl,
       borderTopRightRadius: RADIUS.xl,
       paddingBottom: SPACING.lg,
+      overflow: "hidden" as const,
     },
     handle: {
       width: 40,
@@ -310,143 +354,164 @@ export default function SleepTimerModal({
     },
   }));
 
+  if (!visible) return null;
+
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
-      onRequestClose={onClose}
+      animationType="none"
+      onRequestClose={() => closeModal()}
+      statusBarTranslucent
     >
-      <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
-        <View style={styles.modalContainer}>
-          <View style={styles.handle} />
+        <Animated.View
+            style={[
+                styles.overlay,
+                {
+                    opacity: translateY.interpolate({
+                        inputRange: [0, 600],
+                        outputRange: [1, 0],
+                    }),
+                }
+            ]}
+        >
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => closeModal()} />
+            
+            <Animated.View
+                style={[
+                    styles.modalContainer,
+                    { transform: [{ translateY }] }
+                ]}
+                {...panResponder.panHandlers}
+            >
+                <View style={styles.handle} />
 
-          <View style={styles.header}>
-            <Text style={styles.title}>Sleep Timer</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <MaterialIcons
-                name="close"
-                size={20}
-                color={themeValues.COLORS.onSurface}
-              />
-            </TouchableOpacity>
-          </View>
+                <View style={styles.header}>
+                    <Text style={styles.title}>Sleep Timer</Text>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => closeModal()}>
+                    <MaterialIcons
+                        name="close"
+                        size={20}
+                        color={themeValues.COLORS.onSurface}
+                    />
+                    </TouchableOpacity>
+                </View>
 
-          {timerActive ? (
-            <View style={styles.activeTimerContainer}>
-              <View style={styles.timerRow}>
-                <View style={styles.timerIcon}>
-                  <MaterialIcons
-                    name="timer"
-                    size={20}
-                    color={themeValues.COLORS.primary}
-                  />
+                {/* Content */}
+                {timerActive ? (
+                <View style={styles.activeTimerContainer}>
+                    <View style={styles.timerRow}>
+                    <View style={styles.timerIcon}>
+                        <MaterialIcons
+                        name="timer"
+                        size={20}
+                        color={themeValues.COLORS.primary}
+                        />
+                    </View>
+                    <View style={styles.timerTextContainer}>
+                        <Text style={styles.timerText}>
+                        {formatTime(remainingTime)}
+                        </Text>
+                        <Text style={styles.timerLabel}>until the music stops</Text>
+                    </View>
+                    </View>
+                    <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={handleCancelTimer}
+                    >
+                    <Text style={styles.cancelButtonText}>Cancel Timer</Text>
+                    </TouchableOpacity>
                 </View>
-                <View style={styles.timerTextContainer}>
-                  <Text style={styles.timerText}>
-                    {formatTime(remainingTime)}
-                  </Text>
-                  <Text style={styles.timerLabel}>until the music stops</Text>
+                ) : showCustomInput ? (
+                <View style={styles.customInputContainer}>
+                    <Text style={styles.sectionTitle}>Set custom time</Text>
+                    <View style={styles.customInputRow}>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.inputLabel}>Hours</Text>
+                        <TextInput
+                        style={styles.timeInput}
+                        value={customHours}
+                        onChangeText={(text) =>
+                            setCustomHours(text.replace(/[^0-9]/g, ""))
+                        }
+                        keyboardType="number-pad"
+                        maxLength={2}
+                        placeholder="0"
+                        placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
+                        />
+                    </View>
+                    <Text style={styles.inputSeparator}>:</Text>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.inputLabel}>Minutes</Text>
+                        <TextInput
+                        style={styles.timeInput}
+                        value={customMinutes}
+                        onChangeText={(text) =>
+                            setCustomMinutes(text.replace(/[^0-9]/g, ""))
+                        }
+                        keyboardType="number-pad"
+                        maxLength={2}
+                        placeholder="0"
+                        placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
+                        />
+                    </View>
+                    </View>
+                    <View style={styles.customButtonsRow}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => setShowCustomInput(false)}
+                    >
+                        <Text style={styles.backButtonText}>Back</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                        styles.setButton,
+                        !(
+                            parseInt(customHours, 10) || parseInt(customMinutes, 10)
+                        ) && styles.setButtonDisabled,
+                        ]}
+                        onPress={handleSetCustomTime}
+                        disabled={
+                        !(parseInt(customHours, 10) || parseInt(customMinutes, 10))
+                        }
+                    >
+                        <Text
+                        style={[
+                            styles.setButtonText,
+                            !(
+                                parseInt(customHours, 10) || parseInt(customMinutes, 10)
+                            ) && styles.setButtonTextDisabled,
+                        ]}
+                        >
+                        Set Timer
+                        </Text>
+                    </TouchableOpacity>
+                    </View>
                 </View>
-              </View>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={handleCancelTimer}
-              >
-                <Text style={styles.cancelButtonText}>Cancel Timer</Text>
-              </TouchableOpacity>
-            </View>
-          ) : showCustomInput ? (
-            <View style={styles.customInputContainer}>
-              <Text style={styles.sectionTitle}>Set custom time</Text>
-              <View style={styles.customInputRow}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Hours</Text>
-                  <TextInput
-                    style={styles.timeInput}
-                    value={customHours}
-                    onChangeText={(text) =>
-                      setCustomHours(text.replace(/[^0-9]/g, ""))
-                    }
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    placeholder="0"
-                    placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
-                  />
-                </View>
-                <Text style={styles.inputSeparator}>:</Text>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Minutes</Text>
-                  <TextInput
-                    style={styles.timeInput}
-                    value={customMinutes}
-                    onChangeText={(text) =>
-                      setCustomMinutes(text.replace(/[^0-9]/g, ""))
-                    }
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    placeholder="0"
-                    placeholderTextColor={themeValues.COLORS.onSurfaceVariant}
-                  />
-                </View>
-              </View>
-              <View style={styles.customButtonsRow}>
-                <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={() => setShowCustomInput(false)}
-                >
-                  <Text style={styles.backButtonText}>Back</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.setButton,
-                    !(
-                      parseInt(customHours, 10) || parseInt(customMinutes, 10)
-                    ) && styles.setButtonDisabled,
-                  ]}
-                  onPress={handleSetCustomTime}
-                  disabled={
-                    !(parseInt(customHours, 10) || parseInt(customMinutes, 10))
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.setButtonText,
-                      !(
-                        parseInt(customHours, 10) || parseInt(customMinutes, 10)
-                      ) && styles.setButtonTextDisabled,
-                    ]}
-                  >
-                    Set Timer
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            <ScrollView style={styles.presetsContainer}>
-              <Text style={styles.sectionTitle}>Stop music after</Text>
-              <View style={styles.presetsGrid}>
-                {SLEEP_TIMER_PRESETS.map((preset) => (
-                  <TouchableOpacity
-                    key={preset.minutes}
-                    style={styles.presetButton}
-                    onPress={() => handleSelectPreset(preset.minutes)}
-                  >
-                    <Text style={styles.presetButtonText}>{preset.label}</Text>
-                  </TouchableOpacity>
-                ))}
-                <TouchableOpacity
-                  style={styles.customButton}
-                  onPress={() => setShowCustomInput(true)}
-                >
-                  <Text style={styles.customButtonText}>Custom</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          )}
-        </View>
-      </View>
+                ) : (
+                <ScrollView style={styles.presetsContainer}>
+                    <Text style={styles.sectionTitle}>Stop music after</Text>
+                    <View style={styles.presetsGrid}>
+                    {SLEEP_TIMER_PRESETS.map((preset) => (
+                        <TouchableOpacity
+                        key={preset.minutes}
+                        style={styles.presetButton}
+                        onPress={() => handleSelectPreset(preset.minutes)}
+                        >
+                        <Text style={styles.presetButtonText}>{preset.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity
+                        style={styles.customButton}
+                        onPress={() => setShowCustomInput(true)}
+                    >
+                        <Text style={styles.customButtonText}>Custom</Text>
+                    </TouchableOpacity>
+                    </View>
+                </ScrollView>
+                )}
+            </Animated.View>
+        </Animated.View>
     </Modal>
   );
 }

@@ -39,7 +39,6 @@ _The **one and only** proper music player, with all the features you need._
 | Feature                                             | Importance                        | Completion                 |
 | --------------------------------------------------- | --------------------------------- | -------------------------- |
 | Auto fetch metadata; artist, covers, lyrics etc.    | 🔴 **Important**                  | 🗯 **Improvement required** |
-| Make every part easily customizable (theme.ts)      | 🔴 **Important**                  | 🟡 **Ongoing**             |
 | Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  | 🔄 **Planned**             |
 | Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  | 🔄 **Planned**             |
 | Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  | 🔄 **Planned**             |
@@ -50,7 +49,7 @@ _The **one and only** proper music player, with all the features you need._
 | Gapless playback                                    | 🟡 **High**                       | 🔄 **Planned**             |
 | (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       | 🔄 **Planned**             |
 | Music energy score of the day / Mainstream score    | 🟡 **High**                       | 🔄 **Planned**             |
-| Control music from PC                               | 🟡 **High**                       | 🔄 **Planned**             |
+| Control music from PC/web                           | 🟡 **High**                       | ✅ **Implemented**         |
 | Artist fan image board                              | 🟡 **High**                       | 🔄 **Planned**             |
 | Automatic word for word lyrics (waveform predict)   | 🟡 **High**                       | 🔄 **Planned**             |
 | Volume normalizing                                  | 🟡 **High**                       | 🔄 **Planned**             |
@@ -61,11 +60,11 @@ _The **one and only** proper music player, with all the features you need._
 | Automatic music recommender (Bored detector)        | 🟢 **Low**                        | 🔄 **Planned**             |
 | Automatic sleep timer                               | 🟢 **Low**                        | 🔄 **Planned**             |
 | Floating lyrics                                     | 🟢 **Low**                        | 🔄 **Planned**             |
-| Listening stats page                                | 🟢 **Low**                        | 🔄 **Planned**             |
+| Soundcloud-like comments                            | 🟢 **Low**                        | 🔄 **Planned**             |
 | Copy music link; even when offline.                 | 🟢 **Low**                        | 🔄 **Planned**             |
 | Squiggly line in notification (if possible)         | 🟢 **Low**                        | 🔄 **Planned**             |
 | Show last.fm stats in For You                       | 🟢 **Low**                        | 🔄 **Planned**             |
-| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | Deciding                   |
+| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | 🔄 **Attempt queued**      |
 | Airbuds™ (app) support (Challenging)                | ⁉ **Scrap?**                      | Deciding                   |
 | In-app equalizer                                    | ⁉ **Scrap?**                      | Deciding                   |
 | Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      | Deciding                   |

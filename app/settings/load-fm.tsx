@@ -15,8 +15,9 @@ import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
 import { Square } from "../../components/Shapes";
 import { initDatabase, getSetting, saveProfile } from "../../utils/database";
 import { Entypo } from "@expo/vector-icons";
-import { getLastfmAPIKey } from "@/secrets";
+import { getLastfmAPIKeys } from "@/secrets";
 import userAgents from "@/utils/userAgents";
+import { useLastfmDownloader } from "@/utils/lastfm/getFmData";
 
 function getRandomUserAgent() {
   return userAgents[Math.floor(Math.random() * userAgents.length)];
@@ -141,6 +142,15 @@ export default function LoadDataScreen() {
   const coverOpacity = useRef(new Animated.Value(1)).current;
   const textOpacity = useRef(new Animated.Value(1)).current;
 
+  const {
+    downloadAll,
+    progress: downloadProgress,
+    loading: isDownloading,
+    creatingProfile,
+    profileProgress,
+    error: downloadError,
+  } = useLastfmDownloader();
+
   const fetch_metadata = async () => {
     setIsFetching(true);
     setProgress(0);
@@ -154,10 +164,15 @@ export default function LoadDataScreen() {
         track_count: trackCount || "",
         album_count: albumCount || "",
         lastfm_url: fmURL || "",
+        aka: aka || "",
       });
+      setProgress(50);
+
+      if (username) await downloadAll(username);
+
       setProgress(100);
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("Error saving profile or downloading data:", error);
     } finally {
       setIsFetching(false);
     }
@@ -217,19 +232,34 @@ export default function LoadDataScreen() {
     (async () => {
       if (!mounted) return;
       await initDatabase();
-      const apiKey = await getLastfmAPIKey();
+      const apiKeys = await getLastfmAPIKeys();
       const user = await getSetting("fm_username");
-      try {
-        const res = await fetch(
-          `https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURIComponent(
-            user
-          )}&api_key=${apiKey}&format=json`
-        );
-
-        const fmStats = await res.json();
-
-        if (!fmStats.user) throw new Error("No user data");
-
+      let fmStats;
+      for (const apiKey of apiKeys) {
+        try {
+          const res = await fetch(
+            `https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURIComponent(
+              user
+            )}&api_key=${apiKey}&format=json`
+          );
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(
+              `Last.fm API request failed: ${res.status} ${res.statusText} - ${errorText}`
+            );
+          }
+          fmStats = await res.json();
+          if (fmStats.user) break;
+          else throw new Error("No user data");
+        } catch (err) {
+          console.error(
+            `[LastFM] Failed with key ending in ${apiKey.slice(-4)}: ${
+              err instanceof Error ? err.message : String(err)
+            }`
+          );
+        }
+      }
+      if (fmStats && fmStats.user) {
         type Image = {
           size: "small" | "medium" | "large" | "extralarge";
           "#text": string;
@@ -257,7 +287,7 @@ export default function LoadDataScreen() {
         setTrackCount(fmStats.user.track_count);
         setAlbumCount(fmStats.user.album_count);
         setFmURL(fmStats.user.url || "https://last.fm/user/" + user);
-      } catch {}
+      }
     })();
 
     return () => {
@@ -395,18 +425,64 @@ export default function LoadDataScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
+        {isDownloading && (
+          <Text
+            style={[
+              styles.itemSmall,
+              {
+                textAlign: "center",
+                marginBottom: SPACING.sm,
+                display: downloadProgress.total === 0 ? "none" : "flex",
+              },
+            ]}
+          >
+            Downloading page {downloadProgress.current} of{" "}
+            {downloadProgress.total}...
+          </Text>
+        )}
+        {creatingProfile && (
+          <Text
+            style={[
+              styles.itemSmall,
+              { textAlign: "center", marginBottom: SPACING.sm },
+            ]}
+          >
+            {profileProgress || "Creating your profile.."}
+          </Text>
+        )}
+        {downloadError && (
+          <Text
+            style={[
+              styles.itemSmall,
+              { textAlign: "center", marginBottom: SPACING.sm, color: "red" },
+            ]}
+          >
+            Error: {downloadError}
+          </Text>
+        )}
         <View style={styles.progressContainer}>
           <View
-            style={[styles.progressBar, { width: `${Math.round(progress)}%` }]}
+            style={[
+              styles.progressBar,
+              {
+                width: isDownloading
+                  ? `${Math.round(
+                      (downloadProgress.current / downloadProgress.total) * 100
+                    )}%`
+                  : `${Math.round(progress)}%`,
+              },
+            ]}
           />
         </View>
         <TouchableOpacity
           style={[styles.fetchButton, { width: "100%" }]}
           onPress={fetch_metadata}
-          disabled={isFetching}
+          disabled={isFetching || isDownloading || creatingProfile}
         >
           <Text style={styles.fetchButtonText}>
-            {isFetching ? "Reading..." : "This is me!"}
+            {isFetching || isDownloading || creatingProfile
+              ? "Loading..."
+              : "This is me!"}
           </Text>
         </TouchableOpacity>
       </View>

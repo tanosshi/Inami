@@ -1,6 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Platform, StyleSheet } from "react-native";
-import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
+import {
+  Platform,
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Easing,
+} from "react-native";
+
 import { Entypo } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../../constants/theme";
@@ -15,6 +22,7 @@ const getPageFromHash = (hash: string): number | null => {
     pickfeatures: 1,
     nowforyou: 2,
     musicfolders: 3,
+    holdon: 4,
   };
   const hashName = hash.replace("#", "").toLowerCase();
   return hashMap[hashName] ?? null;
@@ -93,7 +101,7 @@ export default function LandingPage() {
     },
     import: {
       backgroundColor: "transparent",
-      paddingHorizontal: SPACING.md,
+      paddingHorizontal: SPACING.md - 5,
       paddingVertical: SPACING.md,
       borderRadius: RADIUS.full,
     },
