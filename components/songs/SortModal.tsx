@@ -13,7 +13,6 @@ interface SortModalProps {
   setSortBy: (sort: "title" | "created_at" | "artist") => void;
   sortDirection: "asc" | "desc";
   setSortDirection: (direction: "asc" | "desc") => void;
-  setSortKey: (key: string) => void;
 }
 
 export default function SortModal({
@@ -23,7 +22,6 @@ export default function SortModal({
   setSortBy,
   sortDirection,
   setSortDirection,
-  setSortKey,
 }: SortModalProps) {
   const themeValues = useThemeValues();
 
@@ -164,14 +162,12 @@ export default function SortModal({
   const handleSortOptionPress = (option: "title" | "artist" | "created_at") => {
     triggerHaptic();
     setSortBy(option);
-    setSortKey(`${option}-${sortDirection}`);
     onClose();
   };
 
   const handleDirectionPress = (direction: "asc" | "desc") => {
     triggerHaptic();
     setSortDirection(direction);
-    setSortKey(`${sortBy}-${direction}`);
   };
 
   return (
@@ -265,7 +261,8 @@ export default function SortModal({
                 <TouchableOpacity
                   style={[
                     styles.sortDirectionButtonRight,
-                    sortDirection === "desc" && styles.sortDirectionButtonActive,
+                    sortDirection === "desc" &&
+                      styles.sortDirectionButtonActive,
                   ]}
                   onPress={() => handleDirectionPress("desc")}
                 >
@@ -281,7 +278,8 @@ export default function SortModal({
                   <Text
                     style={[
                       styles.sortDirectionText,
-                      sortDirection === "desc" && styles.sortDirectionTextActive,
+                      sortDirection === "desc" &&
+                        styles.sortDirectionTextActive,
                     ]}
                   >
                     Descending

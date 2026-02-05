@@ -121,9 +121,7 @@ interface CommentsSectionProps {
   artistName: string;
 }
 
-export const CommentsSection: React.FC<CommentsSectionProps> = ({
-  artistName,
-}) => {
+const CommentsSection: React.FC<CommentsSectionProps> = ({ artistName }) => {
   const [comments, setComments] = useState<ArtistComment[]>([]);
 
   useEffect(() => {
@@ -185,3 +183,5 @@ export const CommentsSection: React.FC<CommentsSectionProps> = ({
     </View>
   );
 };
+
+export default CommentsSection;

@@ -158,7 +158,7 @@ export default function SongOptionsModal({
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, translateY]);
 
   const closeModal = (callback?: () => void) => {
     Animated.timing(translateY, {
@@ -173,7 +173,7 @@ export default function SongOptionsModal({
 
   const handleAction = (action: () => void) => {
     closeModal(() => {
-        setTimeout(action, 50);
+      setTimeout(action, 50);
     });
   };
 
@@ -209,144 +209,146 @@ export default function SongOptionsModal({
       onRequestClose={() => closeModal()}
       statusBarTranslucent
     >
-        <Animated.View 
-            style={[
-                styles.overlay,
-                {
-                    opacity: translateY.interpolate({
-                        inputRange: [0, 600],
-                        outputRange: [1, 0],
-                    }),
-                }
-            ]}
+      <Animated.View
+        style={[
+          styles.overlay,
+          {
+            opacity: translateY.interpolate({
+              inputRange: [0, 600],
+              outputRange: [1, 0],
+            }),
+          },
+        ]}
+      >
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={() => closeModal()}
+        />
+
+        <Animated.View
+          style={[styles.modalContainer, { transform: [{ translateY }] }]}
+          {...panResponder.panHandlers}
         >
-            <Pressable style={StyleSheet.absoluteFill} onPress={() => closeModal()} />
-            
-            <Animated.View
-                style={[
-                    styles.modalContainer,
-                    { transform: [{ translateY }] }
-                ]}
-                {...panResponder.panHandlers}
+          <View style={styles.handle} />
+
+          <View style={styles.songHeader}>
+            <Image
+              source={{ uri: song.artwork }}
+              style={styles.artwork}
+              contentFit="cover"
+              transition={200}
+            />
+            <View style={styles.songInfo}>
+              <Text style={styles.title} numberOfLines={1}>
+                {safeString(song.title) || "Unknown Title"}
+              </Text>
+              <Text style={styles.artist} numberOfLines={1}>
+                {safeString(song.artist) || "Unknown Artist"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* Options List */}
+          <View style={styles.optionsList}>
+            {/* Add to Playlist */}
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => handleAction(() => console.log("Add to playlist"))}
             >
-                <View style={styles.handle} />
+              <View style={styles.optionIcon}>
+                <MaterialIcons
+                  name="playlist-add"
+                  size={24}
+                  color={themeValues.COLORS.onSurface}
+                />
+              </View>
+              <Text style={styles.optionText}>Add to Playlist</Text>
+            </TouchableOpacity>
 
-                <View style={styles.songHeader}>
-                    <Image
-                    source={{ uri: song.artwork }}
-                    style={styles.artwork}
-                    contentFit="cover"
-                    transition={200}
-                    />
-                    <View style={styles.songInfo}>
-                    <Text style={styles.title} numberOfLines={1}>
-                        {safeString(song.title) || "Unknown Title"}
-                    </Text>
-                    <Text style={styles.artist} numberOfLines={1}>
-                        {safeString(song.artist) || "Unknown Artist"}
-                    </Text>
-                    </View>
-                </View>
+            {/* Track Details */}
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => handleAction(() => console.log("Track details"))}
+            >
+              <View style={styles.optionIcon}>
+                <MaterialIcons
+                  name="info-outline"
+                  size={24}
+                  color={themeValues.COLORS.onSurface}
+                />
+              </View>
+              <Text style={styles.optionText}>Track Details</Text>
+            </TouchableOpacity>
 
-                <View style={styles.divider} />
+            {/* Artist */}
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() =>
+                handleAction(() => {
+                  router.push(`/artist/${encodeURIComponent(song.artist)}`);
+                })
+              }
+            >
+              <View style={styles.optionIcon}>
+                <MaterialIcons
+                  name="person-outline"
+                  size={24}
+                  color={themeValues.COLORS.onSurface}
+                />
+              </View>
+              <Text style={styles.optionText}>Artist</Text>
+            </TouchableOpacity>
 
-                {/* Options List */}
-                <View style={styles.optionsList}>
-                    {/* Add to Playlist */}
-                    <TouchableOpacity
-                    style={styles.optionItem}
-                    onPress={() => handleAction(() => console.log("Add to playlist"))}
-                    >
-                    <View style={styles.optionIcon}>
-                        <MaterialIcons
-                        name="playlist-add"
-                        size={24}
-                        color={themeValues.COLORS.onSurface}
-                        />
-                    </View>
-                    <Text style={styles.optionText}>Add to Playlist</Text>
-                    </TouchableOpacity>
+            {/* Share */}
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() =>
+                handleAction(async () => {
+                  try {
+                    await Share.share({
+                      message: `Check out "${song.title}" by ${song.artist}`,
+                    });
+                  } catch (error) {
+                    console.error("Error sharing song:", error);
+                  }
+                })
+              }
+            >
+              <View style={styles.optionIcon}>
+                <MaterialIcons
+                  name="share"
+                  size={24}
+                  color={themeValues.COLORS.onSurface}
+                />
+              </View>
+              <Text style={styles.optionText}>Share</Text>
+            </TouchableOpacity>
 
-                    {/* Track Details */}
-                    <TouchableOpacity
-                    style={styles.optionItem}
-                    onPress={() => handleAction(() => console.log("Track details"))}
-                    >
-                    <View style={styles.optionIcon}>
-                        <MaterialIcons
-                        name="info-outline"
-                        size={24}
-                        color={themeValues.COLORS.onSurface}
-                        />
-                    </View>
-                    <Text style={styles.optionText}>Track Details</Text>
-                    </TouchableOpacity>
+            <View style={styles.divider} />
 
-                    {/* Artist */}
-                    <TouchableOpacity
-                    style={styles.optionItem}
-                    onPress={() =>
-                        handleAction(() => {
-                        router.push(`/artist/${encodeURIComponent(song.artist)}`);
-                        })
-                    }
-                    >
-                    <View style={styles.optionIcon}>
-                        <MaterialIcons
-                        name="person-outline"
-                        size={24}
-                        color={themeValues.COLORS.onSurface}
-                        />
-                    </View>
-                    <Text style={styles.optionText}>Artist</Text>
-                    </TouchableOpacity>
-
-                    {/* Share */}
-                    <TouchableOpacity
-                    style={styles.optionItem}
-                    onPress={() =>
-                        handleAction(async () => {
-                        try {
-                            await Share.share({
-                            message: `Check out "${song.title}" by ${song.artist}`,
-                            });
-                        } catch (error) {
-                            console.error("Error sharing song:", error);
-                        }
-                        })
-                    }
-                    >
-                    <View style={styles.optionIcon}>
-                        <MaterialIcons
-                        name="share"
-                        size={24}
-                        color={themeValues.COLORS.onSurface}
-                        />
-                    </View>
-                    <Text style={styles.optionText}>Share</Text>
-                    </TouchableOpacity>
-
-                    <View style={styles.divider} />
-
-                    {/* Delete */}
-                    <TouchableOpacity
-                    style={styles.optionItem}
-                    onPress={() => handleAction(handleDelete)}
-                    >
-                    <View style={styles.optionIcon}>
-                        <MaterialIcons
-                        name="delete-outline"
-                        size={24}
-                        color={themeValues.COLORS.error}
-                        />
-                    </View>
-                    <Text style={[styles.optionText, { color: themeValues.COLORS.error }]}>
-                        Delete
-                    </Text>
-                    </TouchableOpacity>
-                </View>
-            </Animated.View>
+            {/* Delete */}
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => handleAction(handleDelete)}
+            >
+              <View style={styles.optionIcon}>
+                <MaterialIcons
+                  name="delete-outline"
+                  size={24}
+                  color={themeValues.COLORS.error}
+                />
+              </View>
+              <Text
+                style={[styles.optionText, { color: themeValues.COLORS.error }]}
+              >
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }

@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-  Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -18,21 +17,18 @@ import {
 import { useDynamicTheme } from "../../contexts/DynamicThemeContext";
 import { useDynamicStyles } from "../../hooks/useDynamicStyles";
 import { COLORS } from "../../constants/theme";
-import RecentTracks from "./components/recentTracks";
 import TracksListened from "./components/tracksListened";
 
 import TopTracks from "./components/topTracks";
 import TopArtists from "./components/topArtists";
 import WordCloud from "@/components/WordCloud";
 
-const { width } = Dimensions.get("window");
 const CONTENT_PADDING = 24;
 
 export default function MusicProfile() {
   const router = useRouter();
   const { dynamicColors, hasPalette } = useDynamicTheme();
   const [profile, setProfile] = useState<any>(null);
-  const [randomTracks, setRandomTracks] = useState<any[]>([]);
   const [primaryColor, setPrimaryColor] = useState("#a3e635");
   const [rawColor, setRawColor] = useState("#a3e635");
 
@@ -45,9 +41,7 @@ export default function MusicProfile() {
       setPrimaryColor(profileData?.primary_color || "#a3e635");
       setRawColor(profileData?.raw_color || "#a3e635");
 
-      const allSongs = await getAllSongs();
-      const shuffled = [...allSongs].sort(() => 0.5 - Math.random());
-      setRandomTracks(shuffled.slice(0, 4));
+      await getAllSongs();
     };
     loadData();
   }, []);

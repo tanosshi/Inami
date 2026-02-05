@@ -60,22 +60,6 @@ export default function LandingTransition(props: TransitionProps) {
     if (!isAnimating) slidePosition.setValue(currentPage * -screenWidth);
   }, [screenWidth, currentPage, isAnimating, slidePosition]);
 
-  useEffect(() => {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      const handleHashChange = () => {
-        const hash = window.location.hash;
-        const newPage = getPageFromHash(hash);
-        if (newPage !== null && newPage !== currentPage && !isAnimating)
-          animateToPage(newPage);
-      };
-
-      window.addEventListener("hashchange", handleHashChange);
-      return () => {
-        window.removeEventListener("hashchange", handleHashChange);
-      };
-    }
-  }, [currentPage, isAnimating]);
-
   const animateToPage = useCallback(
     (targetPage: number) => {
       if (isAnimating || targetPage === currentPage) return;
@@ -98,6 +82,22 @@ export default function LandingTransition(props: TransitionProps) {
     },
     [currentPage, isAnimating, screenWidth, slidePosition, onTransitionComplete]
   );
+
+  useEffect(() => {
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      const handleHashChange = () => {
+        const hash = window.location.hash;
+        const newPage = getPageFromHash(hash);
+        if (newPage !== null && newPage !== currentPage && !isAnimating)
+          animateToPage(newPage);
+      };
+
+      window.addEventListener("hashchange", handleHashChange);
+      return () => {
+        window.removeEventListener("hashchange", handleHashChange);
+      };
+    }
+  }, [currentPage, isAnimating, animateToPage]);
 
   const goToNext = useCallback(
     (data?: { enable_fm?: boolean }) => {

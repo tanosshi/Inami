@@ -184,7 +184,7 @@ function RootLayoutContent() {
           backgroundColor: COLORS.background,
         },
       }),
-    [selectedFont]
+    []
   );
 
   useEffect(() => {
@@ -289,8 +289,10 @@ function RootLayoutContent() {
     initApp();
 
     if (Platform.OS !== "web" && fontsLoaded && isThemeLoaded) {
-      const serverTimer = setTimeout(() => {
-        const { startMusicControlServer } = require("../utils/musicServer");
+      const serverTimer = setTimeout(async () => {
+        const { startMusicControlServer } = await import(
+          "../utils/musicServer"
+        );
         startMusicControlServer();
       }, 5000);
       return () => clearTimeout(serverTimer);

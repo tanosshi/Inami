@@ -446,7 +446,7 @@ function SettingsScreen({
         ? { onPress: () => handleSettingPress(codename, type) }
         : {};
 
-    let EmojiIcon = MaterialIcons;
+    let EmojiIcon: any = MaterialIcons;
     let emojiName = emoji;
     if (customEmoji === "Entypo") {
       EmojiIcon = Entypo;
@@ -500,7 +500,7 @@ function SettingsScreen({
               thumbColor={
                 settingsState[codename] ? COLORS.onPrimary : COLORS.outline
               }
-              disabled={isLoading || isDisabled}
+              disabled={isLoading || !!isDisabled}
             />
           )}
           {hasRightArrow && (
@@ -696,3 +696,5 @@ export function SettingsSearchScreen() {
 export function SettingsDLScreen() {
   return <SettingsScreen config={DLMUSIC_CONFIG} title="Download Music" />;
 }
+
+export default SettingsMetadataScreen;

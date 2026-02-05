@@ -26,7 +26,7 @@ _The **one and only** proper music player, with all the features you need._
 
 ## How other players compare
 
-- Most players are built in Kotlin, while we run in Expo.js. Performance may vary.
+- Most players are built in Kotlin, while we use Expo. Performance may vary.
 - Battery usage might be slightly higher than the average music player.
 - Storage wise, we'll be around 3 times larger than the average music players as we'll try to keep you online, even if you're offline.
 
@@ -36,39 +36,41 @@ _The **one and only** proper music player, with all the features you need._
 
 <div align="center">
 
-| Feature                                             | Importance                        | Completion                 |
-| --------------------------------------------------- | --------------------------------- | -------------------------- |
-| Auto fetch metadata; artist, covers, lyrics etc.    | 🔴 **Important**                  | 🗯 **Improvement required** |
-| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  | 🔄 **Planned**             |
-| Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  | 🔄 **Planned**             |
-| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  | 🔄 **Planned**             |
-| Tag cloud feature (In profile)                      | 🔴 **Important**                  | 🔄 **Planned**             |
-| Custom logo and app name                            | 🟡 **High**                       | 🔄 **Planned**             |
-| Music recommendations, offline version after        | 🟡 **High**                       | 🔄 **Planned**             |
-| Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       | 🔄 **Planned**             |
-| Gapless playback                                    | 🟡 **High**                       | 🔄 **Planned**             |
-| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       | 🔄 **Planned**             |
-| Music energy score of the day / Mainstream score    | 🟡 **High**                       | 🔄 **Planned**             |
-| Control music from PC/web                           | 🟡 **High**                       | ✅ **Implemented**         |
-| Artist fan image board                              | 🟡 **High**                       | 🔄 **Planned**             |
-| Automatic word for word lyrics (waveform predict)   | 🟡 **High**                       | 🔄 **Planned**             |
-| Volume normalizing                                  | 🟡 **High**                       | 🔄 **Planned**             |
-| Smart playlists                                     | 🟢 **Low**                        | 🔄 **Planned**             |
-| Integration with Last.fm                            | 🟢 **Low**                        | 🟡 **Ongoing**             |
-| View local most played artist/track                 | 🟢 **Low**                        | 🔄 **Planned**             |
-| Sync data, songs and playlists                      | 🟢 **Low**                        | 🔄 **Planned**             |
-| Automatic music recommender (Bored detector)        | 🟢 **Low**                        | 🔄 **Planned**             |
-| Automatic sleep timer                               | 🟢 **Low**                        | 🔄 **Planned**             |
-| Floating lyrics                                     | 🟢 **Low**                        | 🔄 **Planned**             |
-| Soundcloud-like comments                            | 🟢 **Low**                        | 🔄 **Planned**             |
-| Copy music link; even when offline.                 | 🟢 **Low**                        | 🔄 **Planned**             |
-| Squiggly line in notification (if possible)         | 🟢 **Low**                        | 🔄 **Planned**             |
-| Show last.fm stats in For You                       | 🟢 **Low**                        | 🔄 **Planned**             |
-| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | 🔄 **Attempt queued**      |
-| Airbuds™ (app) support (Challenging)                | ⁉ **Scrap?**                      | Deciding                   |
-| In-app equalizer                                    | ⁉ **Scrap?**                      | Deciding                   |
-| Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      | Deciding                   |
-| Directly output to DAC                              | ⁉ **Scrap?**                      | Deciding                   |
+| Feature                                             | Importance                        | Completion            |
+| --------------------------------------------------- | --------------------------------- | --------------------- |
+| Auto fetch metadata; artist, covers, lyrics etc.    | 🔴 **Important**                  | ✅ **Implemented**    |
+| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  | 🔄 **Planned**        |
+| Search and stream music                             | 🔴 **Important**                  | 🔄 **Planned**        |
+| Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  | 🔄 **Planned**        |
+| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  | 🔄 **Planned**        |
+| Tag cloud feature (In profile)                      | 🔴 **Important**                  | ✅ **Implemented**    |
+| Custom logo and app name                            | 🟡 **High**                       | 🔄 **Planned**        |
+| Music recommendations, offline version after        | 🟡 **High**                       | 🔄 **Planned**        |
+| Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       | 🔄 **Planned**        |
+| Gapless playback                                    | 🟡 **High**                       | 🔄 **Planned**        |
+| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       | 🔄 **Planned**        |
+| Music energy score of the day / Mainstream score    | 🟡 **High**                       | 🔄 **Planned**        |
+| Control music from PC/web                           | 🟡 **High**                       | ✅ **Implemented**    |
+| Artist fan image board                              | 🟡 **High**                       | 🔄 **Planned**        |
+| Automatic word for word lyrics (waveform predict)   | 🟡 **High**                       | 🔄 **Planned**        |
+| Volume normalizing                                  | 🟡 **High**                       | 🔄 **Planned**        |
+| Smart playlists                                     | 🟢 **Low**                        | 🔄 **Planned**        |
+| Integration with Last.fm                            | 🟢 **Low**                        | 🟡 **Half-done**      |
+| View local most played artist/track                 | 🟢 **Low**                        | 🟡 **Ongoing**        |
+| Sync data, songs and playlists                      | 🟢 **Low**                        | 🔄 **Planned**        |
+| Automatic music recommender (Bored detector)        | 🟢 **Low**                        | 🔄 **Planned**        |
+| Automatic sleep timer                               | 🟢 **Low**                        | 🔄 **Planned**        |
+| Floating lyrics                                     | 🟢 **Low**                        | 🔄 **Planned**        |
+| Soundcloud-like comments                            | 🟢 **Low**                        | 🔄 **Planned**        |
+| Copy music link; even when offline.                 | 🟢 **Low**                        | 🔄 **Planned**        |
+| Squiggly line in notification (if possible)         | 🟢 **Low**                        | 🔄 **Planned**        |
+| Show last.fm stats in For You                       | 🟢 **Low**                        | 🔄 **Planned**        |
+| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | 🔄 **Attempt queued** |
+| Airbuds™ (app) support (Challenging)                | ⁉ **Scrap?**                      | Deciding              |
+| In-app equalizer                                    | ⁉ **Scrap?**                      | Deciding              |
+| Plugins                                             | ⁉ **Scrap?**                      | Deciding              |
+| Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      | Deciding              |
+| Directly output to DAC                              | ⁉ **Scrap?**                      | Deciding              |
 
 #### '⁉' indicates that i'll think about it after core functions are done.
 

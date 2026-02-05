@@ -12,9 +12,7 @@ import {
   RefreshControl,
   Alert,
   Platform,
-  UIManager,
   Animated,
-  LayoutAnimation,
 } from "react-native";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -54,11 +52,6 @@ export default function SongListContainer() {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const searchAnimation = useRef(new Animated.Value(0)).current;
 
-  const setSearchExpandedWithLayout = useCallback((expanded: boolean) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setSearchExpanded(expanded);
-  }, []);
-
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (searchQuery === "") {
@@ -95,14 +88,12 @@ export default function SongListContainer() {
     "title"
   );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [sortKey, setSortKey] = useState(`${sortBy}-${sortDirection}`);
 
   const flatListRef = useRef<FlashListRef<any>>(null);
   const viewportHeightRef = useRef(0);
   const contentHeightRef = useRef(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [maxScroll, setMaxScroll] = useState(1);
-  const [trackHeight, setTrackHeight] = useState(0);
 
   const [dragging, setDragging] = useState(false);
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
@@ -117,19 +108,16 @@ export default function SongListContainer() {
         if (saved) {
           if (saved.sortBy) setSortBy(saved.sortBy);
           if (saved.sortDirection) setSortDirection(saved.sortDirection);
-          setSortKey(
-            `${saved.sortBy || sortBy}-${saved.sortDirection || sortDirection}`
-          );
         }
       } catch {}
     })();
-  }, [sortBy, sortDirection]);
+  }, []);
 
   useEffect(() => {
     saveToStorage("songSortPrefs", { sortBy, sortDirection }).catch(() => {});
   }, [sortBy, sortDirection]);
 
-  const pickRandomArtist = () => {
+  const pickRandomArtist = useCallback(() => {
     try {
       if (songs && songs.length > 0) {
         const unique = Array.from(
@@ -143,7 +131,7 @@ export default function SongListContainer() {
       }
     } catch {}
     return "Search songs, artists etc.";
-  };
+  }, [songs]);
 
   const [placeholderArtist, setPlaceholderArtist] = useState<string>(() =>
     pickRandomArtist()
@@ -151,14 +139,7 @@ export default function SongListContainer() {
 
   useEffect(() => {
     setPlaceholderArtist(pickRandomArtist());
-  }, [songs.length]);
-
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      UIManager.setLayoutAnimationEnabledExperimental &&
-        UIManager.setLayoutAnimationEnabledExperimental(true);
-    }
-  }, []);
+  }, [songs.length, pickRandomArtist]);
 
   const styles = useDynamicStyles(() => ({
     container: {
@@ -555,7 +536,7 @@ export default function SongListContainer() {
 
   useEffect(() => {
     if (songs.length === 0) fetchSongs();
-  }, []);
+  }, [fetchSongs, songs.length]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -691,7 +672,6 @@ export default function SongListContainer() {
         maxScroll={maxScroll}
         scrollY={scrollY}
         flatListRef={flatListRef}
-        setTrackHeight={setTrackHeight}
         dragging={dragging}
         setDragging={setDragging}
         activeLetter={activeLetter}
@@ -705,7 +685,6 @@ export default function SongListContainer() {
         setSortBy={setSortBy}
         sortDirection={sortDirection}
         setSortDirection={setSortDirection}
-        setSortKey={setSortKey}
       />
 
       {optionsSong && (

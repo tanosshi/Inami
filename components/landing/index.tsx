@@ -198,7 +198,7 @@ export default function LandingPage() {
     return () => {
       spinLoop.stop();
     };
-  }, []);
+  }, [floatAnim, floatXAnim, spinAnim]);
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],

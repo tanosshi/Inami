@@ -260,7 +260,7 @@ export default function LandingPage({ onSkip }: FirstProps) {
         fadeAnim.setValue(0);
       }
     });
-  }, []);
+  }, [fadeAnim]);
 
   const handleToggle = (featureId: string, value: boolean) => {
     setFeatureStates((prev) => ({

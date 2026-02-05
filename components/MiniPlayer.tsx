@@ -9,13 +9,11 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 // @ts-ignore
-import { useRouter } from "expo-router";
 import { usePlayerStore } from "../store/playerStore";
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from "../constants/theme";
 import { useDynamicStyles, useThemeValues } from "../hooks/useDynamicStyles";
 import { useDynamicTheme } from "../contexts/DynamicThemeContext";
 import { safeString } from "../utils/safeString";
-import { getThemeSettings } from "../utils/database";
 import { triggerHaptic } from "../utils/haptics";
 
 interface MiniPlayerProps {
@@ -23,11 +21,8 @@ interface MiniPlayerProps {
 }
 
 function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
-  const router = useRouter();
   const themeValues = useThemeValues();
   const { dynamicColors } = useDynamicTheme();
-  const [navToggle, setNavToggle] = useState<boolean>(true);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
   const [lastSong, setLastSong] = useState<any>(null);
   const dragAnim = useRef(new Animated.Value(0)).current;
   const hapticInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -42,16 +37,6 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
     playPrevious,
     showPlayerOverlay,
   } = usePlayerStore();
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      const settings = await getThemeSettings();
-
-      const navToggle = settings?.navToggle ?? false;
-      setNavToggle(navToggle);
-    };
-    fetchSettings();
-  }, []);
 
   useEffect(() => {
     if (currentSong) {
@@ -158,7 +143,6 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
         return Math.abs(dx) > 5 || Math.abs(dy) > 5;
       },
       onPanResponderGrant: () => {
-        setIsDragging(true);
         hapticInterval.current = setInterval(() => {
           triggerHaptic();
         }, 25);
@@ -186,7 +170,6 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
           showPlayerOverlay();
         }
 
-        setIsDragging(false);
         Animated.spring(dragAnim, {
           toValue: 0,
           useNativeDriver: true,
@@ -197,7 +180,6 @@ function MiniPlayerContent({ tabBarColor }: MiniPlayerProps) {
           clearInterval(hapticInterval.current);
           hapticInterval.current = null;
         }
-        setIsDragging(false);
         Animated.spring(dragAnim, {
           toValue: 0,
           useNativeDriver: true,

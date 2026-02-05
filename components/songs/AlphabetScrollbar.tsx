@@ -18,7 +18,6 @@ interface AlphabetScrollbarProps {
   maxScroll: number;
   scrollY: Animated.Value;
   flatListRef: React.RefObject<any>;
-  setTrackHeight: (height: number) => void;
   dragging: boolean;
   setDragging: (dragging: boolean) => void;
   activeLetter: string | null;
@@ -66,7 +65,6 @@ export default function AlphabetScrollbar({
   maxScroll,
   scrollY,
   flatListRef,
-  setTrackHeight,
   dragging,
   setDragging,
   activeLetter,
@@ -296,10 +294,6 @@ export default function AlphabetScrollbar({
       },
     })
   ).current;
-
-  useEffect(() => {
-    setTrackHeight(localTrackHeight);
-  }, [localTrackHeight, setTrackHeight]);
 
   const measureScrollbar = useCallback(() => {
     scrollbarRef.current?.measureInWindow(
