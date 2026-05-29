@@ -24,53 +24,68 @@ _The **one and only** proper music player, with all the features you need._
 - All your data is yours, stored locally on your device or optionally synced.
 - Free and open source and always will be.
 
-## How other players compare
-
-- Most players are built in Kotlin, while we use Expo. Performance may vary.
-- Battery usage might be slightly higher than the average music player.
-- Storage wise, we'll be around 3 times larger than the average music players as we'll try to keep you online, even if you're offline.
-
 ---
 
-## 🎯 Feature Roadmap
+## 📦 Features
+
+| Feature                          | Priority       |
+| -------------------------------- | -------------- |
+| Music player                     | 🔄 **Planned** |
+| Database                         | 🔄 **Planned** |
+| Folder scanner                   | 🔄 **Planned** |
+| Metadata reader                  | 🔄 **Planned** |
+| Miniplayer                       | 🔄 **Planned** |
+| Proper Landscape UI              | 🔄 **Planned** |
+| Sync colors based on album cover | 🔄 **Planned** |
+| Wallpaper accent color           | 🔄 **Planned** |
+| Better Headset support           | 🔄 **Planned** |
+| Gapless playback                 | 🔄 **Planned** |
+| Music notification               | 🔄 **Planned** |
+| Sleep timer                      | 🔄 **Planned** |
+| Lyrics screen, Load lyrics       | 🔄 **Planned** |
+| Edit tag/ID3 in app              | 🔄 **Planned** |
+| Playlist builder                 | 🔄 **Planned** |
+| Settings                         | 🔄 **Planned** |
+
+## 🎯 Extra Feature Roadmap
 
 <div align="center">
 
-| Feature                                             | Importance                        | Completion            |
-| --------------------------------------------------- | --------------------------------- | --------------------- |
-| Auto fetch metadata; artist, covers, lyrics etc.    | 🔴 **Important**                  | ✅ **Implemented**    |
-| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  | 🔄 **Planned**        |
-| Search and stream music                             | 🔴 **Important**                  | 🔄 **Planned**        |
-| Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  | 🔄 **Planned**        |
-| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  | 🔄 **Planned**        |
-| Tag cloud feature (In profile)                      | 🔴 **Important**                  | ✅ **Implemented**    |
-| Custom logo and app name                            | 🟡 **High**                       | 🔄 **Planned**        |
-| Music recommendations, offline version after        | 🟡 **High**                       | 🔄 **Planned**        |
-| Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       | 🔄 **Planned**        |
-| Gapless playback                                    | 🟡 **High**                       | 🔄 **Planned**        |
-| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       | 🔄 **Planned**        |
-| Music energy score of the day / Mainstream score    | 🟡 **High**                       | 🔄 **Planned**        |
-| Control music from PC/web                           | 🟡 **High**                       | ✅ **Implemented**    |
-| Artist fan image board                              | 🟡 **High**                       | 🔄 **Planned**        |
-| Automatic word for word lyrics (waveform predict)   | 🟡 **High**                       | 🔄 **Planned**        |
-| Volume normalizing                                  | 🟡 **High**                       | 🔄 **Planned**        |
-| Smart playlists                                     | 🟢 **Low**                        | 🔄 **Planned**        |
-| Integration with Last.fm                            | 🟢 **Low**                        | 🟡 **Half-done**      |
-| View local most played artist/track                 | 🟢 **Low**                        | 🟡 **Ongoing**        |
-| Sync data, songs and playlists                      | 🟢 **Low**                        | 🔄 **Planned**        |
-| Automatic music recommender (Bored detector)        | 🟢 **Low**                        | 🔄 **Planned**        |
-| Automatic sleep timer                               | 🟢 **Low**                        | 🔄 **Planned**        |
-| Floating lyrics                                     | 🟢 **Low**                        | 🔄 **Planned**        |
-| Soundcloud-like comments                            | 🟢 **Low**                        | 🔄 **Planned**        |
-| Copy music link; even when offline.                 | 🟢 **Low**                        | 🔄 **Planned**        |
-| Squiggly line in notification (if possible)         | 🟢 **Low**                        | 🔄 **Planned**        |
-| Show last.fm stats in For You                       | 🟢 **Low**                        | 🔄 **Planned**        |
-| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | 🔄 **Attempt queued** |
-| Airbuds™ (app) support (Challenging)                | ⁉ **Scrap?**                      | Deciding              |
-| In-app equalizer                                    | ⁉ **Scrap?**                      | Deciding              |
-| Plugins                                             | ⁉ **Scrap?**                      | Deciding              |
-| Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      | Deciding              |
-| Directly output to DAC                              | ⁉ **Scrap?**                      | Deciding              |
+| Feature                                             | Importance                        | Completion     |
+| --------------------------------------------------- | --------------------------------- | -------------- |
+| Auto fetch metadata; artist, covers, lyrics etc.    | 🔴 **Important**                  | 🔄 **Planned** |
+| Navigation bar on top (Take auxio as reference)     | 🔴 **Important**                  | 🔄 **Planned** |
+| Search and stream music                             | 🔴 **Important**                  | 🔄 **Planned** |
+| Download music. MP3 with yt-dlp, FLAC considerable. | 🔴 **Important**                  | 🔄 **Planned** |
+| Sync playlists to Spotify / YouTube music (etc.)    | 🔴 **Important**                  | 🔄 **Planned** |
+| Tag cloud feature (In profile)                      | 🔴 **Important**                  | 🔄 **Planned** |
+| Custom logo and app name                            | 🟡 **High**                       | 🔄 **Planned** |
+| Music recommendations, offline version after        | 🟡 **High**                       | 🔄 **Planned** |
+| Tiktok-like scroll feed for offline music recs      | 🟡 **High**                       | 🔄 **Planned** |
+| Gapless playback                                    | 🟡 **High**                       | 🔄 **Planned** |
+| (Custom) Widgets (1x5, 2x2, etc)                    | 🟡 **High**                       | 🔄 **Planned** |
+| Music energy score of the day / Mainstream score    | 🟡 **High**                       | 🔄 **Planned** |
+| Control music from PC/web                           | 🟡 **High**                       | 🔄 **Planned** |
+| Artist fan image board                              | 🟡 **High**                       | 🔄 **Planned** |
+| Automatic word for word lyrics (waveform predict)   | 🟡 **High**                       | 🔄 **Planned** |
+| Volume normalizing                                  | 🟡 **High**                       | 🔄 **Planned** |
+| Smart playlists                                     | 🟢 **Low**                        | 🔄 **Planned** |
+| Integration with Last.fm                            | 🟢 **Low**                        | 🔄 **Planned** |
+| View local most played artist/track                 | 🟢 **Low**                        | 🔄 **Planned** |
+| Sync data, songs and playlists                      | 🟢 **Low**                        | 🔄 **Planned** |
+| Automatic music recommender (Bored detector)        | 🟢 **Low**                        | 🔄 **Planned** |
+| Automatic sleep timer                               | 🟢 **Low**                        | 🔄 **Planned** |
+| Floating lyrics                                     | 🟢 **Low**                        | 🔄 **Planned** |
+| Soundcloud-like comments                            | 🟢 **Low**                        | 🔄 **Planned** |
+| Copy music link; even when offline.                 | 🟢 **Low**                        | 🔄 **Planned** |
+| Squiggly line in notification (if possible)         | 🟢 **Low**                        | 🔄 **Planned** |
+| Show last.fm stats in For You                       | 🟢 **Low**                        | 🔄 **Planned** |
+| Discord Rich Presence (Battery consuming)           | 🟢 **Low** ⁉ **Success-rate low** | 🔄 **Planned** |
+| Airbuds™ (app) support (Challenging)                | ⁉ **Scrap?**                      | Deciding       |
+| In-app equalizer                                    | ⁉ **Scrap?**                      | Deciding       |
+| Plugins                                             | ⁉ **Scrap?**                      | Deciding       |
+| Modify animation curves per element (Advanced)      | ⁉ **Scrap?**                      | Deciding       |
+| Directly output to DAC                              | ⁉ **Scrap?**                      | Deciding       |
 
 #### '⁉' indicates that i'll think about it after core functions are done.
 
@@ -84,7 +99,6 @@ _The **one and only** proper music player, with all the features you need._
 
 | Feature               | Importance       |
 | --------------------- | ---------------- |
-| Regular dark mode     | 🔴 **Fix**       |
 | YouTube Music replica | 🔴 **Ongoing**   |
 | Playful pink          | 🔴 **Important** |
 | Spotify replica       | 🟡 **High**      |
@@ -101,9 +115,10 @@ _The **one and only** proper music player, with all the features you need._
 
 Inspired by [auxio](https://github.com/OxygenCobalt/Auxio) and [Metro](https://github.com/MuntashirAkon/Metro) (Originally RetroMusicPlayer). And light inspiration from [Pano Scrobbler](https://github.com/kawaiiDango/pano-scrobbler).
 
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![EXPO](https://img.shields.io/badge/Build-fff.svg?style=for-the-badge&logo=EXPO&labelColor=fff&logoColor=000)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Material%203](https://img.shields.io/badge/Material%203-6750A4?style=for-the-badge)
+![Jetpack%20Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
 ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black)
 
 </div>
